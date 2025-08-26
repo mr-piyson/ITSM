@@ -1,5 +1,6 @@
+"use server";
+
 import { iss } from "@/lib/prisma";
-import { all } from "axios";
 import { NextResponse } from "next/server";
 
 // GET http://localhost:3000/api/Assets

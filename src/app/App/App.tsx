@@ -219,7 +219,7 @@ export function AppSidebarContent(props: { role: string | undefined }) {
                   "ms-1 size-6 shrink-0",
                   icon,
                   isActive(url) ? "text-white" : "text-foreground/92",
-                  loading === url && !open ? "hidden" : ""
+                  loading === url && !open && !isMobile ? "hidden" : ""
                 )}
               />
               <div className="flex items-center justify-between w-full">
@@ -227,7 +227,7 @@ export function AppSidebarContent(props: { role: string | undefined }) {
                   className={cn(
                     " text-base",
                     isActive(url) ? "text-white" : "text-foreground/92",
-                    loading === url && !open ? "hidden" : ""
+                    loading === url && !open && !isMobile ? "hidden" : ""
                   )}
                 >
                   {title}

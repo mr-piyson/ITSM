@@ -20,8 +20,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { Account, Ticket } from "@prisma/client";
 import useSWR from "swr";
+import Image from "next/image";
 
 // Register the required modules
 ModuleRegistry.registerModules([
@@ -36,18 +36,37 @@ export default function AccountTable() {
 
   const isMobile = useIsMobile();
 
-  const [rowData, setRowData] = useState<Ticket[]>([]);
+  type EmployeeRow = {
+    id: number;
+    emp_code: string;
+    name: string;
+    department: string;
+    designation: string;
+    left_date: string | null;
+    telephone: string;
+    nationality: string;
+    emp_location: string;
+    emp_source: string;
+    access: string;
+    is_active: boolean;
+    photo: {
+      folder: string;
+      filename: string;
+      ext: string;
+    } | null;
+  };
 
-  const [selectedAccount, setSelectedAccount] = useState<Account | undefined>(
-    undefined
-  );
+  const [rowData, setRowData] = useState<EmployeeRow[]>([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<
+    EmployeeRow | undefined
+  >(undefined);
 
   function onRowSelected(event: RowSelectedEvent<any, any>) {
-    const selectedRows = event.api.getSelectedRows() as Account[];
+    const selectedRows = event.api.getSelectedRows() as EmployeeRow[];
     if (selectedRows.length > 0) {
-      setSelectedAccount(selectedRows[0]);
+      setSelectedEmployee(selectedRows[0]);
     } else {
-      setSelectedAccount(undefined);
+      setSelectedEmployee(undefined);
     }
   }
 
@@ -63,6 +82,26 @@ export default function AccountTable() {
 
   const colDefs: ColDef[] = [
     {
+      field: "photo",
+      headerName: "Photo",
+      flex: 1,
+      cellRenderer: (params: any) => {
+        const photo = params.data.photo;
+        if (!photo) return null;
+        // You may need to adjust the path based on your backend
+        const src = `http://intranet.bfginternational.com:88/storage/employee/${photo.folder}/${photo.filename}.${photo.ext}`;
+        return (
+          <Image
+            src={src}
+            alt="Employee Photo"
+            width={40}
+            height={40}
+            style={{ borderRadius: "50%" }}
+          />
+        );
+      },
+    },
+    {
       field: "emp_code",
       headerName: "Code",
       sortable: true,
@@ -74,7 +113,7 @@ export default function AccountTable() {
       headerName: "Name",
       sortable: true,
       filter: true,
-      flex: 4,
+      flex: 3,
     },
     {
       field: "department",
@@ -110,17 +149,12 @@ export default function AccountTable() {
       sortable: true,
       filter: true,
       flex: 1,
-
-      // cell renderer to show status as badge using switch case where if the left_date and deleted_at is null then status is active else inactive
       cellRenderer: (params: any) => {
         const leftDate = params.data.left_date;
-        const deletedAt = params.data.deleted_at;
-
         let status = "Active";
-        if (leftDate || deletedAt) {
+        if (leftDate) {
           status = "Inactive";
         }
-
         return (
           <Badge variant={status === "Active" ? "success" : "destructive"}>
             {status}
@@ -129,9 +163,7 @@ export default function AccountTable() {
       },
       valueGetter: (params: any) => {
         const leftDate = params.data.left_date;
-        const deletedAt = params.data.deleted_at;
-
-        return leftDate || deletedAt ? "Inactive" : "Active";
+        return leftDate ? "Inactive" : "Active";
       },
     },
   ];
@@ -151,7 +183,7 @@ export default function AccountTable() {
             <span className="max-sm:hidden me-2">New Ticket</span>
           </Button>
           {/* Edit Button */}
-          {selectedAccount && (
+          {selectedEmployee && (
             <Button
               variant={"ghost"}
               className=" bg-transparent hover:bg-background  border-2 "
@@ -161,7 +193,7 @@ export default function AccountTable() {
             </Button>
           )}
           {/* Delete Button */}
-          {selectedAccount && (
+          {selectedEmployee && (
             <Button
               variant={"destructive"}
               className=" bg-transparent hover:bg-background  border-2 "

@@ -300,8 +300,9 @@ const getColorClasses = (color: string) => {
   return colorMap[color as keyof typeof colorMap] || colorMap.blue;
 };
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 import type { assets as Asset } from "../../../../node_modules/.prisma/iss/client";
+import Link from "next/link";
+import { fetcher } from "@/lib/utils";
 
 export default function AssetsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -321,7 +322,9 @@ export default function AssetsPage() {
     let filtered = data || [];
 
     if (selectedTypes.length > 0) {
-      filtered = filtered.filter((asset) => selectedTypes.includes(asset.type));
+      filtered = filtered.filter((asset) =>
+        selectedTypes.includes(asset?.type ?? "")
+      );
     }
 
     if (debouncedSearchQuery.trim()) {
@@ -397,7 +400,7 @@ export default function AssetsPage() {
   }, []);
 
   const AssetCard = ({ asset }: { asset: Asset }) => {
-    const typeConfig = getAssetTypeConfig(asset.type);
+    const typeConfig = getAssetTypeConfig(asset?.type ?? "");
     const Icon = typeConfig.icon;
     const colorClasses = getColorClasses(typeConfig.color);
 
@@ -414,7 +417,7 @@ export default function AssetsPage() {
                 "/placeholder.svg?height=200&width=300&query=IT asset device" ||
                 "/placeholder.svg"
               }
-              alt={asset.deviceName}
+              alt={asset.deviceName ?? "Asset Image"}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
             />
@@ -504,26 +507,31 @@ export default function AssetsPage() {
                 </Badge>
               )}
             </div>
-
-            <Button
-              size="sm"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+            <Link
+              href={`/App/Assets/asset?id=${asset.id}`}
+              className="group"
+              passHref
             >
-              View Details
-              <svg
-                className="h-3 w-3 ml-1 transition-transform group-hover:translate-x-0.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Button>
+                View Details
+                <svg
+                  className="h-3 w-3 ml-1 transition-transform group-hover:translate-x-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
@@ -799,7 +807,7 @@ export default function AssetsPage() {
             </TableHeader>
             <TableBody>
               {displayedAssets.map((asset) => {
-                const typeConfig = getAssetTypeConfig(asset.type);
+                const typeConfig = getAssetTypeConfig(asset?.type ?? "");
                 const Icon = typeConfig.icon;
                 return (
                   <TableRow key={asset.id}>
@@ -808,7 +816,7 @@ export default function AssetsPage() {
                         <Avatar className="h-10 w-10">
                           <AvatarImage
                             src={asset.image || "/placeholder.svg"}
-                            alt={asset.deviceName}
+                            alt={asset.deviceName ?? "Asset Image"}
                           />
                           <AvatarFallback>
                             <Icon className="h-5 w-5" />

@@ -1,4 +1,3 @@
-
 export const Activities = (role: string | undefined | null) => {
   switch (role) {
     case "Admin":
@@ -47,6 +46,11 @@ export const Activities = (role: string | undefined | null) => {
           title: "Vendors",
           url: "/App/Vendors",
           icon: "icon-[icon-park-outline--weixin-market]",
+        },
+        {
+          title: "Notes",
+          url: "/App/Notes",
+          icon: "icon-[mage--note]",
         },
         {
           title: "Settings",
