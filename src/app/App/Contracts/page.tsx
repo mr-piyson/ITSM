@@ -1,80 +1,56 @@
-"use client"
+"use client";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    Building,
-    Calendar,
-    DollarSign,
-    Edit,
-    ExternalLink,
-    FileText,
-    Filter,
-    Plus,
-    Search,
-    Trash2,
-} from "lucide-react"
-import { useState } from "react"
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loading } from "@/components/ui/loading";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { fetcher } from "@/lib/utils";
+import {
+  Building,
+  Calendar,
+  DollarSign,
+  Edit,
+  ExternalLink,
+  FileText,
+  Filter,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import useSWR from "swr";
+import type { contracts as Contract } from "../../../../node_modules/.prisma/iss/client";
+import { Error } from "@/components/ui/error";
 
 // Mock data based on the PHP structure
-const mockContracts = [
-  {
-    id: 1,
-    productName: "Microsoft Office 365 Enterprise",
-    vendorName: "Microsoft Corporation",
-    startDate: "2024-01-01",
-    endDate: "2024-12-31",
-    currency: "USD",
-    cost: "15000",
-    bilingCycle: "annual",
-    account: "IT-DEPT-001",
-    notes: "Enterprise license for 500 users",
-    support: "24/7 Premium Support",
-    docslink: "https://docs.microsoft.com/office365",
-  },
-  {
-    id: 2,
-    productName: "Adobe Creative Cloud",
-    vendorName: "Adobe Systems",
-    startDate: "2024-03-15",
-    endDate: "2025-03-14",
-    currency: "USD",
-    cost: "8500",
-    bilingCycle: "annual",
-    account: "DESIGN-TEAM",
-    notes: "Creative suite for design team",
-    support: "Business support plan",
-    docslink: "https://helpx.adobe.com/creative-cloud",
-  },
-  {
-    id: 3,
-    productName: "Salesforce CRM",
-    vendorName: "Salesforce Inc",
-    startDate: "2023-06-01",
-    endDate: "2024-05-31",
-    currency: "USD",
-    cost: "25000",
-    bilingCycle: "annual",
-    account: "SALES-CRM-001",
-    notes: "CRM system for sales team",
-    support: "Premier Success Plan",
-    docslink: "https://help.salesforce.com",
-  },
-]
 
 export default function ContractsPage() {
-  const [contracts, setContracts] = useState(mockContracts)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState("all")
-  const [selectedContract, setSelectedContract] = useState<any>(null)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const {
+    data: contracts,
+    error,
+    isLoading,
+  } = useSWR<Contract[]>("/api/Contracts", fetcher);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [selectedContract, setSelectedContract] = useState<any>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newContract, setNewContract] = useState({
     productName: "",
     vendorName: "",
@@ -87,62 +63,68 @@ export default function ContractsPage() {
     notes: "",
     support: "",
     docslink: "",
-  })
+  });
 
   // Calculate days remaining
-  const getDaysRemaining = (endDate: string) => {
-    const today = new Date()
-    const end = new Date(endDate)
-    const diffTime = end.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays
-  }
+  const getDaysRemaining = (endDate: string | Date) => {
+    const today = new Date();
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
 
   // Get status badge
-  const getStatusBadge = (endDate: string) => {
-    const daysRemaining = getDaysRemaining(endDate)
+  const getStatusBadge = (endDate: string | Date) => {
+    const daysRemaining = getDaysRemaining(endDate);
     if (daysRemaining < 0) {
-      return <Badge variant="destructive">Expired</Badge>
+      return <Badge variant="destructive">Expired</Badge>;
     } else if (daysRemaining <= 30) {
-      return <Badge className="bg-orange-500 hover:bg-orange-600">Expiring Soon</Badge>
+      return <Badge variant={"warning"}>Expiring Soon</Badge>;
     } else {
-      return <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
+      return <Badge variant={"success"}>Active</Badge>;
     }
-  }
+  };
 
   // Filter contracts
-  const filteredContracts = contracts.filter((contract) => {
-    const matchesSearch =
-      contract.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.vendorName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredContracts = contracts?.filter((contract) => {
+    const matchesSearch = contract?.productName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
-    if (filterStatus === "all") return matchesSearch
-    if (filterStatus === "active") return matchesSearch && getDaysRemaining(contract.endDate) > 0
-    if (filterStatus === "expired") return matchesSearch && getDaysRemaining(contract.endDate) < 0
+    if (filterStatus === "all") return matchesSearch;
+    if (filterStatus === "active")
+      return matchesSearch && getDaysRemaining(contract?.endDate) > 0;
+    if (filterStatus === "expired")
+      return matchesSearch && getDaysRemaining(contract?.endDate) < 0;
     if (filterStatus === "expiring")
-      return matchesSearch && getDaysRemaining(contract.endDate) <= 30 && getDaysRemaining(contract.endDate) > 0
+      return (
+        matchesSearch &&
+        getDaysRemaining(contract.endDate) <= 30 &&
+        getDaysRemaining(contract.endDate) > 0
+      );
 
-    return matchesSearch
-  })
+    return matchesSearch;
+  });
 
   const handleEditContract = (contract: any) => {
-    setSelectedContract(contract)
-    setIsEditModalOpen(true)
-  }
+    setSelectedContract(contract);
+    setIsEditModalOpen(true);
+  };
 
   const handleDeleteContract = (contractId: number) => {
     if (confirm("Are you sure you want to delete this contract?")) {
-      setContracts(contracts.filter((c) => c.id !== contractId))
+      // setContracts(contracts.filter((c) => c.id !== contractId));
     }
-  }
+  };
 
   const handleAddContract = () => {
     const contractToAdd = {
       ...newContract,
       id: Math.max(...contracts.map((c) => c.id)) + 1,
-    }
-    setContracts([...contracts, contractToAdd])
-    setIsAddModalOpen(false)
+    };
+    // setContracts([...contracts, contractToAdd]);
+    setIsAddModalOpen(false);
     // Reset form
     setNewContract({
       productName: "",
@@ -156,21 +138,29 @@ export default function ContractsPage() {
       notes: "",
       support: "",
       docslink: "",
-    })
-  }
+    });
+  };
 
   const handleUpdateContract = () => {
-    setContracts(contracts.map((c) => (c.id === selectedContract.id ? selectedContract : c)))
-    setIsEditModalOpen(false)
-  }
+    // setContracts(
+    //   contracts.map((c) =>
+    //     c.id === selectedContract.id ? selectedContract : c
+    //   )
+    // );
+    setIsEditModalOpen(false);
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Contracts Management</h1>
-          <p className="text-muted-foreground">Track and manage your business contracts</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Contracts Management
+          </h1>
+          <p className="text-muted-foreground">
+            Track and manage your business contracts
+          </p>
         </div>
         <Button className="gap-2" onClick={() => setIsAddModalOpen(true)}>
           <Plus className="h-4 w-4" />
@@ -204,97 +194,140 @@ export default function ContractsPage() {
       </div>
 
       {/* Contracts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredContracts.map((contract) => (
-          <Card key={contract.id} className="hover:shadow-lg transition-shadow flex flex-col">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg font-semibold line-clamp-2">{contract.productName}</CardTitle>
-                {getStatusBadge(contract.endDate)}
-              </div>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col justify-between">
-              <div className="space-y-4">
-                {/* Vendor */}
-                <div className="flex items-center gap-2 text-sm">
-                  <Building className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{contract.vendorName}</span>
-                </div>
+      {isLoading && (
+        <div className="flex w-full  justify-center py-20">
+          <Loading icon="" variant="default" message="Loading contracts..." />
+        </div>
+      )}
 
-                {/* Dates */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>Start: {new Date(contract.startDate).toLocaleDateString()}</span>
-                  </div>
+      {!isLoading && error && (
+        <div className="flex w-full  justify-center py-20">
+          <Error
+            icon="zap"
+            message="There was an error fetching the contracts. Please try again later."
+            variant="destructive"
+          />
+        </div>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {!isLoading &&
+          !error &&
+          filteredContracts?.map((contract) => (
+            <Card
+              key={contract.id}
+              className="hover:shadow-lg transition-shadow flex flex-col"
+            >
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg font-semibold line-clamp-2">
+                    {contract.productName}
+                  </CardTitle>
+                  {getStatusBadge(contract.endDate)}
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col justify-between">
+                <div className="space-y-4">
+                  {/* Vendor */}
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">End: {new Date(contract.endDate).toLocaleDateString()}</span>
+                    <Building className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{contract.vendorID}</span>
                   </div>
-                  {getDaysRemaining(contract.endDate) > 0 && (
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          getDaysRemaining(contract.endDate) <= 30
-                            ? "bg-orange-100 text-orange-800 border border-orange-200"
-                            : getDaysRemaining(contract.endDate) <= 90
+
+                  {/* Dates */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        Start:{" "}
+                        {new Date(contract.startDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">
+                        End: {new Date(contract.endDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {getDaysRemaining(contract.endDate) > 0 && (
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            getDaysRemaining(contract.endDate) <= 30
+                              ? "bg-orange-100 text-orange-800 border border-orange-200"
+                              : getDaysRemaining(contract.endDate) <= 90
                               ? "bg-yellow-100 text-yellow-800 border border-yellow-200"
                               : "bg-green-100 text-green-800 border border-green-200"
-                        }`}
-                      >
-                        {getDaysRemaining(contract.endDate)} days remaining
+                          }`}
+                        >
+                          {getDaysRemaining(contract.endDate)} days remaining
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {getDaysRemaining(contract.endDate) < 0 && (
-                    <div className="flex items-center gap-2">
-                      <div className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
-                        Expired {Math.abs(getDaysRemaining(contract.endDate))} days ago
+                    )}
+                    {getDaysRemaining(contract.endDate) < 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                          Expired {Math.abs(getDaysRemaining(contract.endDate))}{" "}
+                          days ago
+                        </div>
                       </div>
+                    )}
+                  </div>
+
+                  {/* Cost */}
+                  <div className="flex items-center gap-2 text-sm">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-semibold text-lg">
+                      {contract.currency}{" "}
+                      {Number.parseInt(contract.cost).toLocaleString()}
+                    </span>
+                    <span className="text-xs text-muted-foreground capitalize">
+                      / {contract.bilingCycle}
+                    </span>
+                  </div>
+
+                  {/* Account */}
+                  {contract.account && (
+                    <div className="text-xs text-muted-foreground">
+                      Account: {contract.account}
                     </div>
                   )}
                 </div>
 
-                {/* Cost */}
-                <div className="flex items-center gap-2 text-sm">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-semibold text-lg">
-                    {contract.currency} {Number.parseInt(contract.cost).toLocaleString()}
-                  </span>
-                  <span className="text-xs text-muted-foreground capitalize">/ {contract.bilingCycle}</span>
-                </div>
-
-                {/* Account */}
-                {contract.account && <div className="text-xs text-muted-foreground">Account: {contract.account}</div>}
-              </div>
-
-              <div className="flex gap-2 pt-4 mt-auto">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEditContract(contract)}
-                  className="flex-1 gap-1"
-                >
-                  <Edit className="h-3 w-3" />
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDeleteContract(contract.id)}
-                  className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-                {contract.docslink && (
-                  <Button variant="outline" size="sm" onClick={() => window.open(contract.docslink, "_blank")}>
-                    <ExternalLink className="h-3 w-3" />
+                <div className="flex gap-2 pt-4 mt-auto">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditContract(contract)}
+                    className="flex-1 gap-1"
+                  >
+                    <Edit className="h-3 w-3" />
+                    Edit
                   </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteContract(contract.id)}
+                    className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                  {contract.docslink && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        contract.docslink
+                          ? window.open(contract.docslink, "_blank")
+                          : undefined
+                      }
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
       </div>
 
       {/* Add Contract Modal */}
@@ -310,7 +343,12 @@ export default function ContractsPage() {
                 <Input
                   id="add-productName"
                   value={newContract.productName}
-                  onChange={(e) => setNewContract({ ...newContract, productName: e.target.value })}
+                  onChange={(e) =>
+                    setNewContract({
+                      ...newContract,
+                      productName: e.target.value,
+                    })
+                  }
                   placeholder="Enter product name"
                   required
                 />
@@ -320,7 +358,12 @@ export default function ContractsPage() {
                 <Input
                   id="add-vendorName"
                   value={newContract.vendorName}
-                  onChange={(e) => setNewContract({ ...newContract, vendorName: e.target.value })}
+                  onChange={(e) =>
+                    setNewContract({
+                      ...newContract,
+                      vendorName: e.target.value,
+                    })
+                  }
                   placeholder="Enter vendor name"
                   required
                 />
@@ -334,7 +377,12 @@ export default function ContractsPage() {
                   id="add-startDate"
                   type="date"
                   value={newContract.startDate}
-                  onChange={(e) => setNewContract({ ...newContract, startDate: e.target.value })}
+                  onChange={(e) =>
+                    setNewContract({
+                      ...newContract,
+                      startDate: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -344,7 +392,9 @@ export default function ContractsPage() {
                   id="add-endDate"
                   type="date"
                   value={newContract.endDate}
-                  onChange={(e) => setNewContract({ ...newContract, endDate: e.target.value })}
+                  onChange={(e) =>
+                    setNewContract({ ...newContract, endDate: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -356,7 +406,9 @@ export default function ContractsPage() {
                 <div className="flex gap-2">
                   <Select
                     value={newContract.currency}
-                    onValueChange={(value) => setNewContract({ ...newContract, currency: value })}
+                    onValueChange={(value) =>
+                      setNewContract({ ...newContract, currency: value })
+                    }
                   >
                     <SelectTrigger className="w-24">
                       <SelectValue />
@@ -371,7 +423,9 @@ export default function ContractsPage() {
                   <Input
                     placeholder="Enter cost"
                     value={newContract.cost}
-                    onChange={(e) => setNewContract({ ...newContract, cost: e.target.value })}
+                    onChange={(e) =>
+                      setNewContract({ ...newContract, cost: e.target.value })
+                    }
                     className="flex-1"
                     type="number"
                     required
@@ -382,7 +436,9 @@ export default function ContractsPage() {
                 <Label htmlFor="add-billingCycle">Billing Cycle</Label>
                 <Select
                   value={newContract.bilingCycle}
-                  onValueChange={(value) => setNewContract({ ...newContract, bilingCycle: value })}
+                  onValueChange={(value) =>
+                    setNewContract({ ...newContract, bilingCycle: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -402,7 +458,9 @@ export default function ContractsPage() {
               <Input
                 id="add-account"
                 value={newContract.account}
-                onChange={(e) => setNewContract({ ...newContract, account: e.target.value })}
+                onChange={(e) =>
+                  setNewContract({ ...newContract, account: e.target.value })
+                }
                 placeholder="Enter account reference"
               />
             </div>
@@ -413,7 +471,9 @@ export default function ContractsPage() {
                 <Textarea
                   id="add-notes"
                   value={newContract.notes}
-                  onChange={(e) => setNewContract({ ...newContract, notes: e.target.value })}
+                  onChange={(e) =>
+                    setNewContract({ ...newContract, notes: e.target.value })
+                  }
                   rows={4}
                   placeholder="Contract notes and details..."
                 />
@@ -423,7 +483,9 @@ export default function ContractsPage() {
                 <Textarea
                   id="add-support"
                   value={newContract.support}
-                  onChange={(e) => setNewContract({ ...newContract, support: e.target.value })}
+                  onChange={(e) =>
+                    setNewContract({ ...newContract, support: e.target.value })
+                  }
                   rows={4}
                   placeholder="Support plan and contact details..."
                 />
@@ -435,7 +497,9 @@ export default function ContractsPage() {
               <Input
                 id="add-docslink"
                 value={newContract.docslink}
-                onChange={(e) => setNewContract({ ...newContract, docslink: e.target.value })}
+                onChange={(e) =>
+                  setNewContract({ ...newContract, docslink: e.target.value })
+                }
                 placeholder="https://docs.example.com"
                 type="url"
               />
@@ -455,7 +519,10 @@ export default function ContractsPage() {
               >
                 Add Contract
               </Button>
-              <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsAddModalOpen(false)}
+              >
                 Cancel
               </Button>
             </div>
@@ -477,7 +544,12 @@ export default function ContractsPage() {
                   <Input
                     id="edit-productName"
                     value={selectedContract.productName}
-                    onChange={(e) => setSelectedContract({ ...selectedContract, productName: e.target.value })}
+                    onChange={(e) =>
+                      setSelectedContract({
+                        ...selectedContract,
+                        productName: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
@@ -486,7 +558,12 @@ export default function ContractsPage() {
                   <Input
                     id="edit-vendorName"
                     value={selectedContract.vendorName}
-                    onChange={(e) => setSelectedContract({ ...selectedContract, vendorName: e.target.value })}
+                    onChange={(e) =>
+                      setSelectedContract({
+                        ...selectedContract,
+                        vendorName: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
@@ -499,7 +576,12 @@ export default function ContractsPage() {
                     id="edit-startDate"
                     type="date"
                     value={selectedContract.startDate}
-                    onChange={(e) => setSelectedContract({ ...selectedContract, startDate: e.target.value })}
+                    onChange={(e) =>
+                      setSelectedContract({
+                        ...selectedContract,
+                        startDate: e.target.value,
+                      })
+                    }
                   />
                 </div>
                 <div>
@@ -508,7 +590,12 @@ export default function ContractsPage() {
                     id="edit-endDate"
                     type="date"
                     value={selectedContract.endDate}
-                    onChange={(e) => setSelectedContract({ ...selectedContract, endDate: e.target.value })}
+                    onChange={(e) =>
+                      setSelectedContract({
+                        ...selectedContract,
+                        endDate: e.target.value,
+                      })
+                    }
                   />
                 </div>
               </div>
@@ -519,7 +606,12 @@ export default function ContractsPage() {
                   <div className="flex gap-2">
                     <Select
                       value={selectedContract.currency}
-                      onValueChange={(value) => setSelectedContract({ ...selectedContract, currency: value })}
+                      onValueChange={(value) =>
+                        setSelectedContract({
+                          ...selectedContract,
+                          currency: value,
+                        })
+                      }
                     >
                       <SelectTrigger className="w-24">
                         <SelectValue />
@@ -534,7 +626,12 @@ export default function ContractsPage() {
                     <Input
                       placeholder="Cost"
                       value={selectedContract.cost}
-                      onChange={(e) => setSelectedContract({ ...selectedContract, cost: e.target.value })}
+                      onChange={(e) =>
+                        setSelectedContract({
+                          ...selectedContract,
+                          cost: e.target.value,
+                        })
+                      }
                       className="flex-1"
                       type="number"
                     />
@@ -544,7 +641,12 @@ export default function ContractsPage() {
                   <Label htmlFor="edit-billingCycle">Billing Cycle</Label>
                   <Select
                     value={selectedContract.bilingCycle}
-                    onValueChange={(value) => setSelectedContract({ ...selectedContract, bilingCycle: value })}
+                    onValueChange={(value) =>
+                      setSelectedContract({
+                        ...selectedContract,
+                        bilingCycle: value,
+                      })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -564,7 +666,12 @@ export default function ContractsPage() {
                 <Input
                   id="edit-account"
                   value={selectedContract.account}
-                  onChange={(e) => setSelectedContract({ ...selectedContract, account: e.target.value })}
+                  onChange={(e) =>
+                    setSelectedContract({
+                      ...selectedContract,
+                      account: e.target.value,
+                    })
+                  }
                   placeholder="Account reference"
                 />
               </div>
@@ -575,7 +682,12 @@ export default function ContractsPage() {
                   <Textarea
                     id="edit-notes"
                     value={selectedContract.notes}
-                    onChange={(e) => setSelectedContract({ ...selectedContract, notes: e.target.value })}
+                    onChange={(e) =>
+                      setSelectedContract({
+                        ...selectedContract,
+                        notes: e.target.value,
+                      })
+                    }
                     rows={4}
                     placeholder="Contract notes..."
                   />
@@ -585,7 +697,12 @@ export default function ContractsPage() {
                   <Textarea
                     id="edit-support"
                     value={selectedContract.support}
-                    onChange={(e) => setSelectedContract({ ...selectedContract, support: e.target.value })}
+                    onChange={(e) =>
+                      setSelectedContract({
+                        ...selectedContract,
+                        support: e.target.value,
+                      })
+                    }
                     rows={4}
                     placeholder="Support details..."
                   />
@@ -597,7 +714,12 @@ export default function ContractsPage() {
                 <Input
                   id="edit-docslink"
                   value={selectedContract.docslink}
-                  onChange={(e) => setSelectedContract({ ...selectedContract, docslink: e.target.value })}
+                  onChange={(e) =>
+                    setSelectedContract({
+                      ...selectedContract,
+                      docslink: e.target.value,
+                    })
+                  }
                   placeholder="https://..."
                 />
               </div>
@@ -606,14 +728,17 @@ export default function ContractsPage() {
                 <Button className="flex-1" onClick={handleUpdateContract}>
                   Update Contract
                 </Button>
-                <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditModalOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    handleDeleteContract(selectedContract.id)
-                    setIsEditModalOpen(false)
+                    handleDeleteContract(selectedContract.id);
+                    setIsEditModalOpen(false);
                   }}
                 >
                   Delete Contract
@@ -625,7 +750,7 @@ export default function ContractsPage() {
       </Dialog>
 
       {/* Empty State */}
-      {filteredContracts.length === 0 && (
+      {filteredContracts?.length === 0 && (
         <div className="text-center py-12">
           <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">No contracts found</h3>
@@ -641,5 +766,5 @@ export default function ContractsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

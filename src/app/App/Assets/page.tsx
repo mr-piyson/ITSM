@@ -412,10 +412,7 @@ export default function AssetsPage() {
               width={300}
               height={200}
               src={
-                "http://iss.bfginternational.com/ISS/itemsImages/" +
-                  asset.image ||
-                "/placeholder.svg?height=200&width=300&query=IT asset device" ||
-                "/placeholder.svg"
+                "http://iss.bfginternational.com/ISS/itemsImages/" + asset.image
               }
               alt={asset.deviceName ?? "Asset Image"}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -814,10 +811,6 @@ export default function AssetsPage() {
                     <TableCell>
                       {asset.image ? (
                         <Avatar className="h-10 w-10">
-                          <AvatarImage
-                            src={asset.image || "/placeholder.svg"}
-                            alt={asset.deviceName ?? "Asset Image"}
-                          />
                           <AvatarFallback>
                             <Icon className="h-5 w-5" />
                           </AvatarFallback>
@@ -839,7 +832,7 @@ export default function AssetsPage() {
                     </TableCell>
                     <TableCell>{asset.owner}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="link" size="sm">
                         Details
                       </Button>
                     </TableCell>
