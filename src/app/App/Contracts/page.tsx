@@ -119,6 +119,7 @@ export default function ContractsPage() {
   };
 
   const handleAddContract = () => {
+    if (contracts === undefined) return;
     const contractToAdd = {
       ...newContract,
       id: Math.max(...contracts.map((c) => c.id)) + 1,

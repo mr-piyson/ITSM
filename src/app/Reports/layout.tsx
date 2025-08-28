@@ -1,28 +1,30 @@
 "use client";
 import {
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarInset,
-    SidebarProvider,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarInset,
+  SidebarProvider,
 } from "@/components/ui/sidebar";
 
 export default function Page(props: any) {
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        {props.children}
-      </SidebarInset>
-    </SidebarProvider>
+    <QueryClientProvider client={new QueryClient()}>
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <AppSidebar variant="inset" />
+        <SidebarInset>
+          <SiteHeader />
+          {props.children}
+        </SidebarInset>
+      </SidebarProvider>
+    </QueryClientProvider>
   );
 }
 
@@ -51,12 +53,12 @@ export function SiteHeader() {
 import * as React from "react";
 
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -82,18 +84,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           items={[
             {
               title: "Panel Report",
-              url: "/Reports/panel-report",
+              url: "/Reports/Panel-Report",
               icon: "icon-[mingcute--board-line]",
             },
             {
               title: "Package Report",
-              url: "/Reports/package-report",
+              url: "/Reports/Package-Report",
               icon: "icon-[solar--box-outline]",
             },
             {
-              title: "Containers Report",
-              url: "/Reports/containers-report",
+              title: "Container Report",
+              url: "/Reports/Container-Report",
               icon: "icon-[ph--shipping-container]",
+            },
+            {
+              title: "Inspection Report",
+              url: "/Reports/Inspection-Report",
+              icon: "icon-[lucide--route]",
             },
           ]}
         />
@@ -105,6 +112,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 import AppLogo from "@/Assets/Icons/Logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export function NavMain({
   items,
@@ -120,15 +128,15 @@ export function NavMain({
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarGroup>
           <SidebarGroupLabel className="text-sm font-semibold">
-            Main Navigation
+            Main Reports
           </SidebarGroupLabel>
           <SidebarGroupContent className="flex flex-col gap-2">
             <Separator className="my-2" />
 
             <SidebarMenu>
               {items.map((item) => (
-                <Link href={item.url} key={item.title} >
-                  <SidebarMenuItem >
+                <Link href={item.url} key={item.title}>
+                  <SidebarMenuItem>
                     <SidebarMenuButton tooltip={item.title}>
                       <i className={`${item.icon} size-6`}></i>
                       <span className="text-md ">{item.title}</span>
