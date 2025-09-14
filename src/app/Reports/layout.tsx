@@ -36,7 +36,7 @@ export function SiteHeader() {
   const title = path?.split("/").pop()?.replace(/-/g, " ");
   const { theme, setTheme } = useTheme();
   return (
-    <header className="flex h-(--header-height) shrink-0 items-center gap-2  transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+    <header className="bg-sidebar flex h-(--header-height) shrink-0 items-center gap-2  transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
         <Separator
@@ -103,15 +103,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import MESLogo from "@/Assets/Icons/MESLogo";
-import { Computer, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 
 export function NavMain({
@@ -132,7 +124,7 @@ export function NavMain({
           </SidebarGroupLabel>
           <SidebarGroupContent className="flex flex-col gap-2">
             <Separator className="my-2" />
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               {items.map((item) => (
                 <Link href={item.url} key={item.title}>
                   <SidebarMenuItem>
