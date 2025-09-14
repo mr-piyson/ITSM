@@ -34,6 +34,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 export function SiteHeader() {
   const path = usePathname();
   const title = path?.split("/").pop()?.replace(/-/g, " ");
+  const { theme, setTheme } = useTheme();
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2  transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
@@ -44,7 +45,9 @@ export function SiteHeader() {
         />
         <h1 className="text-base font-medium">{title}</h1>
         {/* Left Side */}
-        <div className="ml-auto flex items-center gap-2"></div>
+        <div className="ml-auto flex items-center gap-2">
+          <ModeToggle />
+        </div>
       </div>
     </header>
   );
@@ -67,15 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <a href="#">
-                <AppLogo className="size-8" />
-                <span className="text-base font-semibold">MES Reports</span>
-              </a>
-            </SidebarMenuButton>
+            <MESLogo className="h-8 w-full" />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
@@ -93,11 +88,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               icon: "icon-[solar--box-outline]",
             },
             {
-              title: "Container Report",
-              url: "/Reports/Container-Report",
-              icon: "icon-[ph--shipping-container]",
-            },
-            {
               title: "Inspection Report",
               url: "/Reports/Inspection-Report",
               icon: "icon-[lucide--route]",
@@ -109,10 +99,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   );
 }
 
-import AppLogo from "@/Assets/Icons/Logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import MESLogo from "@/Assets/Icons/MESLogo";
+import { Computer, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 export function NavMain({
   items,
@@ -132,12 +132,15 @@ export function NavMain({
           </SidebarGroupLabel>
           <SidebarGroupContent className="flex flex-col gap-2">
             <Separator className="my-2" />
-
             <SidebarMenu>
               {items.map((item) => (
                 <Link href={item.url} key={item.title}>
                   <SidebarMenuItem>
-                    <SidebarMenuButton tooltip={item.title}>
+                    <SidebarMenuButton
+                      isActive={usePathname() === item.url}
+                      className="data-[active=true]:border-[#00b7b0] border-2 border-transparent"
+                      tooltip={item.title}
+                    >
                       <i className={`${item.icon} size-6`}></i>
                       <span className="text-md ">{item.title}</span>
                     </SidebarMenuButton>

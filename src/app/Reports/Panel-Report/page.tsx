@@ -390,8 +390,8 @@ export default function ReportPage() {
         </div>
       </CardContent>
 
-      <CardContent className="p-0">
-        <div className="ag-theme-alpine h-[550px] w-full">
+      <CardContent className="p-0 h-full">
+        <div className="ag-theme-alpine h-full w-full">
           <AgGridReact
             rowData={panels}
             columnDefs={columnDefs}
