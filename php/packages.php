@@ -23,7 +23,7 @@ $options = [
     PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 
-$filter = isset($_GET['filter']) ? $_GET['filter'] : null;
+$filter = $_GET['filter'] ?? null;
 
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
@@ -56,49 +56,52 @@ SELECT
     END AS has_photo
 FROM mes.packages p
 LEFT JOIN mes.resources s
-    ON s.model = 'package' AND s.type = 'image' AND s.uid = p.id 
-where
-    
-";
+    ON s.model = 'package' AND s.type = 'image' AND s.uid = p.id ";
 
 // Apply date filter
+$params = [];
 switch ($filter) {
     case "today":
-        $sql .= " DATE(p.created_at) = CURDATE()";
+        $sql .= " WHERE DATE(p.created_at) = :today";
+        $params[':today'] = date('Y-m-d');
         break;
     case "last30days":
-        $sql .= " DATE(p.created_at) = CURDATE() - INTERVAL 1 DAY";
+        $sql .= " WHERE DATE(p.created_at) >= :last30days";
+        $params[':last30days'] = date('Y-m-d', strtotime('-30 days'));
         break;
     case "last7days":
-        $sql .= " DATE(p.created_at) >= CURDATE() - INTERVAL 7 DAY";
+        $sql .= " WHERE DATE(p.created_at) >= :last7days";
+        $params[':last7days'] = date('Y-m-d', strtotime('-7 days'));
         break;
     case "last90days":
-        $sql .= " DATE(p.created_at) >= CURDATE() - INTERVAL 90 DAY";
+        $sql .= " WHERE DATE(p.created_at) >= :last90days";
+        $params[':last90days'] = date('Y-m-d', strtotime('-90 days'));
         break;
     case "1year":
-        $sql .= " DATE(p.created_at) >= CURDATE() - INTERVAL 1 YEAR";
+        $sql .= " WHERE DATE(p.created_at) >= :oneyear";
+        $params[':oneyear'] = date('Y-m-d', strtotime('-1 year'));
         break;
     case "2years":
-        $sql .= " DATE(p.created_at) >= CURDATE() - INTERVAL 2 YEAR";
+        $sql .= " WHERE DATE(p.created_at) >= :twoyears";
+        $params[':twoyears'] = date('Y-m-d', strtotime('-2 years'));
         break;
     case "3years":
-        $sql .= " DATE(p.created_at) >= CURDATE() - INTERVAL 3 YEAR";
+        $sql .= " WHERE DATE(p.created_at) >= :threeyears";
+        $params[':threeyears'] = date('Y-m-d', strtotime('-3 years'));
         break;
     case "all":
-        // No date filter
+        $sql .= ""; // No date filter
         break;
     default:
-        $filter = null; // Invalid filter, no results
+        $filter = null; // Invalid filter
         break;
 }
-
-$sql .= " order by p.created_at desc ;";
 
 if (!$filter) {
     echo json_encode([]);
 } else {
     $stmt = $pdo->prepare($sql);
-    $stmt->execute();
+    $stmt->execute($params);
     $result = $stmt->fetchAll();
     echo json_encode($result);
 }

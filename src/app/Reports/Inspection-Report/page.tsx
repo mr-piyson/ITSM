@@ -1,12 +1,10 @@
 "use client";
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import axios from "axios";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
-import { Button } from "@/components/ui/button";
 import { CsvExportModule } from "ag-grid-community";
 import {
   Select,
@@ -15,53 +13,182 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAtom } from "jotai";
-import {
-  filterStore,
-  initPanelsStore,
-  panelsStore,
-} from "./(store)/panel-store";
-import SearchPanels from "./SearchPanels";
-import { SearchIcon } from "lucide-react";
-import { useTableTheme } from "@/hooks/use-TableTheme";
 import { useQuery } from "@tanstack/react-query";
+import { atom, useAtom } from "jotai";
+import { CircleDot, Search, SearchIcon } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import type { VariantProps } from "class-variance-authority";
+import { Textarea } from "@/components/ui/textarea";
+import { useTableTheme } from "@/hooks/use-TableTheme";
+import { Badge } from "@/components/ui/badge";
 
 // Types
 interface ReportData {
-  panelId: string;
-  container?: string;
-  created_at: string;
-  wrapped: boolean;
-  final: boolean;
-  epicor_asm_part_no: string;
-  asm_part_no: string;
+  panel_serial: string;
   project: string;
-  package?: string;
-  qc_datetime?: string;
-  panel_id: string;
-  label_creation_date: string;
+  latest_out: Date;
+  route: string[];
 }
 
 interface ApiReportData {
-  panel_id: string;
-  container?: string;
-  label_creation_date: string;
-  wrapped: number;
-  final: number;
-  epicor_asm_part_no: string;
+  panel_serial: string;
   project: string;
-  package?: string;
-  qc_datetime?: string;
+  latest_out: string;
+  inspection_result: string;
+  gate_name: string;
+  route: string;
+}
+
+const initData = atom<ReportData[]>([]);
+const filteredData = atom<ReportData[]>([]);
+const filterStore = atom<string>("");
+
+export function SearchPanels(
+  props: React.ComponentProps<"button"> &
+    VariantProps<typeof buttonVariants> & {
+      asChild?: boolean;
+    }
+) {
+  return (
+    <SearchDialog>
+      <Button {...props}>
+        <SearchIcon />
+        Search
+      </Button>
+    </SearchDialog>
+  );
+}
+
+const searchOptions: { value: keyof ReportData; label: string }[] = [
+  { value: "panel_serial", label: "Panel Serial" },
+  { value: "project", label: "Project Name" },
+];
+
+interface ImportDialogProps {
+  children?: React.ReactNode;
+}
+
+export function SearchDialog(props: ImportDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [searchBy, setSearchBy] = useState<keyof ReportData>();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [initPanels] = useAtom(initData);
+  const [_, setPanels] = useAtom(filteredData);
+
+  const handleSearch = () => {
+    // Perform search logic here
+    if (!searchBy || !searchQuery) {
+      console.warn("Please select a search field and enter a query.");
+      return;
+    }
+    const filteredData = searchReportDataByKey(
+      initPanels,
+      searchBy,
+      searchQuery
+    );
+    setPanels(filteredData);
+    setOpen(false);
+  };
+
+  function searchReportDataByKey(
+    data: ReportData[],
+    key: keyof ReportData,
+    prompt: string
+  ): ReportData[] {
+    // Extract unique keys after "\n" in the prompt and create a Set for fast lookup and make the search case-insensitive
+    const searchSet = new Set(
+      prompt
+        .split("\n")
+        .map((item) => item.trim().toLocaleUpperCase())
+        .filter((item) => item.length > 0)
+    );
+    // return filtered data where data[key] is in the searchSet
+    return data.filter((item) => {
+      const value = item[key];
+      if (typeof value === "string") {
+        return searchSet.has(value);
+      } else if (typeof value === "number") {
+        return searchSet.has(String(value));
+      }
+      return false;
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{props.children}</DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Search Report Data</DialogTitle>
+          <DialogDescription>
+            Select a field to search by and enter your search criteria.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="search-field">Search By</Label>
+            <Select
+              value={searchBy as string | undefined}
+              onValueChange={(value) => setSearchBy(value as keyof ReportData)}
+            >
+              <SelectTrigger id="search-field">
+                <SelectValue placeholder="Select a field to search by" />
+              </SelectTrigger>
+              <SelectContent>
+                {searchOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="search-query">Search Query</Label>
+            <Textarea
+              id="search-query"
+              placeholder="Enter your search criteria..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="min-h-[200px] max-h-[200px] bg-muted"
+            />
+          </div>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button onClick={handleSearch}>
+            <Search className="h-4 w-4 mr-2" />
+            Search
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
-// Custom cell renderers
-const StatusCellRenderer = ({ value }: { value: boolean }) => (
-  <Badge variant={value ? "default" : "secondary"} className="text-xs">
-    {value ? "Yes" : "No"}
-  </Badge>
-);
+const DateCellRenderer = ({ value }: { value: string }) => {
+  if (!value) return null;
+  const date = new Date(value);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`;
+};
 
 const PanelCellRender = ({ value }: { value: string }) => {
   const trackerUrl = `http://intranet.bfginternational.com:88/utilities/panel_tracker?part_id=${value}`;
@@ -82,101 +209,16 @@ const PanelCellRender = ({ value }: { value: string }) => {
   );
 };
 
-const ContainerCellRenderer = ({ data }: { data: ReportData }) => (
-  <div className="flex justify-between items-center">
-    <span className="text-md font-semibold">{data.container}</span>
-    {data.container && (
-      <Button
-        variant="outline"
-        size="icon"
-        className="p-0"
-        onClick={() =>
-          window.open(
-            `http://intranet.bfginternational.com:88/containers/show?id=${parseInt(
-              data.container?.match(/\d+/)?.[0] || "0"
-            )}`,
-            "_blank"
-          )
-        }
-        title="Inspect Container"
-      >
-        <i className="icon-[ph--shipping-container] size-6" />
-      </Button>
-    )}
-  </div>
-);
-
-const BoxCellRenderer = ({ data }: { data: ReportData }) => (
-  <div className="flex justify-between items-center">
-    <span className="text-md font-semibold">{data.package}</span>
-    {data.package && (
-      <Button
-        variant="outline"
-        size="icon"
-        className="p-0"
-        onClick={() =>
-          window.open(
-            `http://intranet.bfginternational.com:88/packages/show?id=${parseInt(
-              data.package?.match(/\d+/)?.[0] || "0"
-            )}`,
-            "_blank"
-          )
-        }
-        title="Inspect Box"
-      >
-        <i className="icon-[solar--box-outline] size-6" />
-      </Button>
-    )}
-  </div>
-);
-
-const DateCellRenderer = ({ value }: { value: string }) => {
-  if (!value) return null;
-  const date = new Date(value);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
-
 // API function
 
 export default function ReportPage() {
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
   const [selectedRows, setSelectedRows] = useState<ReportData[]>([]);
   const [filter, setFilter] = useAtom(filterStore);
-  const [, setInitPanels] = useAtom(initPanelsStore);
-  const [panels, setPanels] = useAtom(panelsStore);
+  const [, setInitPanels] = useAtom(initData);
+  const [panels, setPanels] = useAtom(filteredData);
   const theme = useTableTheme();
 
-  const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
-    const response = await axios.get(
-      `http://172.18.10.40:80/MES-Fork/api/panels.php?filter=${filter}`
-    );
-
-    return response.data.map(
-      (panel: ApiReportData): ReportData => ({
-        panelId: panel.panel_id.toUpperCase(),
-        container: panel.container,
-        created_at: new Date(panel.label_creation_date)
-          .toISOString()
-          .split("T")[0],
-        wrapped: panel.wrapped === 1,
-        final: panel.final === 1,
-        epicor_asm_part_no: panel.epicor_asm_part_no,
-        asm_part_no: panel.epicor_asm_part_no,
-        project: panel.project,
-        package: panel.package,
-        qc_datetime: panel.qc_datetime
-          ? new Date(panel.qc_datetime).toISOString().split("T")[0]
-          : undefined,
-        panel_id: panel.panel_id,
-        label_creation_date: panel.label_creation_date,
-      })
-    );
-  }, [filter]);
-
-  // React Query for data fetching
   // React Query for data fetching
   const {
     data: tableData = [],
@@ -197,25 +239,29 @@ export default function ReportPage() {
     staleTime: Infinity,
   });
 
+  const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
+    const response = await axios.get(
+      `http://${window.location.hostname}:80/ITSM/php/Inspections.php?filter=${filter}`
+    );
+
+    return response.data.map((item: ApiReportData) => ({
+      panel_serial: item.panel_serial,
+      project: item.project,
+      latest_out: new Date(item.latest_out),
+      route: item.route ? item.route.split(",") : [],
+    }));
+  }, [filter]);
+
   // Memoized column definitions
-  const columnDefs: ColDef[] = useMemo(
+  const columnDefs: ColDef<ReportData>[] = useMemo(
     () => [
       {
-        headerName: "Panel ID",
-        field: "panelId",
+        headerName: "Panel Serial",
+        field: "panel_serial",
         editable: true,
         sortable: true,
         filter: true,
-        flex: 2,
         cellRenderer: PanelCellRender,
-      },
-      {
-        headerName: "ASM EPICOR CODE",
-        field: "asm_part_no",
-        editable: true,
-        sortable: true,
-        filter: true,
-        flex: 1,
       },
       {
         headerName: "Project Name",
@@ -223,57 +269,46 @@ export default function ReportPage() {
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
       },
       {
-        headerName: "Created At",
-        field: "created_at",
+        headerName: "Date Out",
+        field: "latest_out",
         sortable: true,
-        width: 115,
         filter: "agDateColumnFilter",
         cellRenderer: DateCellRenderer,
       },
       {
-        headerName: "QC Passed At",
-        field: "qc_datetime",
-        sortable: true,
-        width: 115,
-        filter: "agDateColumnFilter",
-        cellRenderer: DateCellRenderer,
-      },
-      {
-        headerName: "Final",
-        field: "final",
-        sortable: true,
-        filter: true,
-        width: 100,
-        cellRenderer: StatusCellRenderer,
-      },
-      {
-        headerName: "Wrapped",
-        field: "wrapped",
-        sortable: true,
-        filter: true,
-        width: 100,
-        cellRenderer: StatusCellRenderer,
-      },
-      {
-        headerName: "Box Code",
-        field: "package",
-        editable: true,
-        sortable: true,
-        filter: true,
+        headerName: "Route",
+        field: "route",
         flex: 1,
-        cellRenderer: BoxCellRenderer,
-      },
-      {
-        headerName: "Container Code",
-        field: "container",
-        editable: true,
-        sortable: true,
-        filter: true,
-        flex: 1,
-        cellRenderer: ContainerCellRenderer,
+        cellRenderer: ({ value }: { value: string[] }) => {
+          return (
+            <div className="flex-row gap-1">
+              {value && value.length > 0 ? (
+                value.map((step, index) => (
+                  <div key={index} className="inline-flex items-center">
+                    <Badge
+                      key={index}
+                      className="m-1 text-foreground border-1 border-success-foreground/50"
+                      variant="success"
+                      title={`Step ${index + 1}`}
+                    >
+                      <CircleDot className="mr-1 size-3 text-success-foreground" />
+                      {step}
+                    </Badge>
+                    <div>
+                      {index < value.length - 1 && (
+                        <i className="icon-[mdi--arrow-right-bold] size-4" />
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <span className="text-sm text-muted-foreground">No Route</span>
+              )}
+            </div>
+          );
+        },
       },
     ],
     []
@@ -323,9 +358,9 @@ export default function ReportPage() {
   }, [gridApi]);
 
   // Error state
-  if (error) {
+  if (isError) {
     return (
-      <Card className="h-full">
+      <Card>
         <CardContent className="p-6">
           <div className="text-center text-red-600">
             <h2 className="text-lg font-semibold mb-2">Error Loading Data</h2>
@@ -344,12 +379,12 @@ export default function ReportPage() {
       <CardContent className="w-full flex flex-row items-center justify-between p-3 space-x-3">
         {/* Left Controls */}
         <div className="flex flex-1 flex-row gap-4">
-          <SearchPanels>
-            <Button variant="outline" disabled={isLoading}>
-              <SearchIcon className="mr-2" />
+          <SearchDialog>
+            <Button disabled={isLoading || !gridApi} variant="outline">
+              <SearchIcon />
               Search
             </Button>
-          </SearchPanels>
+          </SearchDialog>
           <Button
             variant="outline"
             onClick={exportRows}
@@ -390,8 +425,8 @@ export default function ReportPage() {
         </div>
       </CardContent>
 
-      <CardContent className="p-0">
-        <div className="ag-theme-alpine h-[550px] w-full">
+      <CardContent className="p-0 h-full">
+        <div className="ag-theme-alpine h-full w-full">
           <AgGridReact
             rowData={panels}
             columnDefs={columnDefs}

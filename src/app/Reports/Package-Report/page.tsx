@@ -419,7 +419,7 @@ export default function ReportPage() {
         {/* Left Controls */}
         <div className="flex flex-1 flex-row gap-4">
           <SearchDialog>
-            <Button variant="outline">
+            <Button disabled={isLoading || !gridApi} variant="outline">
               <SearchIcon />
               Search
             </Button>
@@ -493,3 +493,4 @@ export default function ReportPage() {
     </Card>
   );
 }
+

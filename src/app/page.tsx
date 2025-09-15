@@ -272,7 +272,7 @@ const ITSMLandingPage = () => {
                   <Monitor className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <span className="ml-3 text-xl font-bold text-foreground">
-                  ITSMPro
+                  ITSM
                 </span>
               </div>
             </div>
@@ -309,7 +309,7 @@ const ITSMLandingPage = () => {
                       <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
                         <Monitor className="w-5 h-5 text-primary-foreground" />
                       </div>
-                      <span className="ml-2 text-lg font-bold">ITSMPro</span>
+                      <span className="ml-2 text-lg font-bold">ITSM</span>
                     </div>
                     <Separator />
                     {navigationItems.map((item) => (
@@ -615,7 +615,7 @@ const ITSMLandingPage = () => {
           <Separator className="my-8" />
 
           <div className="text-center text-muted-foreground">
-            <p>&copy; 2025 ITSMPro. All rights reserved.</p>
+            <p>&copy; 2025 ITSM. All rights reserved.</p>
           </div>
         </div>
       </footer>
