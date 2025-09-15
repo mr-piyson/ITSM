@@ -31,7 +31,7 @@ export default function Page(props: any) {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-export function SiteHeader() {
+function SiteHeader() {
   const path = usePathname();
   const title = path?.split("/").pop()?.replace(/-/g, " ");
   const { theme, setTheme } = useTheme();
@@ -64,7 +64,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -106,7 +106,7 @@ import MESLogo from "@/Assets/Icons/MESLogo";
 import { useTheme } from "next-themes";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 
-export function NavMain({
+function NavMain({
   items,
 }: {
   items: {

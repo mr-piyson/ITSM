@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react";
+import type { Icon } from "lucide-react";
 
 // Extract all icon names from lucide-react (excluding non-icon exports)
 const getAllIconNames = () => {
@@ -8,7 +9,7 @@ const getAllIconNames = () => {
     (key) =>
       key !== "createLucideIcon" &&
       key !== "Icon" &&
-      typeof LucideIcons[key] === "function"
+      typeof LucideIcons[key as keyof typeof LucideIcons] === "function"
   );
 };
 

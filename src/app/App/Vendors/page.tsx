@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import { useState } from "react";
 import {
   Search,
@@ -120,6 +120,19 @@ const mockVendors = [
   },
 ];
 
+interface Vendor {
+  id: number;
+  name: string;
+  category: string;
+  status: string;
+  contractValue: number;
+  contractEnd: string;
+  performance: number;
+  contacts: { name: string; position: string; type: string; value: string }[];
+  notes: string;
+  image?: string;
+}
+
 const mockMetrics = {
   totalVendors: 24,
   activeContracts: 18,
@@ -129,7 +142,7 @@ const mockMetrics = {
   pendingReviews: 3,
 };
 
-function getStatusColor(status) {
+function getStatusColor(status: string): string {
   switch (status) {
     case "Active":
       return "bg-green-100 text-green-800";
@@ -142,17 +155,17 @@ function getStatusColor(status) {
   }
 }
 
-function getPerformanceColor(score) {
+function getPerformanceColor(score: number): string {
   if (score >= 90) return "text-green-600";
   if (score >= 75) return "text-yellow-600";
   return "text-red-600";
 }
 
-export default function VendorManagementSystem() {
-  const [vendors, setVendors] = useState(mockVendors);
+export default function VendorManagementSystem(): React.ReactElement {
+  const [vendors, setVendors] = useState<Vendor[]>(mockVendors);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedVendor, setSelectedVendor] = useState(null);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -500,23 +513,31 @@ export default function VendorManagementSystem() {
   );
 }
 
-function VendorForm({ vendor, onClose }) {
+interface VendorFormProps {
+  vendor?: Vendor;
+  onClose: () => void;
+}
+function VendorForm({ vendor, onClose }: VendorFormProps): React.ReactElement {
   const [contacts, setContacts] = useState(
     vendor?.contacts || [{ name: "", position: "", type: "email", value: "" }]
   );
 
-  const addContact = () => {
+  const addContact = (): void => {
     setContacts([
       ...contacts,
       { name: "", position: "", type: "email", value: "" },
     ]);
   };
 
-  const removeContact = (index) => {
+  const removeContact = (index: number): void => {
     setContacts(contacts.filter((_, i) => i !== index));
   };
 
-  const updateContact = (index, field, value) => {
+  const updateContact = (
+    index: number,
+    field: keyof (typeof contacts)[number],
+    value: string
+  ): void => {
     const updated = [...contacts];
     updated[index][field] = value;
     setContacts(updated);
@@ -671,7 +692,10 @@ function VendorForm({ vendor, onClose }) {
   );
 }
 
-function VendorDetails({ vendor }) {
+interface VendorDetailsProps {
+  vendor: Vendor;
+}
+function VendorDetails({ vendor }: VendorDetailsProps): React.ReactElement {
   return (
     <div>
       <DialogHeader>
