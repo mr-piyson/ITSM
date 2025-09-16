@@ -76,23 +76,37 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain
-          items={[
-            {
-              title: "Panel Report",
-              url: "/Reports/Panel-Report",
-              icon: "icon-[mingcute--board-line]",
-            },
-            {
-              title: "Package Report",
-              url: "/Reports/Package-Report",
-              icon: "icon-[solar--box-outline]",
-            },
-            {
-              title: "Inspection Report",
-              url: "/Reports/Inspection-Report",
-              icon: "icon-[lucide--route]",
-            },
-          ]}
+          items={{
+            reports: [
+              {
+                title: "Panel Report",
+                url: "/Reports/Panel-Report",
+                icon: "icon-[mingcute--board-line]",
+              },
+              {
+                title: "Package Report",
+                url: "/Reports/Package-Report",
+                icon: "icon-[solar--box-outline]",
+              },
+              {
+                title: "Inspection Report",
+                url: "/Reports/Inspection-Report",
+                icon: "icon-[lucide--route]",
+              },
+            ],
+            analysis: [
+              {
+                title: "Data Analysis",
+                url: "/Analysis/Data-Analysis",
+                icon: "icon-[ic-outline-data-usage]",
+              },
+              {
+                title: "Gate Analysis",
+                url: "/Analysis/Gate-Analysis",
+                icon: "icon-[ic-outline-stacked-line-chart]",
+              },
+            ],
+          }}
         />
       </SidebarContent>
     </Sidebar>
@@ -109,40 +123,41 @@ import { ModeToggle } from "@/components/ui/mode-toggle";
 function NavMain({
   items,
 }: {
-  items: {
-    title: string;
-    url: string;
-    icon?: string;
-  }[];
+  // write generic type for
+  items: { [key: string]: { title: string; url: string; icon: string }[] };
 }) {
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sm font-semibold">
-            Main Reports
-          </SidebarGroupLabel>
-          <SidebarGroupContent className="flex flex-col gap-2">
-            <Separator className="my-2" />
-            <SidebarMenu className="gap-1">
-              {items.map((item) => (
-                <Link href={item.url} key={item.title}>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={usePathname() === item.url}
-                      className="data-[active=true]:border-[#00b7b0] border-2 border-transparent"
-                      tooltip={item.title}
-                    >
-                      <i className={`${item.icon} size-6`}></i>
-                      <span className="text-md ">{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </Link>
-              ))}
-            </SidebarMenu>
-            <Separator className="my-2" />
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {Object.keys(items).map((section) => (
+          <SidebarGroup key={section}>
+            <SidebarGroupLabel className="text-sm font-semibold">
+              {section.charAt(0).toUpperCase() + section.slice(1)}
+            </SidebarGroupLabel>
+            <SidebarGroupContent className="flex flex-col gap-2">
+              <Separator className="my-2" />
+              <SidebarMenu className="gap-1">
+                {items[section].map(
+                  (item: { title: string; url: string; icon: string }) => (
+                    <Link href={item.url} key={item.title}>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          isActive={usePathname() === item.url}
+                          className="data-[active=true]:border-[#00b7b0] border-2 border-transparent"
+                          tooltip={item.title}
+                        >
+                          <i className={`${item.icon} size-6`}></i>
+                          <span className="text-md ">{item.title}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </Link>
+                  )
+                )}
+              </SidebarMenu>
+              <Separator className="my-2" />
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarGroupContent>
     </SidebarGroup>
   );
