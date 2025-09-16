@@ -1,6 +1,6 @@
 export const Activities = (role: string | undefined | null) => {
-  switch (role) {
-    case "Admin":
+  switch (role?.toLowerCase()) {
+    case "admin":
       return [
         {
           title: "Dashboard",

@@ -181,6 +181,7 @@ export function UserMenu({ account }: { account: Account | null }) {
 
 // Sidebar navigation for the main activities of the application.
 export function AppSidebarContent(props: { role: string | undefined }) {
+  console.log("User role in sidebar", props.role);
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
   const path = usePathname();
