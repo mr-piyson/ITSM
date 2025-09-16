@@ -125,13 +125,6 @@ export default function ReportPage() {
         cellRenderer: PanelCellRender,
       },
       {
-        headerName: "Project Name",
-        field: "project",
-        editable: true,
-        sortable: true,
-        filter: true,
-      },
-      {
         headerName: "Date Out",
         field: "latest_out",
         sortable: true,
