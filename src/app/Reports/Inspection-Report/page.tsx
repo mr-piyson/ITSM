@@ -14,10 +14,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import { atom, useAtom } from "jotai";
-import { CircleDot, Search, SearchIcon } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { SearchPanels, SearchDialog } from "./SearchPanels";
+import { useAtom } from "jotai";
+import { CircleDot, SearchIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SearchDialog } from "./SearchPanels";
 import { useTableTheme } from "@/hooks/use-TableTheme";
 import { Badge } from "@/components/ui/badge";
 

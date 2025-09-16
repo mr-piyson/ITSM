@@ -24,11 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { VariantProps } from "class-variance-authority";
 
 import { useAtom } from "jotai";
-import {
-  initPanelsStore,
-  panelsStore,
-  ReportData,
-} from "./(store)/panel-store";
+import { initPanelsStore, panelsStore, ReportData } from "./atoms";
 
 export function SearchPanels(
   props: React.ComponentProps<"button"> &

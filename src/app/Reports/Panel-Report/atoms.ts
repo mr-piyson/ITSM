@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+
 export const panelsStore = atom<ReportData[]>([]);
 export const initPanelsStore = atom<ReportData[]>([]);
 export const filterStore = atom<string>("");

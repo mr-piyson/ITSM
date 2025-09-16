@@ -185,7 +185,7 @@ const ITSMLandingPage = () => {
     { name: "Help Desk", href: "#help-desk" },
     { name: "Asset Tracking", href: "#asset-tracking" },
     { name: "Knowledge Base", href: "#knowledge-base" },
-    { name: "Reports & Analytics", href: "#reports" },
+    { name: "Reports & Analytics", href: "/Reports" },
   ];
 
   const features = [
