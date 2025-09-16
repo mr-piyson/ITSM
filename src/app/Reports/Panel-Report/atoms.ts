@@ -17,6 +17,8 @@ export interface ReportData {
   qc_datetime?: string;
   panel_id: string;
   label_creation_date: string;
+  description: string;
+  job_id: string;
 }
 
 export interface ApiReportData {
@@ -29,4 +31,6 @@ export interface ApiReportData {
   project: string;
   package?: string;
   qc_datetime?: string;
+  description: string;
+  job_id: string;
 }

@@ -27,6 +27,7 @@ import {
   panelsStore,
   ReportData,
 } from "./atoms";
+import { JobCellRenderer } from "../CellsRender";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
@@ -146,6 +147,8 @@ export default function ReportPage() {
           : undefined,
         panel_id: panel.panel_id,
         label_creation_date: panel.label_creation_date,
+        description: panel.description,
+        job_id: panel.job_id,
       })
     );
   }, [filter]);
@@ -180,16 +183,16 @@ export default function ReportPage() {
         editable: true,
         sortable: true,
         filter: true,
-        flex: 2,
+        pinned: "left",
+        width: 300,
         cellRenderer: PanelCellRender,
       },
       {
-        headerName: "ASM EPICOR CODE",
-        field: "asm_part_no",
+        headerName: "Description",
+        field: "description",
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
       },
       {
         headerName: "Project Name",
@@ -197,7 +200,14 @@ export default function ReportPage() {
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
+      },
+      {
+        headerName: "Job ID",
+        field: "job_id",
+        editable: true,
+        sortable: true,
+        filter: true,
+        cellRenderer: JobCellRenderer,
       },
       {
         headerName: "Created At",
@@ -211,7 +221,7 @@ export default function ReportPage() {
         headerName: "QC Passed At",
         field: "qc_datetime",
         sortable: true,
-        width: 115,
+        width: 120,
         filter: "agDateColumnFilter",
         cellRenderer: DateCellRenderer,
       },
@@ -237,7 +247,6 @@ export default function ReportPage() {
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
         cellRenderer: BoxCellRenderer,
       },
       {
@@ -246,7 +255,6 @@ export default function ReportPage() {
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
         cellRenderer: ContainerCellRenderer,
       },
     ],

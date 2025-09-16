@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 
 // Types
 import { ReportData, initData, filteredData, filterStore } from "./atoms";
+import { RouteCellRenderer } from "../CellsRender";
 
 interface ApiReportData {
   panel_serial: string;
@@ -111,7 +112,7 @@ export default function ReportPage() {
   }, [filter]);
 
   // Memoized column definitions
-  const columnDefs: ColDef<ReportData>[] = useMemo(
+  const columnDefs: ColDef[] = useMemo(
     () => [
       {
         headerName: "Panel Serial",
@@ -119,6 +120,8 @@ export default function ReportPage() {
         editable: true,
         sortable: true,
         filter: true,
+        pinned: "left",
+        width: 280,
         cellRenderer: PanelCellRender,
       },
       {
@@ -136,37 +139,21 @@ export default function ReportPage() {
         cellRenderer: DateCellRenderer,
       },
       {
+        headerName: "last Gate",
+        field: "route",
+        editable: true,
+        sortable: true,
+        filter: true,
+        width: 120,
+        valueGetter: ({ data }) => {
+          return data.route[data.route.length - 1] || "N/A";
+        },
+      },
+      {
         headerName: "Route",
         field: "route",
-        flex: 1,
-        cellRenderer: ({ value }: { value: string[] }) => {
-          return (
-            <div className="flex-row gap-1">
-              {value && value.length > 0 ? (
-                value.map((step, index) => (
-                  <div key={index} className="inline-flex items-center">
-                    <Badge
-                      key={index}
-                      className="m-1 text-foreground border-1 border-success-foreground/50"
-                      variant="success"
-                      title={`Step ${index + 1}`}
-                    >
-                      <CircleDot className="mr-1 size-3 text-success-foreground" />
-                      {step}
-                    </Badge>
-                    <div>
-                      {index < value.length - 1 && (
-                        <i className="icon-[mdi--arrow-right-bold] size-4" />
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <span className="text-sm text-muted-foreground">No Route</span>
-              )}
-            </div>
-          );
-        },
+        width: 1080,
+        cellRenderer: RouteCellRenderer,
       },
     ],
     []
