@@ -16,43 +16,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAtom } from "jotai";
-import {
-  filterStore,
-  initPanelsStore,
-  panelsStore,
-} from "./(store)/panel-store";
 import SearchPanels from "./SearchPanels";
 import { SearchIcon } from "lucide-react";
 import { useTableTheme } from "@/hooks/use-TableTheme";
 import { useQuery } from "@tanstack/react-query";
-
-// Types
-interface ReportData {
-  panelId: string;
-  container?: string;
-  created_at: string;
-  wrapped: boolean;
-  final: boolean;
-  epicor_asm_part_no: string;
-  asm_part_no: string;
-  project: string;
-  package?: string;
-  qc_datetime?: string;
-  panel_id: string;
-  label_creation_date: string;
-}
-
-interface ApiReportData {
-  panel_id: string;
-  container?: string;
-  label_creation_date: string;
-  wrapped: number;
-  final: number;
-  epicor_asm_part_no: string;
-  project: string;
-  package?: string;
-  qc_datetime?: string;
-}
+import {
+  ApiReportData,
+  filterStore,
+  initPanelsStore,
+  panelsStore,
+  ReportData,
+} from "./atoms";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
@@ -151,7 +125,7 @@ export default function ReportPage() {
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const response = await axios.get(
-      `http://172.18.10.40:80/MES-Fork/api/panels.php?filter=${filter}`
+      `http://172.18.10.40:80/MES-Fork/php/panels.php?filter=${filter}`
     );
 
     return response.data.map(

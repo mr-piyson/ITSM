@@ -15,19 +15,8 @@ import {
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { Search, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useTableTheme } from "@/hooks/use-TableTheme";
 import {
   ApiReportData,
@@ -116,7 +105,7 @@ export default function ReportPage() {
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const response = await axios.get(
-      `http://${window.location.hostname}:80/ITSM/php/packages.php?filter=${filter}`
+      `http://172.18.10.40/ITSM/php/packages.php?filter=${filter}`
     );
 
     return response.data.map(

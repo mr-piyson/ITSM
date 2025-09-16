@@ -50,6 +50,7 @@ $sql = "SELECT
       CASE WHEN lp.part_id IS NOT NULL THEN 1 ELSE 0 END as wrapped,
       pi.package_code as package,
       c.code as container,
+      u.key1 as job_id,
       -- pl.plan_added_date AS execution_date,
       -- lp.date as wrapped_date,
       -- pi.created_at as packed_at,

@@ -17,3 +17,15 @@ export interface ReportData {
   panel_id: string;
   label_creation_date: string;
 }
+
+export interface ApiReportData {
+  panel_id: string;
+  container?: string;
+  label_creation_date: string;
+  wrapped: number;
+  final: number;
+  epicor_asm_part_no: string;
+  project: string;
+  package?: string;
+  qc_datetime?: string;
+}

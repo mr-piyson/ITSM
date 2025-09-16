@@ -40,8 +40,7 @@ function validate_date($date, $default)
     return ($d && $d->format('Y-m-d') === $date) ? $date : $default;
 }
 
-$sql = "
-SELECT 
+$sql = "SELECT 
     p.id,
     p.code,
     p.project_name,
@@ -51,12 +50,16 @@ SELECT
     p.weight_kg,
     p.created_at,
     CASE 
-        WHEN s.id IS NOT NULL THEN 1
+        WHEN EXISTS (
+            SELECT 1 
+            FROM mes.resources s
+            WHERE s.model = 'package'
+              AND s.type = 'image'
+              AND s.uid = p.id
+        ) THEN 1
         ELSE 0
     END AS has_photo
-FROM mes.packages p
-LEFT JOIN mes.resources s
-    ON s.model = 'package' AND s.type = 'image' AND s.uid = p.id ";
+FROM mes.packages p ";
 
 // Apply date filter
 $params = [];

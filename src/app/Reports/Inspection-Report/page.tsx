@@ -99,7 +99,7 @@ export default function ReportPage() {
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const response = await axios.get(
-      `http://${window.location.hostname}:80/ITSM/php/Inspections.php?filter=${filter}`
+      `http://172.18.10.40/ITSM/php/Inspections.php?filter=${filter}`
     );
 
     return response.data.map((item: ApiReportData) => ({
