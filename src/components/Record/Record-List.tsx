@@ -8,11 +8,11 @@ import { getRecords } from "./Record.actions";
 import { Inbox } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import RecordTable from "./Record-Table";
-import { getAccount } from "@/app/Auth/auth.actions";
+import { getUser } from "@/app/Auth/auth.actions";
 
 export async function RecordList(props: { Activity: string }) {
   const records = await getRecords();
-  const account = await getAccount();
+  const account = await getUser();
   return (
     <>
       <div className="top-12 bg-sidebar w-full h-12 px-1 py-2 flex gap-2 flex-row items-center border-b-1 shadow-md shadow-black/10 ">

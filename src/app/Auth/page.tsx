@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
-import { getAccount } from "./auth.actions";
+import { getUser } from "./auth.actions";
 import SignInTab from "./SignIn";
 import SignUpTab from "./SignUp";
 import { TabSwitcher } from "./TabSwitcher";
 import AppLogo from "@/Assets/Icons/Logo";
 
 export default async function Auth(props: any) {
-  const session = await getAccount();
+  const session = await getUser();
+  console.log("Is there a user", session);
   if (session) redirect("/App");
 
   return (

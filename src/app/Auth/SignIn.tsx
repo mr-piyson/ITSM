@@ -26,9 +26,10 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { signIn } from "./auth.actions";
+import axios from "axios";
 
 export const SignInSchema = z.object({
-  email: z.string().email(),
+  email: z.string(),
   password: z.string().min(6),
 });
 
@@ -45,16 +46,24 @@ export default function SignInTab() {
 
   async function onSubmit(formData: z.infer<typeof SignInSchema>) {
     setLoading(true);
-    const res = await signIn(formData);
-    if (res?.success) {
-      setTimeout(() => {
-        router.push("/App/Dashboard");
-      }, 1000); // Simulate a delay for the splash screen
-      // Redirect to the Archive page
-    } else {
-      toast.error(res?.error); // Show an error message
-      setLoading(false);
+    const res = await axios.post("/api/Auth/Sign-in", {
+      email: formData.email,
+      password: formData.password,
+    });
+    if (res.status === 200) {
+      toast.success("Signed in successfully!");
+      router.push("/App/Dashboard");
     }
+
+    // if (res?.success) {
+    //   setTimeout(() => {
+    //     router.push("/App/Dashboard");
+    //   }, 1000); // Simulate a delay for the splash screen
+    //   // Redirect to the Archive page
+    // } else {
+    //   toast.error(res?.error); // Show an error message
+    //   setLoading(false);
+    // }
   }
 
   return (
@@ -78,8 +87,7 @@ export default function SignInTab() {
                     <FormControl>
                       <Input
                         id="email"
-                        type="email"
-                        placeholder="user@example.com"
+                        placeholder="user@example.com or username"
                         className="border-1 border-muted-foreground/50"
                         {...field}
                       />

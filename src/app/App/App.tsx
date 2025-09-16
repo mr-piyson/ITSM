@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { type users as Account } from "../../../node_modules/.prisma/iss/client";
 
 // const open = atom(true);
 interface AppProps {
@@ -68,7 +69,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <AppSidebarContent role={props.account?.role} />
+        <AppSidebarContent role={props.account?.type} />
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
@@ -103,7 +104,6 @@ import { signOut } from "@/app/Auth/auth.actions";
 import { Button } from "@/components/ui/button";
 import { Activities } from "@/lib/Activities";
 import { cn } from "@/lib/utils";
-import { Account } from "@prisma/client";
 import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 import Toolbar from "./Toobar";
@@ -121,7 +121,7 @@ export function UserMenu({ account }: { account: Account | null }) {
         >
           <Avatar className="h-8 w-8">
             <AvatarImage
-              src={account?.image ?? undefined}
+              // src={account?.image ?? undefined}
               alt={account?.name}
             />
             <AvatarFallback>{account?.name.charAt(0)}</AvatarFallback>
@@ -143,7 +143,7 @@ export function UserMenu({ account }: { account: Account | null }) {
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <Avatar className="h-8 w-8 ">
               <AvatarImage
-                src={account?.image ?? undefined}
+                // src={account?.image ?? undefined}
                 alt={account?.name}
                 covered
               />

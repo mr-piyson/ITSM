@@ -2,9 +2,10 @@
 import { NavPath } from "@/components/Nav-Path";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Account } from "@prisma/client";
 import { UserMenu } from "./App";
 import { NotificationDropdown } from "./Notifications/notification-dropdown";
+import { type users as Account } from "../../../node_modules/.prisma/iss/client";
+
 
 export default function Toolbar({ account }: { account: Account | null }) {
   return (

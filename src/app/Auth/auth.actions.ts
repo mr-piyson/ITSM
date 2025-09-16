@@ -8,7 +8,8 @@ import * as bcrypt from "bcrypt";
 import { z } from "zod";
 import { SignInSchema } from "./SignIn";
 import { SignUpSchema } from "./SignUp";
-import prisma from "@/lib/prisma";
+import prisma, { iss } from "@/lib/prisma";
+import { type users as Users } from "../../../node_modules/.prisma/iss/client";
 
 // Session duration in milliseconds (1 days)
 const SESSION_DURATION = 24 * 60 * 60 * 1000;
@@ -18,36 +19,39 @@ const SESSION_DURATION = 24 * 60 * 60 * 1000;
 /**
  * Get the current user session from the cookies
  */
-export async function getAccount(): Promise<Account | null> {
+export async function getUser(): Promise<Users | undefined | null> {
   const sessionToken = (await cookies()).get("session_token")?.value;
-
   if (!sessionToken) {
     return null;
   }
 
-  const session = await prisma.session.findUnique({
+  const user = await iss.users.findFirst({
     where: {
       token: sessionToken,
     },
-    include: {
-      account: true,
-    },
   });
 
-  if (!session || session.expiresAt < new Date()) {
-    if (session) {
-      // Clean up expired session
-      await prisma.session.delete({
-        where: {
-          id: session.id,
-        },
-      });
-    }
+  if (!user) {
     return null;
   }
 
-  return session.account;
+  return user;
 }
+
+//   if (!session || session.expiresAt < new Date()) {
+//     if (session) {
+//       // Clean up expired session
+//       await prisma.session.delete({
+//         where: {
+//           id: session.id,
+//         },
+//       });
+//     }
+//     return null;
+//   }
+
+//   return session.account;
+// }
 
 /**
  * Sign in a user with email and password
@@ -222,18 +226,18 @@ export async function signUp(formData: z.infer<typeof SignUpSchema>) {
 export async function signOut() {
   const sessionToken = (await cookies()).get("session_token")?.value;
 
-  if (sessionToken) {
-    try {
-      // Delete the session from the database
-      await prisma.session.delete({
-        where: {
-          token: sessionToken,
-        },
-      });
-    } catch (error) {
-      console.error("Error deleting session:", error);
-    }
-  }
+  // if (sessionToken) {
+  //   try {
+  //     // Delete the session from the database
+  //     await prisma.session.delete({
+  //       where: {
+  //         token: sessionToken,
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.error("Error deleting session:", error);
+  //   }
+  // }
 
   // Delete the session cookie
   (await cookies()).delete("session_token");
@@ -246,7 +250,7 @@ export async function signOut() {
  * Protect a route by checking if the user is authenticated
  */
 export async function requireAuth() {
-  const session = await getAccount();
+  const session = await getUser();
 
   if (!session) redirect("/Auth");
 

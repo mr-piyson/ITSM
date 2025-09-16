@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAccount } from "../Auth/auth.actions";
+import { getUser } from "../Auth/auth.actions";
 
 export function Authorization(
   handler: (req: NextRequest) => Promise<NextResponse>,
@@ -7,7 +7,7 @@ export function Authorization(
 ) {
   return async (req: NextRequest): Promise<NextResponse> => {
     try {
-      const account = await getAccount();
+      const account = await getUser();
 
       if (!account) {
         return new NextResponse("Unauthorized: No account found", {
@@ -15,7 +15,7 @@ export function Authorization(
         });
       }
 
-      if (!role.includes(account.role)) {
+      if (!role.includes(account.type)) {
         return new NextResponse("Unauthorized: Insufficient role", {
           status: 403,
         });

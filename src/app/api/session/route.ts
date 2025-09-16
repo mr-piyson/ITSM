@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Authorization } from "../Authorization";
-import prisma from "@/lib/prisma";
+import { iss } from "@/lib/prisma";
 
 export const GET = Authorization(
   async (req: NextRequest) => {
     try {
-      const session = await prisma.session.findFirst({
+      console.log(req.cookies.get("session_token")?.value);
+      const session = await iss.users.findFirst({
         where: {
           token: req.cookies.get("session_token")?.value,
-        },
-        include: {
-          account: {
-            select: {
-              role: true,
-            },
-          },
         },
       });
 

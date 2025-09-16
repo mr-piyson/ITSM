@@ -1,10 +1,10 @@
 "use server";
-import { getAccount } from "@/app/Auth/auth.actions";
+import { getUser } from "@/app/Auth/auth.actions";
 import prisma from "@/lib/prisma";
 
 export const getSettings = async () => {
   try {
-    if ((await getAccount())?.role !== "Admin") {
+    if ((await getUser())?.role !== "Admin") {
       return {
         success: false,
         data: null,
@@ -24,7 +24,7 @@ export const getSettings = async () => {
 
 export const updateSettings = async (data: any[]) => {
   try {
-    if ((await getAccount())?.role !== "Admin") {
+    if ((await getUser())?.role !== "Admin") {
       return {
         success: false,
         data: null,
