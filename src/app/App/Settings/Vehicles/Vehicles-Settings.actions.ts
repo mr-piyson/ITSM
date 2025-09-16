@@ -30,7 +30,7 @@ export async function addVehicleType(name: string): Promise<{
   data: VehicleType | null;
 }> {
   try {
-    if ((await getUser())?.role !== "Admin") {
+    if ((await getUser())?.type !== "Admin") {
       return {
         success: false,
         error: "You do not have permission to add vehicle types",
@@ -73,7 +73,7 @@ export async function updateVehicleType(
   data: VehicleType | null;
 }> {
   try {
-    if ((await getUser())?.role !== "Admin") {
+    if ((await getUser())?.type !== "Admin") {
       return {
         success: false,
         error: "You do not have permission to update vehicle types",
@@ -114,7 +114,7 @@ export async function deleteVehicleType(id: string): Promise<{
   data: VehicleType | null;
 }> {
   try {
-    if ((await getUser())?.role !== "Admin") {
+    if ((await getUser())?.type !== "Admin") {
       return {
         success: false,
         error: "You do not have permission to delete vehicle types",

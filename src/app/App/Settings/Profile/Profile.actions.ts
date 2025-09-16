@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 
 export const getSettings = async () => {
   try {
-    if ((await getUser())?.role !== "Admin") {
+    if ((await getUser())?.type !== "admin") {
       return {
         success: false,
         data: null,
@@ -24,7 +24,7 @@ export const getSettings = async () => {
 
 export const updateSettings = async (data: any[]) => {
   try {
-    if ((await getUser())?.role !== "Admin") {
+    if ((await getUser())?.type !== "admin") {
       return {
         success: false,
         data: null,
