@@ -15,50 +15,26 @@ import {
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { SearchIcon } from "lucide-react";
+import { CircleDot, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTableTheme } from "@/hooks/use-TableTheme";
-import {
-  ApiReportData,
-  filteredData,
-  filterStore,
-  initData,
-  ReportData,
-} from "./atoms";
 import { SearchDialog } from "./SearchPanels";
+import { useTableTheme } from "@/hooks/use-TableTheme";
+import { Badge } from "@/components/ui/badge";
 
-const searchOptions: { value: keyof ReportData; label: string }[] = [
-  { value: "code", label: "Panel Code" },
-  { value: "project_name", label: "Project Name" },
-];
+// Types
+import { ReportData, initData, filteredData, filterStore } from "./atoms";
+import { RouteCellRenderer } from "../CellsRender";
 
-interface ImportDialogProps {
-  children?: React.ReactNode;
+interface ApiReportData {
+  panel_serial: string;
+  project: string;
+  latest_out: string;
+  inspection_result: string;
+  gate_name: string;
+  route: string;
 }
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
-
-const BoxCellRenderer = ({ data }: { data: ReportData }) => (
-  <div className="flex justify-between items-center">
-    <span className="text-md font-semibold">{data.code}</span>
-    {data.code && (
-      <Button
-        variant="outline"
-        size="icon"
-        className="p-0"
-        onClick={() =>
-          window.open(
-            `http://intranet.bfginternational.com:88/packages/show?id=${data.id}`,
-            "_blank"
-          )
-        }
-        title="Inspect Box"
-      >
-        <i className="icon-[solar--box-outline] size-6" />
-      </Button>
-    )}
-  </div>
-);
 
 const DateCellRenderer = ({ value }: { value: string }) => {
   if (!value) return null;
@@ -71,6 +47,25 @@ const DateCellRenderer = ({ value }: { value: string }) => {
   const seconds = String(date.getSeconds()).padStart(2, "0");
 
   return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`;
+};
+
+const PanelCellRender = ({ value }: { value: string }) => {
+  const trackerUrl = `http://intranet.bfginternational.com:88/utilities/panel_tracker?part_id=${value}`;
+
+  return (
+    <div className="flex justify-between items-center">
+      <span className="text-md font-semibold">{value}</span>
+      <Button
+        variant="outline"
+        size="icon"
+        className="p-0"
+        onClick={() => window.open(trackerUrl, "_blank")}
+        title="Inspect Panel"
+      >
+        <i className="icon-[mingcute--inspect-line] size-5" />
+      </Button>
+    </div>
+  );
 };
 
 // API function
@@ -105,88 +100,53 @@ export default function ReportPage() {
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const response = await axios.get(
-      `http://172.18.10.40/ITSM/php/packages.php?filter=${filter}`
+      `http://172.18.10.40/ITSM/php/Inspections.php?filter=${filter}`
     );
 
-    return response.data.map(
-      (panel: ApiReportData): ReportData => ({
-        id: panel.id,
-        code: panel.code.toLocaleUpperCase(),
-        project_name: panel.project_name,
-        length_cm: panel.length_cm,
-        width_cm: panel.width_cm,
-        height_cm: panel.height_cm,
-        weight_kg: panel.weight_kg,
-        created_at: new Date(panel.created_at),
-      })
-    );
+    return response.data.map((item: ApiReportData) => ({
+      panel_serial: item.panel_serial,
+      project: item.project,
+      latest_out: new Date(item.latest_out),
+      route: item.route ? item.route.split(",") : [],
+    }));
   }, [filter]);
 
   // Memoized column definitions
-  const columnDefs: ColDef<ReportData>[] = useMemo(
+  const columnDefs: ColDef[] = useMemo(
     () => [
       {
-        headerName: "Box Code",
-        field: "code",
+        headerName: "Panel Serial",
+        field: "panel_serial",
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
-        cellRenderer: BoxCellRenderer,
+        pinned: "left",
+        width: 280,
+        cellRenderer: PanelCellRender,
       },
       {
-        headerName: "Project Name",
-        field: "project_name",
-        editable: true,
-        sortable: true,
-        filter: true,
-        flex: 1,
-      },
-      {
-        headerName: "Created At",
-        field: "created_at",
+        headerName: "Date Out",
+        field: "latest_out",
         sortable: true,
         filter: "agDateColumnFilter",
         cellRenderer: DateCellRenderer,
       },
       {
-        headerName: "Length (cm)",
-        field: "length_cm",
-        type: "numericColumn",
+        headerName: "last Gate",
+        field: "route",
         editable: true,
         sortable: true,
-        flex: 1,
-
-        filter: "agNumberColumnFilter",
+        filter: true,
+        width: 120,
+        valueGetter: ({ data }) => {
+          return data.route[data.route.length - 1] || "N/A";
+        },
       },
       {
-        headerName: "Width (cm)",
-        field: "width_cm",
-        type: "numericColumn",
-        editable: true,
-        sortable: true,
-        flex: 1,
-
-        filter: "agNumberColumnFilter",
-      },
-      {
-        headerName: "Height (cm)",
-        field: "height_cm",
-        type: "numericColumn",
-        editable: true,
-        sortable: true,
-        flex: 1,
-
-        filter: "agNumberColumnFilter",
-      },
-      {
-        headerName: "Weight (kg)",
-        field: "weight_kg",
-        type: "numericColumn",
-        editable: true,
-        sortable: true,
-        flex: 1,
-        filter: "agNumberColumnFilter",
+        headerName: "Route",
+        field: "route",
+        width: 1080,
+        cellRenderer: RouteCellRenderer,
       },
     ],
     []

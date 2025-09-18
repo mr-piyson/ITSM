@@ -195,6 +195,13 @@ export default function ReportPage() {
         filter: true,
       },
       {
+        headerName: "ASM Part No",
+        field: "epicor_asm_part_no",
+        editable: true,
+        sortable: true,
+        filter: true,
+      },
+      {
         headerName: "Project Name",
         field: "project",
         editable: true,

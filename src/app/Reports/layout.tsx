@@ -96,14 +96,9 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ],
             analysis: [
               {
-                title: "Data Analysis",
-                url: "/Analysis/Data-Analysis",
-                icon: "icon-[ic-outline-data-usage]",
-              },
-              {
                 title: "Gate Analysis",
-                url: "/Analysis/Gate-Analysis",
-                icon: "icon-[ic-outline-stacked-line-chart]",
+                url: "/Reports/Gate-Analysis",
+                icon: "icon-[gravity-ui--chart-column]",
               },
             ],
           }}

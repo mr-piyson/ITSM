@@ -10,7 +10,6 @@ export interface ReportData {
   height_cm: number;
   weight_kg: number;
   created_at: Date;
-  has_photo: boolean;
 }
 
 export interface ApiReportData {
@@ -22,7 +21,6 @@ export interface ApiReportData {
   height_cm: number;
   weight_kg: number;
   created_at: string;
-  has_photo: string;
 }
 
 export const initData = atom<ReportData[]>([]);

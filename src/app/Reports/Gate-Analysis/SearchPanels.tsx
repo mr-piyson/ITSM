@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAtom } from "jotai";
+import { atom, useAtom } from "jotai";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,12 +24,8 @@ import {
 import { initData, filteredData, ReportData } from "./atoms";
 
 const searchOptions: { value: keyof ReportData; label: string }[] = [
-  { value: "code", label: "Package Code" },
-  { value: "project_name", label: "Project Name" },
-  { value: "length_cm", label: "Length (cm)" },
-  { value: "width_cm", label: "Width (cm)" },
-  { value: "height_cm", label: "Height (cm)" },
-  { value: "weight_kg", label: "Weight (kg)" },
+  { value: "panel_serial", label: "Panel Serial" },
+  { value: "project", label: "Project Name" },
 ];
 
 interface ImportDialogProps {
