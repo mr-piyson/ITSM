@@ -99,6 +99,7 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 title: "Gate Analysis",
                 url: "/Reports/Gate-Analysis",
                 icon: "icon-[gravity-ui--chart-column]",
+                dev: true,
               },
             ],
           }}
@@ -114,12 +115,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import MESLogo from "@/Assets/Icons/MESLogo";
 import { useTheme } from "next-themes";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { toast, useSonner } from "sonner";
 
 function NavMain({
   items,
 }: {
   // write generic type for
-  items: { [key: string]: { title: string; url: string; icon: string }[] };
+  items: {
+    [key: string]: {
+      title: string;
+      url: string;
+      icon: string;
+      dev?: boolean;
+    }[];
+  };
 }) {
   return (
     <SidebarGroup>
@@ -133,8 +142,22 @@ function NavMain({
               <Separator className="my-2" />
               <SidebarMenu className="gap-1">
                 {items[section].map(
-                  (item: { title: string; url: string; icon: string }) => (
-                    <Link href={item.url} key={item.title}>
+                  (item: {
+                    title: string;
+                    url: string;
+                    icon: string;
+                    dev?: boolean;
+                  }) => (
+                    <Link
+                      href={item.url}
+                      key={item.title}
+                      onClick={(e) => {
+                        if (item.dev) {
+                          e.preventDefault();
+                          toast.error("This feature is under development.");
+                        }
+                      }}
+                    >
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           isActive={usePathname() === item.url}
