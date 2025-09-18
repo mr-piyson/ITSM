@@ -334,9 +334,9 @@ export default function ReportPage() {
         {/* Left Controls */}
         <div className="flex flex-1 flex-row gap-4">
           <SearchPanels>
-            <Button variant="outline" disabled={isLoading}>
-              <SearchIcon className="mr-2" />
-              Search
+            <Button disabled={isLoading || !gridApi} variant="outline">
+              <SearchIcon />
+              <span className="max-sm:hidden">Search</span>
             </Button>
           </SearchPanels>
           <Button
@@ -345,7 +345,7 @@ export default function ReportPage() {
             disabled={isLoading || !gridApi}
           >
             <i className="icon-[vscode-icons--file-type-excel] size-4" />
-            Export to CSV
+            <span className="max-sm:hidden">Export to CSV</span>
           </Button>
           <Button
             className="flex items-center gap-2"
@@ -354,14 +354,14 @@ export default function ReportPage() {
             disabled={isLoading}
           >
             <i className="icon-[tdesign--refresh] size-4" />
-            Refresh
+            <span className="max-sm:hidden">Refresh</span>
           </Button>
         </div>
 
         {/* Right Controls */}
         <div className="flex flex-1 flex-row justify-end">
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[200px] border-border">
+            <SelectTrigger className="w-[160px] border-border">
               <SelectValue placeholder="Filter by date" />
             </SelectTrigger>
             <SelectContent>
@@ -373,7 +373,6 @@ export default function ReportPage() {
               <SelectItem value="1year">Last Year</SelectItem>
               <SelectItem value="2years">Last 2 Years</SelectItem>
               <SelectItem value="3years">Last 3 Years</SelectItem>
-              <SelectItem value="all">All Time</SelectItem>
             </SelectContent>
           </Select>
         </div>

@@ -149,7 +149,7 @@ function NavMain({
                   )
                 )}
               </SidebarMenu>
-              <Separator className="my-2" />
+              {/* <Separator className="my-2" /> */}
             </SidebarGroupContent>
           </SidebarGroup>
         ))}

@@ -229,7 +229,7 @@ export default function ReportPage() {
             disabled={isLoading || !gridApi}
           >
             <i className="icon-[vscode-icons--file-type-excel] size-4" />
-            Export to CSV
+            <span>Export to CSV</span>
           </Button>
           <Button
             className="flex items-center gap-2"

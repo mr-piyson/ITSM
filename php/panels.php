@@ -112,9 +112,9 @@ switch ($filter) {
     case "3years":
         $sql .= " AND DATE(i.created_at) >= CURDATE() - INTERVAL 3 YEAR";
         break;
-    case "all":
-        // No date filter
-        break;
+    // case "all":
+    //     // No date filter
+    //     break;
     default:
         $filter = null; // Invalid filter, no results
         break;

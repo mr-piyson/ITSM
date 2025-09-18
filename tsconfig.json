@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -19,15 +23,22 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/middleware.ts"
-, "src/app/App/Assets/page.tss"  ],
-  "exclude": ["node_modules", "./src/components/Table/**/*"]
+    "next-env.d.ts",
+    "src/app/App/Assets/page.tss",
+    "src/middleware.ts",
+    "build/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "./src/components/Table/**/*"
+  ]
 }

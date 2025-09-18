@@ -260,7 +260,7 @@ export default function ReportPage() {
           <SearchDialog>
             <Button disabled={isLoading || !gridApi} variant="outline">
               <SearchIcon />
-              Search
+              <span className="max-sm:hidden">Search</span>
             </Button>
           </SearchDialog>
           <Button
@@ -269,7 +269,7 @@ export default function ReportPage() {
             disabled={isLoading || !gridApi}
           >
             <i className="icon-[vscode-icons--file-type-excel] size-4" />
-            Export to CSV
+            <span className="max-sm:hidden">Export to CSV</span>
           </Button>
           <Button
             className="flex items-center gap-2"
@@ -278,14 +278,14 @@ export default function ReportPage() {
             disabled={isLoading}
           >
             <i className="icon-[tdesign--refresh] size-4" />
-            Refresh
+            <span className="max-sm:hidden">Refresh</span>
           </Button>
         </div>
 
         {/* Right Controls */}
         <div className="flex flex-1 flex-row justify-end">
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[200px] border-border">
+            <SelectTrigger className="w-[160px] border-border">
               <SelectValue placeholder="Filter by date" />
             </SelectTrigger>
             <SelectContent>
