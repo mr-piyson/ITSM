@@ -42,36 +42,11 @@ function validate_date($date, $default)
 
 $sql = "SELECT 
     panel_serial,
-    project,
-    MAX(datetime_out) AS latest_out,
-    GROUP_CONCAT(gate_name ORDER BY datetime_out SEPARATOR ',') AS route
-FROM (
-    SELECT 
-        ir.panel_serial,
-        ir.project,
-        ir.datetime_out,
-        CASE 
-            WHEN gate = 1  THEN 'Mold'
-            WHEN gate = 2  THEN 'Gelcoating'
-            WHEN gate = 3  THEN 'Trimming'
-            WHEN gate = 4  THEN 'Finishing'
-            WHEN gate = 5  THEN 'Painting'
-            WHEN gate = 6  THEN 'Final'
-            WHEN gate = 10 THEN 'Demolding'
-            WHEN gate = 11 THEN 'Drilling'
-            WHEN gate = 12 THEN 'Bonding'
-            WHEN gate = 15 THEN 'Paint Prep'
-            WHEN gate = 16 THEN 'Wrapping'
-            WHEN gate = 17 THEN 'Packing'
-            WHEN gate = 18 THEN 'Mixing'
-            WHEN gate = 19 THEN 'Casting'
-            WHEN gate = 20 THEN 'Pullout Test'
-            WHEN gate = 21 THEN 'Curing'
-            WHEN gate = 22 THEN 'After Trimming'
-        END AS gate_name
-    FROM quality.inspection_results ir
-    WHERE inspection_result = 'OK'
-) t
+    datetime_out,
+    gate
+from quality.inspection_results
+where inspection_result = 'OK'
+order by panel_serial, datetime_out
 ";
 
 // Apply date filter
@@ -104,9 +79,6 @@ switch ($filter) {
     case "3years":
         $sql .= " WHERE DATE(datetime_out) >= :threeyears";
         $params[':threeyears'] = date('Y-m-d', strtotime('-3 years'));
-        break;
-    case "all":
-        $sql .= ""; // No date filter
         break;
     default:
         $filter = null; // Invalid filter

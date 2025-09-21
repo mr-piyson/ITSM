@@ -15,24 +15,20 @@ import {
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
-import { CircleDot, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchDialog } from "./SearchPanels";
 import { useTableTheme } from "@/hooks/use-TableTheme";
-import { Badge } from "@/components/ui/badge";
 
 // Types
-import { ReportData, initData, filteredData, filterStore } from "./atoms";
+import {
+  ReportData,
+  initData,
+  filteredData,
+  filterStore,
+  ApiReportData,
+} from "./atoms";
 import { RouteCellRenderer } from "../CellsRender";
-
-interface ApiReportData {
-  panel_serial: string;
-  project: string;
-  latest_out: string;
-  inspection_result: string;
-  gate_name: string;
-  route: string;
-}
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
@@ -68,7 +64,7 @@ const PanelCellRender = ({ value }: { value: string }) => {
   );
 };
 
-// API function
+
 
 export default function ReportPage() {
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
@@ -100,14 +96,13 @@ export default function ReportPage() {
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const response = await axios.get(
-      `http://172.18.10.40/ITSM/php/Inspections.php?filter=${filter}`
+      `http://172.18.10.40/ITSM/php/gate-time-out.php?filter=${filter}`
     );
 
     return response.data.map((item: ApiReportData) => ({
       panel_serial: item.panel_serial,
-      project: item.project,
-      latest_out: new Date(item.latest_out),
-      route: item.route ? item.route.split(",") : [],
+      gate: item.gate,
+      datetime_out: new Date(item.datetime_out),
     }));
   }, [filter]);
 

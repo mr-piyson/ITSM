@@ -115,8 +115,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import MESLogo from "@/Assets/Icons/MESLogo";
 import { useTheme } from "next-themes";
 import { ModeToggle } from "@/components/ui/mode-toggle";
-import { toast } from "sonner";
-import { Development } from "@/components/ui/development";
 
 function NavMain({
   items,
@@ -150,18 +148,16 @@ function NavMain({
                     dev?: boolean;
                   }) => (
                     <Link href={item.url} key={item.title}>
-                      <Development isDev={!!item.dev}>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            isActive={usePathname() === item.url}
-                            className="data-[active=true]:border-[#00b7b0] border-2 border-transparent"
-                            tooltip={item.title}
-                          >
-                            <i className={`${item.icon} size-6`}></i>
-                            <span className="text-md ">{item.title}</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      </Development>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          isActive={usePathname() === item.url}
+                          className="data-[active=true]:border-[#00b7b0] border-2 border-transparent"
+                          tooltip={item.title}
+                        >
+                          <i className={`${item.icon} size-6`}></i>
+                          <span className="text-md ">{item.title}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
                     </Link>
                   )
                 )}
