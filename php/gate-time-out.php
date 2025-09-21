@@ -46,38 +46,37 @@ $sql = "SELECT
     gate
 from quality.inspection_results
 where inspection_result = 'OK'
-order by panel_serial, datetime_out
 ";
 
 // Apply date filter
 $params = [];
 switch ($filter) {
     case "today":
-        $sql .= " WHERE DATE(datetime_out) = :today";
+        $sql .= " AND DATE(datetime_out) = :today";
         $params[':today'] = date('Y-m-d');
         break;
     case "last30days":
-        $sql .= " WHERE DATE(datetime_out) >= :last30days";
+        $sql .= " AND DATE(datetime_out) >= :last30days";
         $params[':last30days'] = date('Y-m-d', strtotime('-30 days'));
         break;
     case "last7days":
-        $sql .= " WHERE DATE(datetime_out) >= :last7days";
+        $sql .= " AND DATE(datetime_out) >= :last7days";
         $params[':last7days'] = date('Y-m-d', strtotime('-7 days'));
         break;
     case "last90days":
-        $sql .= " WHERE DATE(datetime_out) >= :last90days";
+        $sql .= " AND DATE(datetime_out) >= :last90days";
         $params[':last90days'] = date('Y-m-d', strtotime('-90 days'));
         break;
     case "1year":
-        $sql .= " WHERE DATE(datetime_out) >= :oneyear";
+        $sql .= " AND DATE(datetime_out) >= :oneyear";
         $params[':oneyear'] = date('Y-m-d', strtotime('-1 year'));
         break;
     case "2years":
-        $sql .= " WHERE DATE(datetime_out) >= :twoyears";
+        $sql .= " AND DATE(datetime_out) >= :twoyears";
         $params[':twoyears'] = date('Y-m-d', strtotime('-2 years'));
         break;
     case "3years":
-        $sql .= " WHERE DATE(datetime_out) >= :threeyears";
+        $sql .= " AND DATE(datetime_out) >= :threeyears";
         $params[':threeyears'] = date('Y-m-d', strtotime('-3 years'));
         break;
     default:

@@ -250,7 +250,6 @@ export default function ReportPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="yesterday">Yesterday</SelectItem>
               <SelectItem value="last7days">Last 7 Days</SelectItem>
               <SelectItem value="last30days">Last 30 Days</SelectItem>
               <SelectItem value="last90days">Last 90 Days</SelectItem>
