@@ -84,8 +84,6 @@ switch ($filter) {
         break;
 }
 
-$sql .= " GROUP BY panel_serial";
-
 if (!$filter) {
     echo json_encode([]);
 } else {

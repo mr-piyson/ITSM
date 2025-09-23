@@ -93,15 +93,21 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 url: "/Reports/Inspection-Report",
                 icon: "icon-[lucide--route]",
               },
-            ],
-            analysis: [
               {
-                title: "Gate Analysis",
-                url: "/Reports/Gate-Analysis",
-                icon: "icon-[gravity-ui--chart-column]",
+                title: "Panel Out Times",
+                url: "/Reports/Panel-Out-Times",
+                icon: "icon-[famicons--log-out-outline]",
                 dev: true,
               },
             ],
+            // analysis: [
+            //   {
+            //     title: "Gate Analysis",
+            //     url: "/Reports/Gate-Analysis",
+            //     icon: "icon-[gravity-ui--chart-column]",
+            //     dev: true,
+            //   },
+            // ],
           }}
         />
       </SidebarContent>

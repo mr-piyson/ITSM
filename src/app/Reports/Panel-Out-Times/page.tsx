@@ -27,8 +27,8 @@ import {
   filteredData,
   filterStore,
   ApiReportData,
+  getPivotData,
 } from "./atoms";
-import { RouteCellRenderer } from "../CellsRender";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
@@ -64,7 +64,7 @@ const PanelCellRender = ({ value }: { value: string }) => {
   );
 };
 
-
+// API function
 
 export default function ReportPage() {
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
@@ -95,54 +95,34 @@ export default function ReportPage() {
   });
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
-    const response = await axios.get(
+    const res = await axios.get(
       `http://172.18.10.40/ITSM/php/gate-time-out.php?filter=${filter}`
     );
-
-    return response.data.map((item: ApiReportData) => ({
-      panel_serial: item.panel_serial,
-      gate: item.gate,
-      datetime_out: new Date(item.datetime_out),
-    }));
+    const data = getPivotData(res.data);
+    return data;
   }, [filter]);
 
   // Memoized column definitions
   const columnDefs: ColDef[] = useMemo(
     () => [
-      {
-        headerName: "Panel Serial",
-        field: "panel_serial",
-        editable: true,
-        sortable: true,
-        filter: true,
-        pinned: "left",
-        width: 280,
-        cellRenderer: PanelCellRender,
-      },
-      {
-        headerName: "Date Out",
-        field: "latest_out",
-        sortable: true,
-        filter: "agDateColumnFilter",
-        cellRenderer: DateCellRenderer,
-      },
-      {
-        headerName: "last Gate",
-        field: "route",
-        editable: true,
-        sortable: true,
-        filter: true,
-        width: 120,
-        valueGetter: ({ data }) => {
-          return data.route[data.route.length - 1] || "N/A";
-        },
-      },
-      {
-        headerName: "Route",
-        field: "route",
-        width: 1080,
-        cellRenderer: RouteCellRenderer,
-      },
+      { field: "panel_serial" },
+      { field: "Mold" },
+      { field: "Gelcoating" },
+      { field: "Trimming" },
+      { field: "Finishing" },
+      { field: "Painting" },
+      { field: "Final" },
+      { field: "Demolding" },
+      { field: "Drilling" },
+      { field: "Bonding" },
+      { field: "Paint Prep" },
+      { field: "Wrapping" },
+      { field: "Packing" },
+      { field: "Mixing" },
+      { field: "Casting" },
+      { field: "Pullout Test" },
+      { field: "Curing" },
+      { field: "After Trimming" },
     ],
     []
   );
@@ -215,7 +195,7 @@ export default function ReportPage() {
           <SearchDialog>
             <Button disabled={isLoading || !gridApi} variant="outline">
               <SearchIcon />
-              Search
+              <span className="max-sm:hidden">Search</span>
             </Button>
           </SearchDialog>
           <Button
@@ -224,7 +204,7 @@ export default function ReportPage() {
             disabled={isLoading || !gridApi}
           >
             <i className="icon-[vscode-icons--file-type-excel] size-4" />
-            <span>Export to CSV</span>
+            <span className="max-sm:hidden">Export to CSV</span>
           </Button>
           <Button
             className="flex items-center gap-2"
@@ -233,14 +213,14 @@ export default function ReportPage() {
             disabled={isLoading}
           >
             <i className="icon-[tdesign--refresh] size-4" />
-            Refresh
+            <span className="max-sm:hidden">Refresh</span>
           </Button>
         </div>
 
         {/* Right Controls */}
         <div className="flex flex-1 flex-row justify-end">
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[200px] border-border">
+            <SelectTrigger className="w-[160px] border-border">
               <SelectValue placeholder="Filter by date" />
             </SelectTrigger>
             <SelectContent>
