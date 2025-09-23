@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "next start",
-    "lint": "next lint",
-    "dev": "next dev -p 4000 ",
+    "start": "next start ",
+    "lint": "next lint ",
+    "dev": "next dev -p 4000 --turbopack",
     "build": "next build ",
     "build:Android": "npx cap add android && npx cap sync android && npx cap open android",
     "db:pull": "npx prisma db pull --schema ./prisma/mes.prisma; npx prisma db pull --schema ./prisma/iss.prisma;",
-    "db:generate": "npx prisma generate --schema ./prisma/mes.prisma; npx prisma generate --schema ./prisma/iss.prisma;",
+    "generate": "npx prisma generate --schema ./prisma/mes.prisma; npx prisma generate --schema ./prisma/iss.prisma;",
     "db:push": "npx prisma db push --schema ./prisma/schema.prisma",
     "update": "git pull && bun install && bun run build"
   },

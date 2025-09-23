@@ -25,7 +25,9 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ]
+      ],
+      "@prisma/iss": ["node_modules/.prisma/iss"],
+      "@prisma/mes": ["node_modules/.prisma/mes"]
     }
   },
   "include": [
