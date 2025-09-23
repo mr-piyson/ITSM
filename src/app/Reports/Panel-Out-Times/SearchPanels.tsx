@@ -25,7 +25,6 @@ import { initData, filteredData, ReportData } from "./atoms";
 
 const searchOptions: { value: keyof ReportData; label: string }[] = [
   { value: "panel_serial", label: "Panel Serial" },
-  { value: "project", label: "Project Name" },
 ];
 
 interface ImportDialogProps {
@@ -113,7 +112,7 @@ export function SearchDialog(props: ImportDialogProps) {
               </SelectTrigger>
               <SelectContent>
                 {searchOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem key={option.value} value={String(option.value)}>
                     {option.label}
                   </SelectItem>
                 ))}

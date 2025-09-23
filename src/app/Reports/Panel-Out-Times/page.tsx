@@ -105,7 +105,11 @@ export default function ReportPage() {
   // Memoized column definitions
   const columnDefs: ColDef[] = useMemo(
     () => [
-      { field: "panel_serial" },
+      {
+        field: "panel_serial",
+        headerName: "Panel Serial",
+        editable: true,
+      },
       { field: "Mold" },
       { field: "Gelcoating" },
       { field: "Trimming" },
