@@ -48,7 +48,7 @@ export function getPivotData(
     const workstationName = workstation[Number(gate)];
     if (!workstationName) continue;
 
-    let record = panelMap.get(panel_serial);
+    let record = panelMap.get(panel_serial.toUpperCase());
     if (!record) {
       record = {};
       panelMap.set(panel_serial, record);
