@@ -1,6 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaClient as ISSPrismaClient } from "@prisma/iss";
-import { PrismaClient as MESPrismaClient } from "@prisma/mes";
+// import { PrismaClient as ISSPrismaClient } from "@prisma/iss";
+// import { PrismaClient as MESPrismaClient } from "@prisma/mes";
+
+import { PrismaClient as ISSPrismaClient } from '../../node_modules/.prisma/iss';
+import { PrismaClient as MESPrismaClient } from '../../node_modules/.prisma/mes';
 
 const mes = new MESPrismaClient();
 const iss = new ISSPrismaClient();

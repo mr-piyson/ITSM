@@ -5,7 +5,7 @@
   "scripts": {
     "start": "next start ",
     "lint": "next lint ",
-    "dev": "next dev -p 4000 --turbopack",
+    "dev": "next dev -p 4000 ",
     "build": "next build ",
     "build:Android": "npx cap add android && npx cap sync android && npx cap open android",
     "db:pull": "npx prisma db pull --schema ./prisma/mes.prisma; npx prisma db pull --schema ./prisma/iss.prisma;",

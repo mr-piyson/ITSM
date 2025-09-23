@@ -126,7 +126,7 @@ export default function ReportPage() {
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const response = await axios.get(
-      `http://172.18.10.40/ITSM/php/panels.php?filter=${filter}`
+      `http://172.18.10.40/ITSM/php/reports/panels.php?filter=${filter}`
     );
 
     return response.data.map(
