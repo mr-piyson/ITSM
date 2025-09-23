@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -23,9 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"],
+      "@prisma/iss": ["./node_modules/.prisma/iss"],
+      "@prisma/mes": ["./node_modules/.prisma/mes"]
     }
   },
   "include": [
@@ -37,8 +33,5 @@
     "src/middleware.ts",
     "build/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "./src/components/Table/**/*"
-  ]
+  "exclude": ["node_modules", "./src/components/Table/**/*"]
 }
