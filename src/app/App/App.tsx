@@ -13,6 +13,7 @@ import {
   SidebarProvider,
   useSidebar,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import {
@@ -103,7 +104,7 @@ import { signOut } from "@/app/Auth/auth.actions";
 import { Button } from "@/components/ui/button";
 import { Activities } from "@/lib/Activities";
 import { cn } from "@/lib/utils";
-import { ChevronsUpDown, Loader2, LogOut, Moon, Settings } from "lucide-react";
+import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 import Toolbar from "./Toobar";
 
@@ -116,7 +117,7 @@ export function UserMenu({ account }: { account: Account | null }) {
       <DropdownMenuTrigger asChild>
         <Button
           variant={"ghost"}
-          className=" data-[state=open]:border-border  border-2 border-transparent max-w-52"
+          className=" data-[state=open]:border-border  border-2 border-transparent"
         >
           <Avatar className="h-8 w-8">
             <AvatarImage
@@ -127,7 +128,7 @@ export function UserMenu({ account }: { account: Account | null }) {
           </Avatar>
           <div className="max-sm:hidden grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold">{account?.name}</span>
-            <span className="truncate text-xs ">{account?.email}</span>
+            <span className="truncate text-xs">{account?.email}</span>
           </div>
           <ChevronsUpDown className="max-sm:hidden ml-auto size-4" />
         </Button>
@@ -162,10 +163,6 @@ export function UserMenu({ account }: { account: Account | null }) {
             <CommandShortcut>
               <ThemeSwitcher />
             </CommandShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings />
-            Settings
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
