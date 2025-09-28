@@ -8,14 +8,19 @@ export const Activities = (role: string | undefined | null) => {
           icon: "icon-[solar--chart-square-linear]",
         },
         {
-          title: "Tickets",
-          url: "/App/Tickets",
+          title: "Tasks",
+          url: "/App/Tasks",
           icon: "icon-[solar--ticket-linear]",
         },
         {
           title: "Assets",
           url: "/App/Assets",
           icon: "icon-[streamline--computer-pc-desktop]",
+        },
+        {
+          title: "Printers",
+          url: "/App/Printers",
+          icon: "icon-[streamline-plump--printer]",
         },
         {
           title: "Employees",
@@ -48,9 +53,9 @@ export const Activities = (role: string | undefined | null) => {
           icon: "icon-[icon-park-outline--weixin-market]",
         },
         {
-          title: "Notes",
-          url: "/App/Notes",
-          icon: "icon-[mage--note]",
+          title: "Reports",
+          url: "/App/Reports",
+          icon: "icon-[iconoir--reports]",
         },
         {
           title: "Settings",

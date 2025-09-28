@@ -13,12 +13,12 @@ export function TabSwitcher({
       defaultValue="Sign-In"
       className="max-sm:w-full max-sm:p-2 sm:w-[420px]"
     >
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-1">
         <TabsTrigger value="Sign-In">Sign In</TabsTrigger>
-        <TabsTrigger value="Sign-Up">Sign Up</TabsTrigger>
+        {/* <TabsTrigger value="Sign-Up">Sign Up</TabsTrigger> */}
       </TabsList>
       <TabsContent value="Sign-In">{TabOne}</TabsContent>
-      <TabsContent value="Sign-Up">{TabTow}</TabsContent>
+      {/* <TabsContent value="Sign-Up">{TabTow}</TabsContent> */}
     </Tabs>
   );
 }

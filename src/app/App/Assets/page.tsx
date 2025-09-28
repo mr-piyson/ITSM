@@ -415,7 +415,7 @@ export default function AssetsPage() {
                 "http://iss.bfginternational.com/ISS/itemsImages/" + asset.image
               }
               alt={asset.deviceName ?? "Asset Image"}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
             />
           ) : (
@@ -566,7 +566,7 @@ export default function AssetsPage() {
   }
 
   return (
-    <div className="mx-auto p-6 space-y-6" ref={scrollContainerRef}>
+    <div className="container mx-auto p-6 space-y-6" ref={scrollContainerRef}>
       {/* Search and Controls */}
       <div className="top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40 -mx-6 px-6 py-4">
         <div className="space-y-4">

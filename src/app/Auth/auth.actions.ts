@@ -2,7 +2,6 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { PrismaClient, Account } from "@prisma/client";
 import { randomUUID } from "crypto";
 import * as bcrypt from "bcrypt";
 import { z } from "zod";
@@ -38,25 +37,6 @@ export async function getUser(): Promise<Users | undefined | null> {
   return user;
 }
 
-//   if (!session || session.expiresAt < new Date()) {
-//     if (session) {
-//       // Clean up expired session
-//       await prisma.session.delete({
-//         where: {
-//           id: session.id,
-//         },
-//       });
-//     }
-//     return null;
-//   }
-
-//   return session.account;
-// }
-
-/**
- * Sign in a user with email and password
- */
-
 export async function signIn(formData: z.infer<typeof SignInSchema>) {
   const email = formData.email as string;
   const password = formData.password as string;
@@ -68,56 +48,51 @@ export async function signIn(formData: z.infer<typeof SignInSchema>) {
   }
 
   try {
-    // Find the user by email
-    const account = await prisma.account.findUnique({
+    const account = await iss.users.findFirst({
       where: {
-        email,
+        email: email.toLowerCase(),
       },
     });
 
+    // Verify password (in a real app, use hashed passwords and a library like bcrypt)
+    // Here we assume the password is stored in plain text for simplicity (not recommended)
     if (!account) {
       return {
+        data: undefined,
         error: "Invalid email or password",
+        status: 401,
       };
-    }
+    } else {
+      // change $2y$ to $2b$
+      account.password = account.password.replace("$2y$", "$2b$");
+      const passwordMatch = await bcrypt.compare(password, account.password);
+      if (!passwordMatch) {
+        return {
+          data: undefined,
+          error: "Invalid email or password",
+          status: 401,
+        };
+      }
 
-    // Verify password
-    const passwordMatch = await bcrypt.compare(password, account.password);
+      // Generate session token
+      const expiresAt = new Date(Date.now() + SESSION_DURATION);
 
-    if (!passwordMatch) {
+      // Set the session token in cookies
+      (await cookies()).set({
+        name: "session_token",
+        value: account.token,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        expires: expiresAt,
+        path: "/",
+      });
       return {
-        error: "Invalid email or password",
+        data: account,
+        error: undefined,
+        status: 200,
       };
     }
-
-    // Generate session token
-    const token = randomUUID();
-    const expiresAt = new Date(Date.now() + SESSION_DURATION);
-
-    // Create a new session
-    await prisma.session.create({
-      data: {
-        token,
-        expiresAt,
-        accountId: account.id,
-      },
-    });
-
-    // Set the session token in cookies
-    (await cookies()).set({
-      name: "session_token",
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      expires: expiresAt,
-      path: "/",
-    });
-
-    return {
-      success: true,
-      redirectUrl: "/Archive",
-    };
   } catch (error) {
     console.error("Sign in error:", error);
     return {
@@ -138,12 +113,6 @@ export async function signUp(formData: z.infer<typeof SignUpSchema>) {
   const role = formData.role as string;
   const secretKey = formData.secretKey as string;
 
-  if (secretKey !== process.env.SECRET_KEY) {
-    return {
-      error: "Invalid secret key",
-    };
-  }
-
   if (!email || !password) {
     return {
       error: "Email and password are required",
@@ -158,7 +127,7 @@ export async function signUp(formData: z.infer<typeof SignUpSchema>) {
 
   try {
     // Check if user already exists
-    const existingUser = await prisma.account.findUnique({
+    const existingUser = await iss.users.findFirst({
       where: {
         email,
       },

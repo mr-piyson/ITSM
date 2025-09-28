@@ -46,24 +46,19 @@ export default function SignInTab() {
 
   async function onSubmit(formData: z.infer<typeof SignInSchema>) {
     setLoading(true);
-    const res = await axios.post("/api/Auth/Sign-in", {
-      email: formData.email,
-      password: formData.password,
-    });
-    if (res.status === 200) {
-      toast.success("Signed in successfully!");
-      router.push("/App/Dashboard");
+    try {
+      const res = await signIn(formData);
+      if (res.status === 200) {
+        toast.success("Signed in successfully!");
+        router.push("/App/Dashboard");
+      }
+      if (res.error) {
+        toast.error(res.error);
+        setLoading(false);
+      }
+    } catch (e) {
+      toast.error("Error", { description: String(e) });
     }
-
-    // if (res?.success) {
-    //   setTimeout(() => {
-    //     router.push("/App/Dashboard");
-    //   }, 1000); // Simulate a delay for the splash screen
-    //   // Redirect to the Archive page
-    // } else {
-    //   toast.error(res?.error); // Show an error message
-    //   setLoading(false);
-    // }
   }
 
   return (

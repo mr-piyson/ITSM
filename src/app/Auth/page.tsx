@@ -7,7 +7,6 @@ import AppLogo from "@/Assets/Icons/Logo";
 
 export default async function Auth(props: any) {
   const session = await getUser();
-  console.log("Is there a user", session);
   if (session) redirect("/App");
 
   return (
