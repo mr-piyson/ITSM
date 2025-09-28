@@ -2,13 +2,9 @@
 
 import { iss } from "@/lib/prisma";
 import PrinterManagement from "./printers-page";
-
-type PrintersLayoutProps = {
-  children?: React.ReactNode;
-};
-
-export default async function PrintersLayout(props: PrintersLayoutProps) {
-  const printers = await iss.printers.findMany({
+import { type printers as Printer } from "@prisma/iss";
+export default async function PrintersPage() {
+  const printers = (await iss.printers.findMany({
     select: {
       id: true,
       name: true,
@@ -17,7 +13,7 @@ export default async function PrintersLayout(props: PrintersLayoutProps) {
       img: true,
       usedBy: true,
     },
-  });
+  })) as Printer[];
 
   return <PrinterManagement printers={printers} />;
 }

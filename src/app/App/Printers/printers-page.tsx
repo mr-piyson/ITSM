@@ -7,7 +7,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { Plus, Grid3X3, List, PrinterIcon } from "lucide-react";
 import { SearchFilters } from "./search-filters";
 import { PrinterCard } from "./printer-card";
-import { PrinterTable } from "./printer-table";
+
 import { type printers as Printer } from "@prisma/iss";
 
 // Mock data - replace with actual API call
@@ -71,14 +71,7 @@ import { type printers as Printer } from "@prisma/iss";
 export default function PrinterManagement({
   printers,
 }: {
-  printers: {
-    id: number;
-    name: string;
-    location: string;
-    img: string;
-    department: string | null;
-    usedBy: string;
-  }[];
+  printers: Printer[];
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
