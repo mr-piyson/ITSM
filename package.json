@@ -11,7 +11,7 @@
     "db:pull": "npx prisma db pull --schema ./prisma/mes.prisma; npx prisma db pull --schema ./prisma/iss.prisma;",
     "db:generate": "npx prisma generate --schema ./prisma/mes.prisma; npx prisma generate --schema ./prisma/iss.prisma;",
     "db:push": "npx prisma db push --schema ./prisma/schema.prisma",
-    "update": "rm -rf .next && git pull && bun install && bun run build"
+    "update": "rm -rf .next && git pull && bun install && bun run build && bun start"
   },
   "dependencies": {
     "@capacitor-community/contacts": "^7.0.0",
