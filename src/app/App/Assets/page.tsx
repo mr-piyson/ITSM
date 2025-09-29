@@ -568,13 +568,13 @@ export default function AssetsPage() {
   return (
     <div className="container mx-auto p-6 space-y-6" ref={scrollContainerRef}>
       {/* Search and Controls */}
-      <div className="top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40 -mx-6 px-6 py-4">
-        <div className="space-y-4">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40 py-2">
+        <div>
           {/* Search Bar, View Controls, and Add New Asset Button */}
-          <div className="flex flex-wrap flex-col sm:flex-row gap-4">
+          <div className="flex flex-wrap flex-row gap-4">
             <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add New Asset
+              <Plus className="h-4 w-4 " />
+              <span className="max-sm:hidden">Add New Asset</span>
             </Button>
             <div className="relative flex-1 ">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -591,7 +591,7 @@ export default function AssetsPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 max-sm:hidden">
               <Popover
                 open={categoryDropdownOpen}
                 onOpenChange={setCategoryDropdownOpen}
@@ -705,7 +705,7 @@ export default function AssetsPage() {
           </div>
 
           {(selectedTypes.length > 0 || searchQuery) && (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 mt-2">
               <span className="text-sm text-muted-foreground">
                 Active filters:
               </span>
@@ -743,7 +743,7 @@ export default function AssetsPage() {
             </div>
           )}
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between max-sm:hidden mt-2">
             <p className="text-sm text-muted-foreground">
               Showing {displayedAssets.length} of {filteredAssets.length} assets
               {selectedTypes.length > 0 &&

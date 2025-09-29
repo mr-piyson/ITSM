@@ -5,24 +5,32 @@ import {
   ArrowLeft,
   Edit,
   Trash2,
-  UserCheck,
   QrCode,
   Printer,
+  Save,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { UpdateAssetDialog } from "./update-asset-dialog";
-import { UpdateOwnerDialog } from "./update-owner-dialog";
-import { DeleteAssetDialog } from "./delete-asset-dialog";
-import { QRCodeDisplay } from "./qr-code-display";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import useSWR from "swr";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useRouter, useSearchParams } from "next/navigation";
+import useSWR, { mutate } from "swr";
 import { fetcher } from "@/lib/utils";
 import Image from "next/image";
 import QRCode from "react-qr-code";
+import { useQuery } from "@tanstack/react-query";
+import { useAsset } from "@/hooks/use-Asset";
 
 interface Asset {
   id: string;
@@ -67,20 +75,61 @@ interface AssetDetailsPageProps {
 }
 
 export default function AssetDetailsPage(props: any) {
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [ownerDialogOpen, setOwnerDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<Partial<Asset>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const router = useRouter();
   const params = useSearchParams();
 
-  const {
-    data: asset,
-    error,
-    isLoading,
-  } = useSWR<Asset>(`/api/Assets/asset?id=${params.get("id")}`, fetcher);
+  const { data: asset, isLoading } = useQuery({
+    queryKey: ["asset", "id"],
+    queryFn: async () => {
+      const res = await fetch(`/api/Assets/asset?id=${params.get("id")}`);
+      const data = await res.json();
+      setEditData(data);
+      return data;
+    },
+  });
 
-  // Mock data - replace with actual API call
+  const handleSubmit = async () => {
+    if (!asset) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/Assets/asset?id=${asset.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editData),
+      });
+
+      if (response.ok) {
+        // Refresh the data
+        mutate(`/api/Assets/asset?id=${params.get("id")}`);
+        setIsEditing(false);
+      } else {
+        console.error("Failed to update asset");
+      }
+    } catch (error) {
+      console.error("Error updating asset:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditData(asset || {});
+    setIsEditing(false);
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setEditData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -139,9 +188,9 @@ export default function AssetDetailsPage(props: any) {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
+    <div className="container mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="sticky top-0 z-10 py-4 px-6  flex justify-between items-center  bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/60 flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
@@ -150,48 +199,61 @@ export default function AssetDetailsPage(props: any) {
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            <span className="max-sm:hidden">Back</span>
           </Button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               Asset Details
             </h1>
-            <p className="text-gray-600">Code: {asset.code}</p>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setOwnerDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <UserCheck className="h-4 w-4" />
-            Update Owner
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setUpdateDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Edit className="h-4 w-4" />
-            Update
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </Button>
+          {!isEditing ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                <span className="max-sm:hidden">Edit Asset</span>
+              </Button>
+              <Button variant="destructive" size="sm">
+                <Trash2 className="h-4 w-4" />
+                <span className="max-sm:hidden">Delete</span>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                className="flex items-center gap-2 bg-transparent"
+              >
+                <X className="h-4 w-4" />
+                Cancel
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 px-6  lg:grid-cols-3 gap-6">
         {/* General Information */}
         <Card>
           <CardHeader>
@@ -203,20 +265,54 @@ export default function AssetDetailsPage(props: any) {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Code</span>
-                <span className="text-foreground">{asset.code}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.code || ""}
+                    onChange={(e) => handleInputChange("code", e.target.value)}
+                    className="w-32 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.code}</span>
+                )}
               </div>
               <Separator />
 
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Type</span>
-                <span className="text-foreground">{asset.type}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.type || ""}
+                    onChange={(e) => handleInputChange("type", e.target.value)}
+                    className="w-32 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.type}</span>
+                )}
               </div>
               <Separator />
 
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Status</span>
                 <div className="flex flex-col gap-1 items-end">
-                  {getStatusBadge(asset.deviceStatus)}
+                  {isEditing ? (
+                    <Select
+                      value={editData.deviceStatus || asset.deviceStatus}
+                      onValueChange={(value) =>
+                        handleInputChange("deviceStatus", value)
+                      }
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="In Use">In Use</SelectItem>
+                        <SelectItem value="Available">Available</SelectItem>
+                        <SelectItem value="Defective">Defective</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    getStatusBadge(asset.deviceStatus)
+                  )}
                   {asset.verified && (
                     <Badge
                       variant="default"
@@ -231,13 +327,33 @@ export default function AssetDetailsPage(props: any) {
 
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Location</span>
-                <span className="text-foreground">{asset.location}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.location || ""}
+                    onChange={(e) =>
+                      handleInputChange("location", e.target.value)
+                    }
+                    className="w-32 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.location}</span>
+                )}
               </div>
               <Separator />
 
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Department</span>
-                <span className="text-foreground">{asset.department}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.department || ""}
+                    onChange={(e) =>
+                      handleInputChange("department", e.target.value)
+                    }
+                    className="w-32 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.department}</span>
+                )}
               </div>
               <Separator />
 
@@ -262,7 +378,18 @@ export default function AssetDetailsPage(props: any) {
                 <span className="font-medium text-foreground">
                   Purchase Date
                 </span>
-                <span className="text-foreground">{asset.purchaseDate}</span>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={editData.purchaseDate || ""}
+                    onChange={(e) =>
+                      handleInputChange("purchaseDate", e.target.value)
+                    }
+                    className="w-40 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.purchaseDate}</span>
+                )}
               </div>
               <Separator />
 
@@ -270,7 +397,17 @@ export default function AssetDetailsPage(props: any) {
                 <span className="font-medium text-foreground">
                   Purchase Price
                 </span>
-                <span className="text-foreground">{asset.purchasePrice}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.purchasePrice || ""}
+                    onChange={(e) =>
+                      handleInputChange("purchasePrice", e.target.value)
+                    }
+                    className="w-32 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.purchasePrice}</span>
+                )}
               </div>
             </div>
 
@@ -283,6 +420,7 @@ export default function AssetDetailsPage(props: any) {
                     "http://iss.bfginternational.com/ISS/itemsImages/" +
                       asset.image ||
                     "/placeholder.svg?height=200&width=300&query=IT asset device" ||
+                    "/placeholder.svg" ||
                     "/placeholder.svg"
                   }
                   alt={asset.deviceName ?? "Asset Image"}
@@ -305,7 +443,17 @@ export default function AssetDetailsPage(props: any) {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Device Name</span>
-                <span className="text-foreground">{asset.deviceName}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.deviceName || ""}
+                    onChange={(e) =>
+                      handleInputChange("deviceName", e.target.value)
+                    }
+                    className="w-40 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.deviceName}</span>
+                )}
               </div>
               <Separator />
 
@@ -313,9 +461,19 @@ export default function AssetDetailsPage(props: any) {
                 <span className="font-medium text-foreground">
                   Serial Number
                 </span>
-                <span className="text-foreground font-mono text-sm">
-                  {asset.serialNumber}
-                </span>
+                {isEditing ? (
+                  <Input
+                    value={editData.serialNumber || ""}
+                    onChange={(e) =>
+                      handleInputChange("serialNumber", e.target.value)
+                    }
+                    className="w-40 text-right font-mono text-sm"
+                  />
+                ) : (
+                  <span className="text-foreground font-mono text-sm">
+                    {asset.serialNumber}
+                  </span>
+                )}
               </div>
               <Separator />
 
@@ -323,29 +481,65 @@ export default function AssetDetailsPage(props: any) {
                 <span className="font-medium text-foreground">
                   Manufacturer
                 </span>
-                <span className="text-foreground">{asset.manufacturer}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.manufacturer || ""}
+                    onChange={(e) =>
+                      handleInputChange("manufacturer", e.target.value)
+                    }
+                    className="w-32 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.manufacturer}</span>
+                )}
               </div>
               <Separator />
 
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Model</span>
-                <span className="text-foreground">{asset.model}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.model || ""}
+                    onChange={(e) => handleInputChange("model", e.target.value)}
+                    className="w-32 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.model}</span>
+                )}
               </div>
               <Separator />
 
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">MAC Address</span>
-                <span className="text-foreground font-mono text-sm">
-                  {asset.macAddress}
-                </span>
+                {isEditing ? (
+                  <Input
+                    value={editData.macAddress || ""}
+                    onChange={(e) =>
+                      handleInputChange("macAddress", e.target.value)
+                    }
+                    className="w-40 text-right font-mono text-sm"
+                  />
+                ) : (
+                  <span className="text-foreground font-mono text-sm">
+                    {asset.macAddress}
+                  </span>
+                )}
               </div>
               <Separator />
 
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">IP Address</span>
-                <span className="text-foreground font-mono text-sm">
-                  {asset.ip}
-                </span>
+                {isEditing ? (
+                  <Input
+                    value={editData.ip || ""}
+                    onChange={(e) => handleInputChange("ip", e.target.value)}
+                    className="w-32 text-right font-mono text-sm"
+                  />
+                ) : (
+                  <span className="text-foreground font-mono text-sm">
+                    {asset.ip}
+                  </span>
+                )}
               </div>
               <Separator />
 
@@ -353,7 +547,17 @@ export default function AssetDetailsPage(props: any) {
                 <span className="font-medium text-foreground">
                   Firmware Version
                 </span>
-                <span className="text-foreground">{asset.firmwareVer}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.firmwareVer || ""}
+                    onChange={(e) =>
+                      handleInputChange("firmwareVer", e.target.value)
+                    }
+                    className="w-32 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.firmwareVer}</span>
+                )}
               </div>
               <Separator />
 
@@ -361,7 +565,18 @@ export default function AssetDetailsPage(props: any) {
                 <span className="font-medium text-foreground">
                   Warranty Date
                 </span>
-                <span className="text-foreground">{asset.warrantyDate}</span>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={editData.warrantyDate || ""}
+                    onChange={(e) =>
+                      handleInputChange("warrantyDate", e.target.value)
+                    }
+                    className="w-40 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.warrantyDate}</span>
+                )}
               </div>
               <Separator />
 
@@ -369,7 +584,25 @@ export default function AssetDetailsPage(props: any) {
                 <span className="font-medium text-foreground">
                   Warranty Status
                 </span>
-                {getWarrantyBadge(asset.warrantyStatus)}
+                {isEditing ? (
+                  <Select
+                    value={editData.warrantyStatus || asset.warrantyStatus}
+                    onValueChange={(value) =>
+                      handleInputChange("warrantyStatus", value)
+                    }
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Valid">Valid</SelectItem>
+                      <SelectItem value="Expired">Expired</SelectItem>
+                      <SelectItem value="NA">NA</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  getWarrantyBadge(asset.warrantyStatus)
+                )}
               </div>
             </div>
           </CardContent>
@@ -384,7 +617,17 @@ export default function AssetDetailsPage(props: any) {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Processor</span>
-                <span className="text-foreground">{asset.processor}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.processor || ""}
+                    onChange={(e) =>
+                      handleInputChange("processor", e.target.value)
+                    }
+                    className="w-40 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.processor}</span>
+                )}
               </div>
               <Separator />
 
@@ -392,19 +635,45 @@ export default function AssetDetailsPage(props: any) {
                 <span className="font-medium text-foreground">
                   Operating System
                 </span>
-                <span className="text-foreground">{asset.os}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.os || ""}
+                    onChange={(e) => handleInputChange("os", e.target.value)}
+                    className="w-32 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.os}</span>
+                )}
               </div>
               <Separator />
 
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Memory</span>
-                <span className="text-foreground">{asset.memory}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.memory || ""}
+                    onChange={(e) =>
+                      handleInputChange("memory", e.target.value)
+                    }
+                    className="w-24 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.memory}</span>
+                )}
               </div>
               <Separator />
 
               <div className="flex justify-between items-center">
                 <span className="font-medium text-foreground">Hard Disk</span>
-                <span className="text-foreground">{asset.hdd}</span>
+                {isEditing ? (
+                  <Input
+                    value={editData.hdd || ""}
+                    onChange={(e) => handleInputChange("hdd", e.target.value)}
+                    className="w-24 text-right"
+                  />
+                ) : (
+                  <span className="text-foreground">{asset.hdd}</span>
+                )}
               </div>
             </div>
           </CardContent>
@@ -451,9 +720,20 @@ export default function AssetDetailsPage(props: any) {
                   <span className="font-medium text-foreground">
                     Other Specifications
                   </span>
-                  <span className="text-foreground text-right max-w-xs">
-                    {asset.specification}
-                  </span>
+                  {isEditing ? (
+                    <Textarea
+                      value={editData.specification || ""}
+                      onChange={(e) =>
+                        handleInputChange("specification", e.target.value)
+                      }
+                      className="w-48 text-right text-sm"
+                      rows={3}
+                    />
+                  ) : (
+                    <span className="text-foreground text-right max-w-xs">
+                      {asset.specification}
+                    </span>
+                  )}
                 </div>
 
                 {asset.verified && asset.verifiedDate && (
@@ -506,35 +786,6 @@ export default function AssetDetailsPage(props: any) {
           )}
         </div>
       </div>
-
-      {/* Dialogs */}
-      <UpdateAssetDialog
-        asset={asset}
-        open={updateDialogOpen}
-        onOpenChange={setUpdateDialogOpen}
-        onUpdate={(updatedAsset) => {
-          setUpdateDialogOpen(false);
-        }}
-      />
-
-      <UpdateOwnerDialog
-        asset={asset}
-        open={ownerDialogOpen}
-        onOpenChange={setOwnerDialogOpen}
-        onUpdate={(updatedAsset) => {
-          setOwnerDialogOpen(false);
-        }}
-      />
-
-      <DeleteAssetDialog
-        asset={asset}
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onDelete={() => {
-          // Handle navigation after deletion
-          window.location.href = "/assets";
-        }}
-      />
     </div>
   );
 }

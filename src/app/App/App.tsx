@@ -38,12 +38,15 @@ interface AppProps {
 export default function App(props: AppProps) {
   return (
     <QueryClientProvider client={new QueryClient()}>
-      <SidebarProvider>
+      <SidebarProvider className="flex h-screen overflow-hidden">
         <AppSidebar account={props.account} />
-        <SidebarInset>
-          <Toolbar account={props.account} />
-          <div className="w-full h-full overflow-hidden">{props.children}</div>
-        </SidebarInset>
+        <div className="relative flex flex-col flex-1 min-h-full">
+          {/* Toolbar fixed at top */}
+          <Toolbar className="sticky top-0 z-10" account={props.account} />
+
+          {/* Scrollable main area */}
+          <div className="flex-1 overflow-auto relative">{props.children}</div>
+        </div>
       </SidebarProvider>
     </QueryClientProvider>
   );

@@ -5,11 +5,22 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { UserMenu } from "./App";
 import { NotificationDropdown } from "./Notifications/notification-dropdown";
 import { type users as Account } from "../../../node_modules/.prisma/iss/client";
+import { cn } from "@/lib/utils";
 
+type ToolbarProps = {
+  account: Account | null;
+  className?: string;
+};
 
-export default function Toolbar({ account }: { account: Account | null }) {
+export default function Toolbar(props: ToolbarProps) {
   return (
-    <header className="flex sticky z-10 top-0 bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/60 h-12 shrink-0 items-center gap-2 border-b px-4 flex-nowrap ">
+    <header
+      className={cn(
+        "flex sticky z-10 top-0 bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/60 h-12 shrink-0 items-center gap-2 border-b px-4 flex-nowrap ",
+        props.className
+      )}
+    >
+      {" "}
       {/* Left hand side */}
       <div className="h-full w-full flex left flex-1 items-center gap-2 ">
         <SidebarTrigger className="-ml-1" />
@@ -19,7 +30,7 @@ export default function Toolbar({ account }: { account: Account | null }) {
       {/* Right hand side */}
       <div className="flex items-center gap-2">
         <NotificationDropdown />
-        <UserMenu account={account} />
+        <UserMenu account={props.account} />
       </div>
     </header>
   );
