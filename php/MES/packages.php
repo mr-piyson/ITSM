@@ -1,20 +1,6 @@
 <?php
 // CORS Headers
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
-
-// Database connection
-$host = '172.18.1.20';
-$db   = 'mes';
-$user = 'root';
-$pass = 'bfgA$$essDb';
-$charset = 'utf8mb4';
+require "../header.php";
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [

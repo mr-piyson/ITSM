@@ -96,7 +96,7 @@ export default function ReportPage() {
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const res = await axios.get(
-      `http://172.18.10.40/ITSM/php/reports/gate-time-out.php?filter=${filter}`
+      `http://172.18.10.40/ITSM/php/MES/gate-time-out.php?filter=${filter}`
     );
     const data = getPivotData(res.data);
     return data;
