@@ -763,7 +763,7 @@ export default function AssetDetailsPage(props: any) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {asset.ownerChangeLogs.map((log, index) => (
+                  {asset.ownerChangeLogs.map((log: any, index: any) => (
                     <div
                       key={index}
                       className="flex justify-between items-center text-sm max-sm:flex max-sm:flex-col"
