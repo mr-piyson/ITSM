@@ -25,12 +25,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter, useSearchParams } from "next/navigation";
-import useSWR, { mutate } from "swr";
-import { fetcher } from "@/lib/utils";
+import { mutate } from "swr";
 import Image from "next/image";
 import QRCode from "react-qr-code";
 import { useQuery } from "@tanstack/react-query";
-import { useAsset } from "@/hooks/use-Asset";
 
 interface Asset {
   id: string;
