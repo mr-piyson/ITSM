@@ -405,7 +405,7 @@ export default function AssetsPage() {
     const colorClasses = getColorClasses(typeConfig.color);
 
     return (
-      <Card className="pt-0 h-full group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-border overflow-hidden flex flex-col">
+      <Card className="pt-0 h-full group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary overflow-hidden flex flex-col ">
         <div className="relative h-48 bg-gradient-to-br from-muted/50 to-muted overflow-hidden">
           {asset.image ? (
             <Image

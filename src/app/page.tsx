@@ -27,6 +27,8 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { LandingPageNavigationMenu } from "./nav-menu";
 
 const EmblaCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -179,15 +181,6 @@ const ITSMLandingPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navigationItems = [
-    { name: "IT Request Portal", href: "#it-request" },
-    { name: "Device Management", href: "#device-management" },
-    { name: "Help Desk", href: "#help-desk" },
-    { name: "Asset Tracking", href: "#asset-tracking" },
-    { name: "Knowledge Base", href: "#knowledge-base" },
-    { name: "Reports & Analytics", href: "/Reports" },
-  ];
-
   const features = [
     {
       icon: <Monitor className="w-8 h-8" />,
@@ -279,14 +272,8 @@ const ITSMLandingPage = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
-                {navigationItems.map((item) => (
-                  <Button key={item.name} variant="ghost" asChild>
-                    <a href={item.href} className="text-sm font-medium">
-                      {item.name}
-                    </a>
-                  </Button>
-                ))}
+              <div className="flex items-baseline space-x-4">
+                <LandingPageNavigationMenu />
               </div>
             </div>
 
@@ -297,13 +284,13 @@ const ITSMLandingPage = () => {
 
             {/* Mobile Navigation */}
             <div className="md:hidden">
-              <Sheet>
-                <SheetTrigger asChild>
+              <Drawer>
+                <DrawerTrigger asChild>
                   <Button variant="ghost" size="icon">
                     <Menu className="w-6 h-6" />
                   </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                </DrawerTrigger>
+                <DrawerContent className="w-[300px] sm:w-[400px]">
                   <div className="flex flex-col space-y-4 mt-8">
                     <div className="flex items-center mb-4">
                       <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
@@ -312,21 +299,12 @@ const ITSMLandingPage = () => {
                       <span className="ml-2 text-lg font-bold">ITSM</span>
                     </div>
                     <Separator />
-                    {navigationItems.map((item) => (
-                      <Button
-                        key={item.name}
-                        variant="ghost"
-                        asChild
-                        className="justify-start"
-                      >
-                        <a href={item.href}>{item.name}</a>
-                      </Button>
-                    ))}
+
                     <Separator />
                     <Button className="w-full">Sign In</Button>
                   </div>
-                </SheetContent>
-              </Sheet>
+                </DrawerContent>
+              </Drawer>
             </div>
           </div>
         </div>

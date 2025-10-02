@@ -11,6 +11,7 @@ import { CsvExportModule } from "ag-grid-community";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -25,9 +26,11 @@ import {
   filterStore,
   initPanelsStore,
   panelsStore,
+  projectsStore,
   ReportData,
 } from "./atoms";
 import { JobCellRenderer } from "../CellsRender";
+import { Separator } from "@/components/ui/separator";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
@@ -122,6 +125,7 @@ export default function ReportPage() {
   const [filter, setFilter] = useAtom(filterStore);
   const [, setInitPanels] = useAtom(initPanelsStore);
   const [panels, setPanels] = useAtom(panelsStore);
+  const [projects, setProjects] = useAtom(projectsStore);
   const theme = useTableTheme();
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
@@ -129,8 +133,10 @@ export default function ReportPage() {
       `http://172.18.10.40/ITSM/php/reports/panels.php?filter=${filter}`
     );
 
-    return response.data.map(
-      (panel: ApiReportData): ReportData => ({
+    let filteredData: ReportData[] = [];
+
+    (response.data as ApiReportData[]).forEach((panel) => {
+      filteredData.push({
         panelId: panel.panel_id.toUpperCase(),
         container: panel.container,
         created_at: new Date(panel.label_creation_date)
@@ -149,8 +155,11 @@ export default function ReportPage() {
         label_creation_date: panel.label_creation_date,
         description: panel.description,
         job_id: panel.job_id,
-      })
-    );
+      });
+      projects.add(panel.project);
+    });
+    setProjects(projects);
+    return filteredData;
   }, [filter]);
 
   // React Query for data fetching
@@ -356,6 +365,25 @@ export default function ReportPage() {
             <i className="icon-[tdesign--refresh] size-4" />
             <span className="max-sm:hidden">Refresh</span>
           </Button>
+          <Select>
+            <SelectTrigger
+              disabled={Array.from(projects).length == 0 || isLoading}
+              className="w-[180px] border-border"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem defaultValue={"No Filter"} value={"No filter"}>
+                No Filter
+              </SelectItem>
+              <Separator className="my-2" />
+              {Array.from(projects).map((project) => (
+                <SelectItem key={project} value={project}>
+                  {project}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Right Controls */}

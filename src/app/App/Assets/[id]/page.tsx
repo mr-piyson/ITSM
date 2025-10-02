@@ -88,6 +88,7 @@ export default function AssetDetailsPage(props: any) {
       const res = await fetch(`/api/Assets/asset?id=${params.get("id")}`);
       const data = await res.json();
       setEditData(data);
+      console.log(data);
       return data;
     },
   });
@@ -362,14 +363,14 @@ export default function AssetDetailsPage(props: any) {
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={asset.owner?.image || "/placeholder.svg"}
-                      alt={asset.owner?.name}
+                      src={`http://iss.bfginternational.com/ISS/itemsImages/${asset.empImg}`}
+                      alt={asset.owner.charAt(0)}
                     />
                     <AvatarFallback>
                       {asset.owner?.name?.charAt(0).toUpperCase() ?? "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-foreground">{asset.owner?.name}</span>
+                  <span className="text-foreground">{asset.owner}</span>
                 </div>
               </div>
               <Separator />
@@ -752,7 +753,6 @@ export default function AssetDetailsPage(props: any) {
               </div>
             </CardContent>
           </Card>
-
           {/* Owner Change Logs */}
           {asset.ownerChangeLogs?.length > 0 && (
             <Card>
@@ -766,16 +766,18 @@ export default function AssetDetailsPage(props: any) {
                   {asset.ownerChangeLogs.map((log, index) => (
                     <div
                       key={index}
-                      className="flex justify-between items-center text-sm"
+                      className="flex justify-between items-center text-sm max-sm:flex max-sm:flex-col"
                     >
-                      <span className="text-foreground">{log.date}</span>
+                      <span className="text-foreground">
+                        {new Date(log.date).toDateString()}
+                      </span>
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary" className="text-xs">
-                          {log.oldOwner}
+                          {log.old}
                         </Badge>
                         <span className="text-muted-foreground">→</span>
                         <Badge variant="secondary" className="text-xs">
-                          {log.newOwner}
+                          {log.new}
                         </Badge>
                       </div>
                     </div>

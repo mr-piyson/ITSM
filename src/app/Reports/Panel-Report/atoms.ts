@@ -3,6 +3,7 @@ import { atom } from "jotai";
 export const panelsStore = atom<ReportData[]>([]);
 export const initPanelsStore = atom<ReportData[]>([]);
 export const filterStore = atom<string>("");
+export const projectsStore = atom(new Set<string>());
 
 export interface ReportData {
   panelId: string;
