@@ -38,7 +38,7 @@ export const GET = async (request: Request) => {
   const serialNumber = searchParams.get("serialNumber");
 
   if (id) {
-    const asset = await iss.$queryRaw`
+    const asset: ResponseAsset[] = await iss.$queryRaw`
     SELECT assets.id,
     assets.code,
     assets.serialNumber,
@@ -90,6 +90,7 @@ export const GET = async (request: Request) => {
     //   });
     //   return NextResponse.json({ ...asset, ownerChangeLogs: ownerChangelog });
     // }
+    //
     return NextResponse.json({ ...asset[0], ownerChangeLogs: logs });
   }
 
