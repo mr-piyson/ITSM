@@ -46,8 +46,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import useSWR from "swr";
 import Image from "next/image";
 
-
-
 const assetCategories = {
   "Computing Devices": [
     { name: "Desktop", icon: Monitor, color: "blue" },
@@ -269,7 +267,7 @@ const getColorClasses = (color: string) => {
 // import type { assets as Asset } from "../../../../node_modules/.prisma/iss/client";
 import Link from "next/link";
 import { fetcher } from "@/lib/utils";
-import { DebounceSearch } from "@/components/DebounceSearch";
+import { Asset } from "@/app/api/Assets/route";
 
 export default function AssetsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -434,7 +432,9 @@ export default function AssetsPage() {
                       {asset.owner?.charAt(0).toUpperCase() ?? "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-foreground">{asset.owner}</span>
+                  <span className="text-foreground">
+                    {asset.owner ?? "Unknown"}
+                  </span>
                 </div>
               </div>
 
@@ -526,7 +526,7 @@ export default function AssetsPage() {
   return (
     <div className="container mx-auto p-6 space-y-6" ref={scrollContainerRef}>
       {/* Search and Controls */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40 py-2">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background border-b border-border py-2">
         <div>
           {/* Search Bar, View Controls, and Add New Asset Button */}
           <div className="flex flex-wrap flex-row gap-4">

@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 // GET http://localhost:3000/api/Assets
 
-type Asset = {
+export type Asset = {
   id: string;
   code: string;
   type: string;
@@ -19,21 +19,20 @@ type Asset = {
   warrantyStatus: "Valid" | "Expired" | "NA";
   verified: boolean;
   verifiedDate?: string;
-  owner: {
-    name: string;
-    image?: string;
-    empId: string;
-  };
+  owner?: string;
   name: string;
   image?: string;
   empId: string;
   purchaseDate: string;
   purchasePrice: string;
   warrantyDate: string;
-  processor: string;
-  os: string;
-  memory: string;
-  hdd: string;
+  processor?: string;
+  os?: string;
+  memory?: string;
+  hdd?: string;
+  ip?: string;
+  specification?: string;
+  empImg?: string;
 };
 
 export const GET = async () => {

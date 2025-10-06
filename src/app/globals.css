@@ -69,12 +69,12 @@
   --accent-foreground: #fbfbfb;
   --default: #1a3150;
   --default-foreground: #0099cc;
-  --destructive-foreground: #ff4b72;
-  --destructive: #501a2d;
-  --success: #36551d;
-  --success-foreground: #5dd400;
-  --warning: #55500d;
-  --warning-foreground: #ecd91b;
+  --destructive: #ff4b72;
+  --destructive-foreground: #501a2d;
+  --success-foreground: #36551d;
+  --success: #5dd400;
+  --warning-foreground: #55500d;
+  --warning: #ecd91b;
   --border: #454545;
   --input: #454545;
   --ring: #6a6285;
@@ -188,21 +188,4 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--color-primary);
   }
-}
-
-
-[data-sonner-toast][data-type="error"] {
-  @apply bg-red-500 text-white border-red-600;
-}
-
-[data-sonner-toast][data-type="success"] {
-  @apply bg-green-500 text-white border-green-600;
-}
-
-[data-sonner-toast][data-type="info"] {
-  @apply bg-blue-500 text-white border-blue-600;
-}
-
-[data-sonner-toast][data-type="warning"] {
-  @apply bg-yellow-500 text-black border-yellow-600;
 }

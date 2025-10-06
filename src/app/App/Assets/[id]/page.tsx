@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
@@ -29,6 +28,7 @@ import { mutate } from "swr";
 import Image from "next/image";
 import QRCode from "react-qr-code";
 import { useQuery } from "@tanstack/react-query";
+import { Badge } from "@/components/Badge";
 
 interface Asset {
   id: string;
@@ -66,10 +66,6 @@ interface Asset {
     oldOwner: string;
     newOwner: string;
   }>;
-}
-
-interface AssetDetailsPageProps {
-  assetCode: string;
 }
 
 export default function AssetDetailsPage(props: any) {
