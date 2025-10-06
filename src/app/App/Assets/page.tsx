@@ -47,41 +47,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import useSWR from "swr";
 import Image from "next/image";
 
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-const VirtualizedAssetCard = ({
-  index,
-  style,
-  data,
-}: {
-  index: number;
-  style: any;
-  data: any[];
-}) => {
-  const asset = data[index];
-  return (
-    <div style={style}>
-      <div className="p-2">
-        {/* AssetCard component will be inserted here */}
-      </div>
-    </div>
-  );
-};
-
 const assetCategories = {
   "Computing Devices": [
     { name: "Desktop", icon: Monitor, color: "blue" },
@@ -303,6 +268,7 @@ const getColorClasses = (color: string) => {
 import type { assets as Asset } from "../../../../node_modules/.prisma/iss/client";
 import Link from "next/link";
 import { fetcher } from "@/lib/utils";
+import { DebounceSearch } from "@/components/DebounceSearch";
 
 export default function AssetsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -311,8 +277,6 @@ export default function AssetsPage() {
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [displayCount, setDisplayCount] = useState(20);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -327,8 +291,8 @@ export default function AssetsPage() {
       );
     }
 
-    if (debouncedSearchQuery.trim()) {
-      const query = debouncedSearchQuery.toLowerCase();
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (asset) =>
           asset.deviceName?.toLowerCase().includes(query) ||
@@ -342,7 +306,7 @@ export default function AssetsPage() {
     }
 
     return filtered;
-  }, [data, debouncedSearchQuery, selectedTypes]);
+  }, [data, searchQuery, selectedTypes]);
 
   const displayedAssets = useMemo(() => {
     return filteredAssets.slice(0, displayCount);
@@ -389,7 +353,7 @@ export default function AssetsPage() {
 
   useEffect(() => {
     setDisplayCount(20);
-  }, [debouncedSearchQuery, selectedTypes]);
+  }, [searchQuery, selectedTypes]);
 
   const getAssetTypeConfig = useCallback((type: string) => {
     for (const category of Object.values(assetCategories)) {
@@ -428,22 +392,6 @@ export default function AssetsPage() {
             </div>
           )}
 
-          {asset.verified && (
-            <div className="absolute top-3 right-3 h-6 w-6 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-white shadow-lg">
-              <svg
-                className="h-3 w-3 text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-          )}
-
           <div className="absolute bottom-3 left-3">
             <Badge
               className={`${colorClasses.bg} ${colorClasses.bgHover} text-white border-0 shadow-lg`}
@@ -474,10 +422,19 @@ export default function AssetsPage() {
           <div className="space-y-4 flex-1">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                <span className="font-medium text-foreground">
-                  {asset.owner || "Unassigned"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src={`http://iss.bfginternational.com/ISS/itemsImages/${asset.empImg}`}
+                      alt={asset.owner?.charAt(0) ?? "U"}
+                      className="object-cover"
+                    />
+                    <AvatarFallback>
+                      {asset.owner?.charAt(0).toUpperCase() ?? "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-foreground">{asset.owner}</span>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-sm">
@@ -576,6 +533,7 @@ export default function AssetsPage() {
               <Plus className="h-4 w-4 " />
               <span className="max-sm:hidden">Add New Asset</span>
             </Button>
+
             <div className="relative flex-1 ">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -584,11 +542,6 @@ export default function AssetsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
-              {searchQuery !== debouncedSearchQuery && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-3 w-3 border-b border-muted-foreground"></div>
-                </div>
-              )}
             </div>
 
             <div className="flex items-center gap-2 max-sm:hidden">
@@ -712,9 +665,9 @@ export default function AssetsPage() {
               {searchQuery && (
                 <Badge variant="secondary" className="gap-1">
                   Search: "{searchQuery}"
-                  <X
-                    className="h-3 w-3 cursor-pointer hover:text-destructive"
+                  <i
                     onClick={() => setSearchQuery("")}
+                    className="icon-[proicons--cancel] size-3  cursor-pointer  rounded-sm"
                   />
                 </Badge>
               )}
@@ -725,8 +678,8 @@ export default function AssetsPage() {
                   <Badge key={type} variant="secondary" className="gap-1">
                     <Icon className="h-3 w-3" />
                     {type}
-                    <X
-                      className="h-3 w-3 cursor-pointer hover:text-destructive"
+                    <i
+                      className="icon-[proicons--cancel] size-3  cursor-pointer  rounded-sm"
                       onClick={() => toggleAssetType(type)}
                     />
                   </Badge>

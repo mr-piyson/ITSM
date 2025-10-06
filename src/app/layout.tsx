@@ -42,7 +42,16 @@ export default async function RootLayout(props: any) {
         >
           {props.children}
         </ThemeProvider>
-        <Toaster position="top-center" />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: "var(--normal-bg)",
+              color: "var(--normal-text)",
+              border: "1px solid var(--normal-border)",
+            },
+          }}
+        />
       </body>
     </html>
   );

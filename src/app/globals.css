@@ -189,3 +189,20 @@
     background: var(--color-primary);
   }
 }
+
+
+[data-sonner-toast][data-type="error"] {
+  @apply bg-red-500 text-white border-red-600;
+}
+
+[data-sonner-toast][data-type="success"] {
+  @apply bg-green-500 text-white border-green-600;
+}
+
+[data-sonner-toast][data-type="info"] {
+  @apply bg-blue-500 text-white border-blue-600;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  @apply bg-yellow-500 text-black border-yellow-600;
+}

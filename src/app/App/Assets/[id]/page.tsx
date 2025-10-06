@@ -363,6 +363,7 @@ export default function AssetDetailsPage(props: any) {
                     <AvatarImage
                       src={`http://iss.bfginternational.com/ISS/itemsImages/${asset.empImg}`}
                       alt={asset.owner.charAt(0)}
+                      className="object-cover"
                     />
                     <AvatarFallback>
                       {asset.owner?.name?.charAt(0).toUpperCase() ?? "U"}

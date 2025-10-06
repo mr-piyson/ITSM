@@ -3,8 +3,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  Menu,
-  X,
   Monitor,
   Smartphone,
   Headphones,
@@ -24,11 +22,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
-import { LandingPageNavigationMenu } from "./nav-menu";
+import { NavigationToolbar } from "./nav-menu";
 
 const EmblaCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -250,65 +246,7 @@ const ITSMLandingPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav
-        className={`fixed w-full z-50 transition-all duration-300 ${
-          isScrolled
-            ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b"
-            : "bg-transparent"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
-                  <Monitor className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <span className="ml-3 text-xl font-bold text-foreground">
-                  ITSM
-                </span>
-              </div>
-            </div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:block">
-              <div className="flex items-baseline space-x-4">
-                <LandingPageNavigationMenu />
-              </div>
-            </div>
-
-            {/* Desktop Sign In Button */}
-            <div className="hidden md:block">
-              <Button className="font-semibold">Sign In</Button>
-            </div>
-
-            {/* Mobile Navigation */}
-            <div className="md:hidden">
-              <Drawer>
-                <DrawerTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Menu className="w-6 h-6" />
-                  </Button>
-                </DrawerTrigger>
-                <DrawerContent className="w-[300px] sm:w-[400px]">
-                  <div className="flex flex-col space-y-4 mt-8">
-                    <div className="flex items-center mb-4">
-                      <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
-                        <Monitor className="w-5 h-5 text-primary-foreground" />
-                      </div>
-                      <span className="ml-2 text-lg font-bold">ITSM</span>
-                    </div>
-                    <Separator />
-
-                    <Separator />
-                    <Button className="w-full">Sign In</Button>
-                  </div>
-                </DrawerContent>
-              </Drawer>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <NavigationToolbar />
 
       {/* Hero Section */}
       <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8">

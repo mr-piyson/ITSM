@@ -2,7 +2,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 export default async function middleware(request: NextRequest) {
-  console.log("Middleware Should Auth Check");
   // const pathname = request.nextUrl.pathname;
   // Example: Decode role from cookie or header (use your auth method)
   // const res = await fetch(`${request.nextUrl.origin}/api/session`, {

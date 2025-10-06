@@ -73,31 +73,27 @@ export default function PrinterManagement({
 }: {
   printers: Printer[];
 }) {
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery, debouncedSearch] = useDebounce("", 300);
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
   // Debounce search query to avoid excessive filtering
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Filter printers based on search and status
   const filteredPrinters = useMemo(() => {
     return printers.filter((printer) => {
       const matchesSearch =
-        debouncedSearchQuery === "" ||
-        printer.name
-          .toLowerCase()
-          .includes(debouncedSearchQuery.toLowerCase()) ||
+        debouncedSearch === "" ||
+        printer.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         printer.location
           .toLowerCase()
-          .includes(debouncedSearchQuery.toLowerCase()) ||
-        printer.usedBy
-          .toLowerCase()
-          .includes(debouncedSearchQuery.toLowerCase());
+          .includes(debouncedSearch.toLowerCase()) ||
+        printer.usedBy.toLowerCase().includes(debouncedSearch.toLowerCase());
 
       return matchesSearch;
     });
-  }, [debouncedSearchQuery, statusFilter]);
+  }, [debouncedSearch, statusFilter]);
 
   const handleViewDetails = (id: string) => {
     // Navigate to printer details page

@@ -17,6 +17,12 @@ import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { Monitor, Laptop } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import epicor from "@/Assets/Images/Epicor.jpg";
+import office365 from "@/Assets/Images/Office.webp";
+import MESLogo from "@/Assets/Icons/MESLogo";
+import { createRequest } from "./server";
+import { toast } from "sonner";
 
 export default function ITRequestForm() {
   const router = useRouter();
@@ -37,22 +43,34 @@ export default function ITRequestForm() {
     justification: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Generate a unique request ID
-    const requestId = `REQ-${Date.now()}`;
-    const submissionData = {
-      ...formData,
-      requestId,
-      submittedDate: new Date().toISOString(),
-    };
+    const res = await createRequest({
+      department: formData.department,
+      location: formData.location,
+      software: JSON.stringify([
+        formData.softwareMES,
+        formData.softwareOffice365,
+        formData.softwareEPICOR,
+        formData.softwareOther,
+      ]),
+      Permissions: formData.similarPermissions,
+      hardware: formData.hardwareSelection,
+      other: formData.hardwareOther,
+      sharedFilesAccess: formData.sharedFilesAccess,
+      justification: formData.justification,
+      requesterManager: formData.requesterManager,
+      requesterName: formData.requesterName,
+      createdAt: new Date(), // Add this line to include the createdAt property
+    });
 
-    // Store in localStorage (in production, this would be saved to a database)
-    localStorage.setItem("currentRequest", JSON.stringify(submissionData));
-
-    // Redirect to preview page
-    router.push("/request-preview");
+    if (res.status === 200) {
+      toast.success("Request submitted successfully!");
+      router.replace("/");
+    } else {
+      toast.error(res.error);
+    }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -88,7 +106,6 @@ export default function ITRequestForm() {
                         handleInputChange("requesterName", e.target.value)
                       }
                       placeholder="Enter your name and ID"
-                      required
                     />
                   </div>
                   <div className="space-y-2">
@@ -102,7 +119,6 @@ export default function ITRequestForm() {
                         handleInputChange("requesterManager", e.target.value)
                       }
                       placeholder="Enter manager's name and ID"
-                      required
                     />
                   </div>
                 </div>
@@ -116,7 +132,6 @@ export default function ITRequestForm() {
                         handleInputChange("department", e.target.value)
                       }
                       placeholder="Enter your department"
-                      required
                     />
                   </div>
                   <div className="space-y-2">
@@ -128,7 +143,6 @@ export default function ITRequestForm() {
                         handleInputChange("location", e.target.value)
                       }
                       placeholder="Enter your location"
-                      required
                     />
                   </div>
                 </div>
@@ -144,32 +158,28 @@ export default function ITRequestForm() {
 
                 {/* Software Section */}
                 <div className="space-y-4">
-                  <h4 className="font-medium text-gray-800">Software:</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <h4 className="font-medium text-primary">Software:</h4>
+                  <div className="grid max-sm:grid-cols-1 grid-cols-4 gap-4">
                     {/* MES Card */}
                     <Card
-                      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                      className={`cursor-pointer transition-all duration-200 hover:shadow-md max-sm:p-0 ${
                         formData.softwareMES
-                          ? "ring-2 ring-blue-500 bg-blue-50 border-blue-200"
-                          : "hover:border-gray-300"
+                          ? "ring-2 ring-primary bg-primary/15 "
+                          : "hover:border-border"
                       }`}
                       onClick={() =>
                         handleInputChange("softwareMES", !formData.softwareMES)
                       }
                     >
-                      <CardContent className="flex flex-col items-center justify-center p-4 text-center">
-                        <div className="w-16 h-16 mb-3 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                          <img
-                            src="/placeholder.svg?height=64&width=64"
-                            alt="MES Software"
-                            className="w-full h-full object-cover"
-                          />
+                      <CardContent className="flex flex-col items-center justify-center p-4 text-center ">
+                        <div className="w-16 h-16 mb-3 rounded-lg overflow-hidden  flex items-center justify-center">
+                          <MESLogo />
                         </div>
                         <h5
                           className={`font-semibold text-sm mb-1 ${
                             formData.softwareMES
-                              ? "text-blue-900"
-                              : "text-gray-700"
+                              ? "text-primary"
+                              : "text-foreground"
                           }`}
                         >
                           MES
@@ -177,15 +187,15 @@ export default function ITRequestForm() {
                         <p
                           className={`text-xs ${
                             formData.softwareMES
-                              ? "text-blue-700"
+                              ? "text-muted-foreground"
                               : "text-gray-500"
                           }`}
                         >
                           Manufacturing Execution System
                         </p>
                         {formData.softwareMES && (
-                          <div className="mt-2 flex items-center text-blue-600">
-                            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1"></div>
+                          <div className="mt-2 flex items-center text-prbg-primary">
+                            <div className="w-1.5 h-1.5 bg-primary rounded-full mr-1"></div>
                             <span className="text-xs font-medium">
                               Selected
                             </span>
@@ -196,10 +206,10 @@ export default function ITRequestForm() {
 
                     {/* Office 365 Card */}
                     <Card
-                      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                      className={`cursor-pointer transition-all duration-200 hover:shadow-md max-sm:p-0 ${
                         formData.softwareOffice365
-                          ? "ring-2 ring-blue-500 bg-blue-50 border-blue-200"
-                          : "hover:border-gray-300"
+                          ? "ring-2 ring-primary bg-primary/15 "
+                          : "hover:border-border"
                       }`}
                       onClick={() =>
                         handleInputChange(
@@ -209,18 +219,20 @@ export default function ITRequestForm() {
                       }
                     >
                       <CardContent className="flex flex-col items-center justify-center p-4 text-center">
-                        <div className="w-16 h-16 mb-3 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                          <img
-                            src="/placeholder.svg?height=64&width=64"
-                            alt="Office 365"
-                            className="w-full h-full object-cover"
+                        <div className="w-16 h-16 mb-3 rounded-lg overflow-hidden  flex items-center justify-center">
+                          <Image
+                            src={office365}
+                            width={100}
+                            height={100}
+                            alt="MES Software"
+                            className="w-full h-full object-contain"
                           />
                         </div>
                         <h5
                           className={`font-semibold text-sm mb-1 ${
                             formData.softwareOffice365
-                              ? "text-blue-900"
-                              : "text-gray-700"
+                              ? "text-primary"
+                              : "text-foreground"
                           }`}
                         >
                           Office 365
@@ -228,15 +240,15 @@ export default function ITRequestForm() {
                         <p
                           className={`text-xs ${
                             formData.softwareOffice365
-                              ? "text-blue-700"
+                              ? "text-primary"
                               : "text-gray-500"
                           }`}
                         >
                           Microsoft Office Suite
                         </p>
                         {formData.softwareOffice365 && (
-                          <div className="mt-2 flex items-center text-blue-600">
-                            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1"></div>
+                          <div className="mt-2 flex items-center text-prbg-primary">
+                            <div className="w-1.5 h-1.5 bg-primary rounded-full mr-1"></div>
                             <span className="text-xs font-medium">
                               Selected
                             </span>
@@ -247,10 +259,10 @@ export default function ITRequestForm() {
 
                     {/* EPICOR Card */}
                     <Card
-                      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                      className={`cursor-pointer transition-all duration-200 hover:shadow-md max-sm:p-0 ${
                         formData.softwareEPICOR
-                          ? "ring-2 ring-blue-500 bg-blue-50 border-blue-200"
-                          : "hover:border-gray-300"
+                          ? "ring-2 ring-primary bg-primary/15 "
+                          : "hover:border-border"
                       }`}
                       onClick={() =>
                         handleInputChange(
@@ -261,17 +273,19 @@ export default function ITRequestForm() {
                     >
                       <CardContent className="flex flex-col items-center justify-center p-4 text-center">
                         <div className="w-16 h-16 mb-3 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                          <img
-                            src="/placeholder.svg?height=64&width=64"
-                            alt="EPICOR Software"
+                          <Image
+                            src={epicor}
+                            width={100}
+                            height={100}
+                            alt="MES Software"
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <h5
                           className={`font-semibold text-sm mb-1 ${
                             formData.softwareEPICOR
-                              ? "text-blue-900"
-                              : "text-gray-700"
+                              ? "text-primary"
+                              : "text-foreground"
                           }`}
                         >
                           EPICOR
@@ -279,15 +293,15 @@ export default function ITRequestForm() {
                         <p
                           className={`text-xs ${
                             formData.softwareEPICOR
-                              ? "text-blue-700"
-                              : "text-gray-500"
+                              ? "text-primary"
+                              : "text-muted-foreground"
                           }`}
                         >
                           Enterprise Resource Planning
                         </p>
                         {formData.softwareEPICOR && (
-                          <div className="mt-2 flex items-center text-blue-600">
-                            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1"></div>
+                          <div className="mt-2 flex items-center ">
+                            <div className="w-1.5 h-1.5 bg-primary rounded-full mr-1"></div>
                             <span className="text-xs font-medium">
                               Selected
                             </span>
@@ -298,9 +312,9 @@ export default function ITRequestForm() {
 
                     {/* Other Software Card */}
                     <Card
-                      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                      className={`cursor-pointer transition-all duration-200 hover:shadow-md max-sm:p-0 ${
                         formData.softwareOther
-                          ? "ring-2 ring-blue-500 bg-blue-50 border-blue-200"
+                          ? "ring-2 ring-blue-500 bg-primary border-blue-200"
                           : "hover:border-gray-300"
                       }`}
                       onClick={() => {
@@ -317,7 +331,6 @@ export default function ITRequestForm() {
                       <CardContent className="flex flex-col items-center justify-center p-4 text-center">
                         <div className="w-16 h-16 mb-3 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                           <img
-                            src="/placeholder.svg?height=64&width=64"
                             alt="Other Software"
                             className="w-full h-full object-cover"
                           />
@@ -325,7 +338,7 @@ export default function ITRequestForm() {
                         <h5
                           className={`font-semibold text-sm mb-1 ${
                             formData.softwareOther
-                              ? "text-blue-900"
+                              ? "text-primary"
                               : "text-gray-700"
                           }`}
                         >
@@ -334,15 +347,15 @@ export default function ITRequestForm() {
                         <p
                           className={`text-xs ${
                             formData.softwareOther
-                              ? "text-blue-700"
+                              ? "text-primary"
                               : "text-gray-500"
                           }`}
                         >
                           Specify other software
                         </p>
                         {formData.softwareOther && (
-                          <div className="mt-2 flex items-center text-blue-600">
-                            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1"></div>
+                          <div className="mt-2 flex items-center text-prbg-primary">
+                            <div className="w-1.5 h-1.5 bg-primary rounded-full mr-1"></div>
                             <span className="text-xs font-medium">
                               Selected
                             </span>
@@ -386,14 +399,14 @@ export default function ITRequestForm() {
 
                 {/* Hardware Section */}
                 <div className="space-y-4">
-                  <h4 className="font-medium text-gray-800">Hardware:</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <h4 className="font-medium text-primary">Hardware:</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                     {/* PC Card */}
                     <Card
                       className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
                         formData.hardwareSelection === "pc"
-                          ? "ring-2 ring-blue-500 bg-blue-50 border-blue-200"
-                          : "hover:border-gray-300"
+                          ? "ring-2 ring-primary bg-primary/15 "
+                          : "hover:border-muted-foreground"
                       }`}
                       onClick={() =>
                         handleInputChange(
@@ -406,31 +419,25 @@ export default function ITRequestForm() {
                         <Monitor
                           className={`w-12 h-12 mb-3 ${
                             formData.hardwareSelection === "pc"
-                              ? "text-blue-600"
-                              : "text-gray-400"
+                              ? "text-primary"
+                              : "text-muted-foreground"
                           }`}
                         />
                         <h5
                           className={`font-semibold text-lg mb-2 ${
                             formData.hardwareSelection === "pc"
-                              ? "text-blue-900"
-                              : "text-gray-700"
+                              ? "text-foreground"
+                              : "text-muted-foreground"
                           }`}
                         >
-                          PC & Peripherals
+                          PC
                         </h5>
-                        <p
-                          className={`text-sm ${
-                            formData.hardwareSelection === "pc"
-                              ? "text-blue-700"
-                              : "text-gray-500"
-                          }`}
-                        >
+                        <p className={`text-sm text-border`}>
                           Desktop computer with monitor, keyboard, and mouse
                         </p>
                         {formData.hardwareSelection === "pc" && (
-                          <div className="mt-3 flex items-center text-blue-600">
-                            <div className="w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                          <div className="mt-3 flex items-center text-primary">
+                            <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
                             <span className="text-sm font-medium">
                               Selected
                             </span>
@@ -443,8 +450,8 @@ export default function ITRequestForm() {
                     <Card
                       className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
                         formData.hardwareSelection === "laptop"
-                          ? "ring-2 ring-blue-500 bg-blue-50 border-blue-200"
-                          : "hover:border-gray-300"
+                          ? "ring-2 ring-primary bg-primary/15 "
+                          : "hover:border-muted-foreground"
                       }`}
                       onClick={() =>
                         handleInputChange(
@@ -459,31 +466,31 @@ export default function ITRequestForm() {
                         <Laptop
                           className={`w-12 h-12 mb-3 ${
                             formData.hardwareSelection === "laptop"
-                              ? "text-blue-600"
+                              ? "text-primary"
                               : "text-gray-400"
                           }`}
                         />
                         <h5
                           className={`font-semibold text-lg mb-2 ${
                             formData.hardwareSelection === "laptop"
-                              ? "text-blue-900"
-                              : "text-gray-700"
+                              ? "text-foreground"
+                              : "text-muted-foreground"
                           }`}
                         >
-                          Laptop
+                          laptop
                         </h5>
                         <p
                           className={`text-sm ${
                             formData.hardwareSelection === "laptop"
-                              ? "text-blue-700"
+                              ? "text-muted-foreground"
                               : "text-gray-500"
                           }`}
                         >
                           Portable laptop computer for mobile work
                         </p>
                         {formData.hardwareSelection === "laptop" && (
-                          <div className="mt-3 flex items-center text-blue-600">
-                            <div className="w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                          <div className="mt-3 flex items-center text-primary">
+                            <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
                             <span className="text-sm font-medium">
                               Selected
                             </span>
@@ -556,7 +563,6 @@ export default function ITRequestForm() {
                     }
                     placeholder="Please provide detailed justification for this request..."
                     className="min-h-[120px]"
-                    required
                   />
                 </div>
               </div>
@@ -567,13 +573,6 @@ export default function ITRequestForm() {
               <div className="flex flex-col sm:flex-row gap-4 pt-6">
                 <Button type="submit" className="flex-1">
                   Submit IT Request
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 bg-transparent"
-                >
-                  Save as Draft
                 </Button>
               </div>
             </form>
