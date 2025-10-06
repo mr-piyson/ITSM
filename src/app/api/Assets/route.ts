@@ -5,6 +5,37 @@ import { NextResponse } from "next/server";
 
 // GET http://localhost:3000/api/Assets
 
+type Asset = {
+  id: string;
+  code: string;
+  type: string;
+  deviceName: string;
+  serialNumber: string;
+  manufacturer: string;
+  model: string;
+  location: string;
+  department: string;
+  deviceStatus: "In Use" | "Available" | "Defective";
+  warrantyStatus: "Valid" | "Expired" | "NA";
+  verified: boolean;
+  verifiedDate?: string;
+  owner: {
+    name: string;
+    image?: string;
+    empId: string;
+  };
+  name: string;
+  image?: string;
+  empId: string;
+  purchaseDate: string;
+  purchasePrice: string;
+  warrantyDate: string;
+  processor: string;
+  os: string;
+  memory: string;
+  hdd: string;
+};
+
 export const GET = async () => {
   try {
     await iss.$queryRaw`

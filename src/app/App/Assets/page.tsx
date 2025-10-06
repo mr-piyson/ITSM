@@ -20,7 +20,6 @@ import {
   Zap,
   Building,
   Projector,
-  X,
   Filter,
   ChevronDown,
 } from "lucide-react";
@@ -46,6 +45,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import useSWR from "swr";
 import Image from "next/image";
+
+
 
 const assetCategories = {
   "Computing Devices": [
@@ -265,7 +266,7 @@ const getColorClasses = (color: string) => {
   return colorMap[color as keyof typeof colorMap] || colorMap.blue;
 };
 
-import type { assets as Asset } from "../../../../node_modules/.prisma/iss/client";
+// import type { assets as Asset } from "../../../../node_modules/.prisma/iss/client";
 import Link from "next/link";
 import { fetcher } from "@/lib/utils";
 import { DebounceSearch } from "@/components/DebounceSearch";
