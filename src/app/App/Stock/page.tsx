@@ -24,64 +24,11 @@ import {
 } from "@/components/ui/table";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { useQuery } from "@tanstack/react-query";
+import { Spinner } from "@/components/ui/spinner";
+import Image from "next/image";
 
-// Mock data - replace with actual API calls
-const mockItems = [
-  {
-    id: 1,
-    name: "Wireless Bluetooth Headphones",
-    brand: "TechSound",
-    stock: 25,
-    purchased: 50,
-    provided: 23,
-    image: "/wireless-headphones.png",
-  },
-  {
-    id: 2,
-    name: "Gaming Mechanical Keyboard",
-    brand: "GamePro",
-    stock: 0,
-    purchased: 30,
-    provided: 30,
-    image: "/gaming-keyboard.png",
-  },
-  {
-    id: 3,
-    name: "4K Webcam",
-    brand: "StreamTech",
-    stock: 12,
-    purchased: 20,
-    provided: 8,
-    image: "/4k-webcam.png",
-  },
-  {
-    id: 4,
-    name: "Wireless Mouse",
-    brand: "TechSound",
-    stock: 8,
-    purchased: 25,
-    provided: 17,
-    image: "/wireless-mouse.png",
-  },
-  {
-    id: 5,
-    name: "USB-C Hub",
-    brand: "ConnectPro",
-    stock: 0,
-    purchased: 15,
-    provided: 15,
-    image: "/usb-c-hub.png",
-  },
-  {
-    id: 6,
-    name: "Portable SSD 1TB",
-    brand: "DataStore",
-    stock: 18,
-    purchased: 40,
-    provided: 22,
-    image: "/placeholder-4oinl.png",
-  },
-];
+
 
 type ViewMode = "grid" | "table";
 type FilterType = "all" | "inStock" | "outOfStock";
@@ -90,6 +37,14 @@ export default function StockManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [filterType, setFilterType] = useState<FilterType>("all");
+
+  const { data: mockItems } = useQuery({
+    queryKey: ["Stock"],
+    queryFn: async () => {
+      const response = await fetch("/api/Stock");
+      return response.json();
+    },
+  });
 
   const filteredItems = useMemo(() => {
     let filtered = mockItems;
@@ -116,18 +71,24 @@ export default function StockManagement() {
     }
 
     return filtered;
-  }, [searchQuery, filterType]);
+  }, [searchQuery, filterType , mockItems]);
+
+  if (!filteredItems) {
+    return <Spinner />
+  }
 
   const ItemCard = ({ item }: { item: (typeof mockItems)[0] }) => (
-    <Card className="h-full hover:shadow-md transition-shadow overflow-hidden">
+    <Card className="h-full hover:shadow-md transition-shadow overflow-hidden p-0">
       <div className="h-32 w-full bg-muted/30 overflow-hidden">
-        {item.image &&
-        item.image !== "/placeholder.svg" &&
-        item.image !== "/placeholder-4oinl.png" ? (
-          <img
-            src={item.image || "/placeholder.svg"}
+        {item.img &&
+        item.img !== "/placeholder.svg" &&
+        item.img !== "/placeholder-4oinl.png" ? (
+          <Image
+            src={`http://iss.bfginternational.com/ISS/itemsImages/${item.img}`}
             alt={item.name}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+            width={300}
+            height={200}
+            className="w-full h-full object-contain"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 flex items-center justify-center">
@@ -255,6 +216,7 @@ export default function StockManagement() {
 
         {/* Content */}
         {filteredItems.length === 0 ? (
+          
           <div className="text-center py-12">
             <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No items found</h3>
@@ -264,70 +226,15 @@ export default function StockManagement() {
                 : "No items match the selected filter"}
             </p>
           </div>
-        ) : viewMode === "grid" ? (
+        ):(
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredItems.map((item) => (
               <ItemCard key={item.id} item={item} />
             ))}
           </div>
-        ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">Image</TableHead>
-                  <TableHead>Brand</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="text-center">Stock</TableHead>
-                  <TableHead className="text-center">Purchased</TableHead>
-                  <TableHead className="text-center">Provided</TableHead>
-                  <TableHead className="w-24"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredItems.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      {item.image &&
-                      item.image !== "/placeholder.svg" &&
-                      item.image !== "/placeholder-4oinl.png" ? (
-                        <img
-                          src={item.image || "/placeholder.svg"}
-                          alt={item.name}
-                          className="w-10 h-10 object-cover rounded"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 rounded flex items-center justify-center">
-                          <Package className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">{item.brand}</TableCell>
-                    <TableCell>{item.name}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge
-                        variant={item.stock > 0 ? "default" : "destructive"}
-                      >
-                        {item.stock}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="secondary">{item.purchased}</Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline">{item.provided}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="link" size="sm" asChild>
-                        <a href={`/item/${item.id}`}>Details</a>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
         )}
+
+        
       </div>
     </div>
   );

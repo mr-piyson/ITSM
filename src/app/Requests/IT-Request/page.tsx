@@ -159,7 +159,7 @@ export default function ITRequestForm() {
                 {/* Software Section */}
                 <div className="space-y-4">
                   <h4 className="font-medium text-primary">Software:</h4>
-                  <div className="grid max-sm:grid-cols-1 grid-cols-4 gap-4">
+                  <div className="grid max-sm:grid-cols-1 grid-cols-3 gap-3">
                     {/* MES Card */}
                     <Card
                       className={`cursor-pointer transition-all duration-200 hover:shadow-md max-sm:p-0 ${
@@ -310,77 +310,7 @@ export default function ITRequestForm() {
                       </CardContent>
                     </Card>
 
-                    {/* Other Software Card */}
-                    <Card
-                      className={`cursor-pointer transition-all duration-200 hover:shadow-md max-sm:p-0 ${
-                        formData.softwareOther
-                          ? "ring-2 ring-blue-500 bg-primary border-blue-200"
-                          : "hover:border-gray-300"
-                      }`}
-                      onClick={() => {
-                        if (!formData.softwareOther) {
-                          setTimeout(() => {
-                            const input = document.getElementById(
-                              "softwareOtherInput"
-                            ) as HTMLInputElement;
-                            if (input) input.focus();
-                          }, 100);
-                        }
-                      }}
-                    >
-                      <CardContent className="flex flex-col items-center justify-center p-4 text-center">
-                        <div className="w-16 h-16 mb-3 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                          <img
-                            alt="Other Software"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <h5
-                          className={`font-semibold text-sm mb-1 ${
-                            formData.softwareOther
-                              ? "text-primary"
-                              : "text-gray-700"
-                          }`}
-                        >
-                          Other
-                        </h5>
-                        <p
-                          className={`text-xs ${
-                            formData.softwareOther
-                              ? "text-primary"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          Specify other software
-                        </p>
-                        {formData.softwareOther && (
-                          <div className="mt-2 flex items-center text-prbg-primary">
-                            <div className="w-1.5 h-1.5 bg-primary rounded-full mr-1"></div>
-                            <span className="text-xs font-medium">
-                              Selected
-                            </span>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
                   </div>
-
-                  {formData.softwareOther && (
-                    <div className="space-y-2 mt-4">
-                      <Label htmlFor="softwareOtherInput">
-                        Specify Other Software:
-                      </Label>
-                      <Input
-                        id="softwareOtherInput"
-                        value={formData.softwareOther}
-                        onChange={(e) =>
-                          handleInputChange("softwareOther", e.target.value)
-                        }
-                        placeholder="Enter the name of other software needed"
-                        className="max-w-md"
-                      />
-                    </div>
-                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="similarPermissions">
@@ -432,9 +362,12 @@ export default function ITRequestForm() {
                         >
                           PC
                         </h5>
-                        <p className={`text-sm text-border`}>
+                        <p
+                          className={"text-sm text-muted-foreground"}
+                        >
                           Desktop computer with monitor, keyboard, and mouse
                         </p>
+                        
                         {formData.hardwareSelection === "pc" && (
                           <div className="mt-3 flex items-center text-primary">
                             <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
@@ -467,7 +400,7 @@ export default function ITRequestForm() {
                           className={`w-12 h-12 mb-3 ${
                             formData.hardwareSelection === "laptop"
                               ? "text-primary"
-                              : "text-gray-400"
+                              : "text-muted-foreground"
                           }`}
                         />
                         <h5
