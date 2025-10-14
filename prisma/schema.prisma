@@ -1,57 +1,355 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
 }
 
-// datasource db {
-//   provider = "sqlite"
-//   url      = env("DATABASE_URL")
-// }
-
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model Settings {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  value     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([name])
+model assestOwnerUpdateLogs {
+  id            Int      @id @default(autoincrement())
+  user          Int
+  oldOwnerEmpID Int
+  oldOwnerText  String?  @db.VarChar(100)
+  newOwnerID    Int
+  date          DateTime @db.DateTime(0)
+  assetID       Int
 }
 
-model IT_Request {
+model assetBooking {
+  id             Int      @id @default(autoincrement())
+  empID          Int
+  assetID        Int
+  bookingDate    DateTime @db.Date
+  returnDate     DateTime @db.Date
+  bookingPurpose String   @db.VarChar(100)
+  status         String   @db.VarChar(100)
+  user           Int
+  addedTime      DateTime @db.DateTime(0)
+  otherInfo      String?  @db.VarChar(100)
+}
+
+model assets {
+  id             Int       @id @default(autoincrement())
+  code           String    @unique(map: "code") @db.VarChar(10)
+  serialNumber   String    @unique(map: "serialNumber") @db.VarChar(50)
+  deviceName     String?   @db.VarChar(50)
+  type           String?   @db.VarChar(50)
+  location       String?   @db.VarChar(50)
+  manufacturer   String?   @db.VarChar(50)
+  model          String?   @db.VarChar(50)
+  processor      String?   @db.VarChar(50)
+  os             String?   @db.VarChar(50)
+  memory         String?   @db.VarChar(50)
+  hdd            String?   @db.VarChar(50)
+  ip             String?   @db.VarChar(50)
+  owner          String?   @db.VarChar(50)
+  specification  String?   @db.Text
+  inActive       Boolean
+  image          String?   @db.VarChar(200)
+  empID          Int?      @default(0)
+  department     String?   @db.VarChar(100)
+  firmwareVer    String?   @db.VarChar(50)
+  macAddress     String?   @db.VarChar(100)
+  deviceStatus   String?   @db.VarChar(50)
+  purchaseDate   DateTime? @db.Date
+  purchasePrice  String?   @db.VarChar(50)
+  warrantyDate   DateTime? @db.Date
+  warrantyStatus String?   @db.VarChar(50)
+  verified       DateTime? @db.DateTime(0)
+}
+
+model changes_logs {
+  id     Int      @id @default(autoincrement())
+  userID Int
+  date   DateTime @db.DateTime(0)
+  action String   @db.VarChar(50)
+  node   String   @db.VarChar(50)
+  nodeID Int
+}
+
+model contracts {
+  id          Int      @id @default(autoincrement())
+  productName String   @db.VarChar(100)
+  vendorID    Int
+  startDate   DateTime @db.Date
+  endDate     DateTime @db.Date
+  notes       String   @db.Text
+  support     String   @db.Text
+  account     String   @db.VarChar(100)
+  cost        String   @db.VarChar(50)
+  currency    String   @db.VarChar(3)
+  bilingCycle String   @db.VarChar(50)
+  inActive    Boolean
+  docslink    String?  @db.Text
+}
+
+model employees {
+  id       Int     @id @default(autoincrement())
+  empID    Int     @unique(map: "empID")
+  name     String  @db.VarChar(100)
+  user     Int
+  image    String? @db.VarChar(200)
+  inActive Boolean
+  email    String? @db.VarChar(100)
+}
+
+model employeesDetails {
+  id                          Int     @id @default(autoincrement())
+  empID                       Int
+  license                     String  @db.VarChar(100)
+  msProject                   Boolean
+  powerPi                     Boolean
+  authenticationTwoFactor     Boolean
+  authenticationAuthenticator Boolean
+  authenticationPhone         Boolean
+  recipientLimit              String  @db.VarChar(50)
+  oneDrive                    Boolean
+  mailType                    String  @db.VarChar(50)
+  mailStorageSize             String  @db.VarChar(10)
+  onlineMailboxArchive        Boolean
+  onlineArchiveStorageSize    String  @db.VarChar(10)
+}
+
+model employeesGroupDetails {
+  id        Int    @id @default(autoincrement())
+  empID     Int
+  groupName String @db.VarChar(100)
+}
+
+model items {
+  id       Int     @id @default(autoincrement())
+  name     String  @db.VarChar(100)
+  stock    Int
+  brand    String  @db.VarChar(100)
+  user     Int
+  img      String  @db.VarChar(100)
+  inActive Boolean
+  category String  @db.VarChar(100)
+}
+
+model logins_logs {
+  id            Int      @id @default(autoincrement())
+  ip            String   @db.VarChar(50)
+  date          DateTime @db.DateTime(0)
+  userID        Int
+  login_success Boolean
+}
+
+model printerActions {
+  id          Int      @id @default(autoincrement())
+  printerID   Int
+  actionType  String   @db.VarChar(100)
+  actionDate  DateTime @db.Date
+  actionBy    String   @db.VarChar(100)
+  note        String   @db.VarChar(100)
+  itemID      Int
+  requestedBy String   @db.VarChar(50)
+  recievedBy  String   @db.VarChar(50)
+}
+
+model printerInfo {
+  id            Int      @id @default(autoincrement())
+  printerID     Int
+  model         String?  @db.VarChar(100)
+  serialNumber  String?  @db.VarChar(50)
+  firmware      String?  @db.VarChar(50)
+  RFID          Boolean?
+  darkness      String?  @db.VarChar(50)
+  printSpeed    Int?
+  tearOffAdjust Int?
+  printMode     String?  @db.VarChar(50)
+  mediaType     String?  @db.VarChar(50)
+  sensorSelect  String?  @db.VarChar(50)
+  printMethod   String?  @db.VarChar(50)
+  printWidth    Int?
+  labelLength   Int?
+  labelTop      Int?
+  leftPosition  Int?
+  manufacturer  String   @db.VarChar(100)
+}
+
+model printers {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(100)
+  location    String  @db.VarChar(100)
+  usedBy      String  @db.VarChar(100)
+  img         String  @db.VarChar(200)
+  inActive    Boolean
+  department  String? @db.VarChar(100)
+  printerLink String? @db.VarChar(50)
+  empID       Int?
+}
+
+model printersToners {
+  id        Int @id @default(autoincrement())
+  tonerID   Int
+  PrinterID Int
+}
+
+model provide {
+  id         Int      @id @default(autoincrement())
+  date       DateTime @db.Date
+  empID      Int
+  requestBy  Int
+  provideBy  String   @db.VarChar(50)
+  recievedBy Int
+  notes      String   @db.Text
+  user       Int
+}
+
+model provideItems {
+  id        Int @id @default(autoincrement())
+  itemID    Int
+  quantity  Int
+  provideID Int
+}
+
+model purchase {
+  id             Int       @id @default(autoincrement())
+  vendorID       Int
+  quotationDate  DateTime? @db.Date
+  buyer          String    @db.VarChar(50)
+  poNumber       Int
+  forWho         String    @db.Text
+  notes          String    @db.Text
+  mrnNumber      String    @db.VarChar(50)
+  currentTotal   String    @db.VarChar(50)
+  vat            String    @db.VarChar(50)
+  grandTotal     String    @db.VarChar(50)
+  advanceRequest Boolean
+  LPO            Boolean
+  invoice        Boolean
+  deliveryNote   Boolean
+  mrn            Boolean
+  paidDate       DateTime? @db.Date
+  currency       String    @db.VarChar(50)
+  user           Int
+  date           DateTime  @db.DateTime(0)
+  link           String    @db.Text
+  ServiceType    Boolean
+}
+
+model purchaseItems {
+  id         Int    @id @default(autoincrement())
+  purchaseID Int
+  itemID     Int
+  quantity   Int
+  price      String @db.VarChar(50)
+}
+
+model purchaseServices {
+  id           Int    @id @default(autoincrement())
+  purchaseID   Int
+  serviceName  String @db.VarChar(100)
+  servicePrice String @db.VarChar(50)
+}
+
+model requestReplies {
+  id        Int      @id @default(autoincrement())
+  requestID Int
+  reply     String   @db.Text
+  replyDate DateTime @db.DateTime(0)
+  userID    Int
+}
+
+model requests {
+  id            Int       @id @default(autoincrement())
+  user          Int
+  pgtype        String?   @db.VarChar(50)
+  newpg         String?   @db.VarChar(100)
+  slctname      String?   @db.VarChar(50)
+  otherpg       String?   @db.VarChar(100)
+  modifi        String?   @db.VarChar(50)
+  descrip       String?   @db.Text
+  imagefilePath String?   @db.VarChar(200)
+  status        String?   @db.VarChar(50)
+  submitDate    DateTime? @db.DateTime(0)
+  requestPrio   String?   @db.VarChar(50)
+}
+
+model serverActions {
   id                Int      @id @default(autoincrement())
-  requesterName     String?
-  requesterManager  String?
-  department        String?
-  location          String?
-  software          String?
-  Permissions       String?
-  hardware          String?
-  other             String?
-  sharedFilesAccess String?
-  justification     String?
-  createdAt         DateTime @default(now())
+  serverID          Int
+  actionType        String   @db.VarChar(100)
+  actionDate        DateTime @db.DateTime(0)
+  actionDescription String   @db.Text
+  actionImage       String?  @db.VarChar(100)
+  user              Int
+  actionPeriod      String   @db.VarChar(50)
 }
 
-model Notification {
-  id        String   @id @default(uuid())
-  title     String?
-  message   String?
-  type      String?
-  read      Boolean? @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model servers {
+  serverID        Int      @id @default(autoincrement())
+  name            String   @db.VarChar(100)
+  type            String   @db.VarChar(50)
+  os              String   @db.VarChar(50)
+  serverIP        String   @db.VarChar(50)
+  host            String   @db.VarChar(50)
+  hostIP          String   @db.VarChar(50)
+  maintenanceLast DateTime @db.Date
+  maintenanceDue  DateTime @db.Date
+  cpu             String   @db.VarChar(50)
+  ram             String   @db.VarChar(50)
+  disk            String   @db.VarChar(50)
+  diskType        String   @db.VarChar(50)
+  diskAmount      String   @db.VarChar(50)
+  location        String   @db.VarChar(50)
+  backupStatus    String   @db.VarChar(50)
+  backupSoftware  String   @db.VarChar(50)
+  descrip         String?  @db.VarChar(200)
+  notes           String?  @db.Text
+  serverStatus    String   @db.VarChar(50)
+  Applications    String   @db.VarChar(50)
+  inActive        Boolean?
+  image           String?  @db.VarChar(100)
+  disk2           String   @db.VarChar(50)
+  diskType2       String   @db.VarChar(50)
+  location2       String   @db.VarChar(50)
+}
 
-  @@index([type])
+model tapes {
+  id          Int       @id @default(autoincrement())
+  tapeID      String    @unique(map: "tapeID") @db.VarChar(50)
+  location    String?   @db.VarChar(50)
+  month       String?   @db.VarChar(50)
+  year        Int?
+  status      String?   @db.VarChar(50)
+  sequenceNum Int?
+  lastWritten DateTime? @db.DateTime(0)
+  expire      DateTime? @db.DateTime(0)
+  capacity    String?   @db.VarChar(50)
+  free        String?   @db.VarChar(50)
+  inActive    Boolean
+}
+
+model users {
+  id       Int    @id @default(autoincrement())
+  username String @db.VarChar(50)
+  password String @db.Text
+  name     String @db.VarChar(50)
+  empCode  Int
+  type     String @db.VarChar(50)
+  token    String @db.VarChar(200)
+  email    String @db.VarChar(100)
+}
+
+model vendors {
+  id       Int     @id @default(autoincrement())
+  name     String  @db.VarChar(150)
+  notes    String  @db.Text
+  user     Int
+  inActive Boolean
+  image    String? @db.Text
+}
+
+model vendorsContacts {
+  id             Int     @id @default(autoincrement())
+  vendorID       Int
+  contactType    String  @db.VarChar(50)
+  contactName    String  @db.VarChar(100)
+  contact        String  @db.VarChar(100)
+  personPosition String? @db.VarChar(100)
 }

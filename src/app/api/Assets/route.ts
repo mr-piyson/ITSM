@@ -1,43 +1,43 @@
 "use server";
 
-import { iss } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import db from "@/lib/prisma";
 
 // GET http://localhost:3000/api/Assets
 
 export type Asset = {
-  id: string;
-  code: string;
-  type: string;
-  deviceName: string;
-  serialNumber: string;
-  manufacturer: string;
-  model: string;
-  location: string;
-  department: string;
-  deviceStatus: "In Use" | "Available" | "Defective";
-  warrantyStatus: "Valid" | "Expired" | "NA";
-  verified: boolean;
-  verifiedDate?: string;
-  owner?: string;
-  name: string;
-  image?: string;
-  empId: string;
-  purchaseDate: string;
-  purchasePrice: string;
-  warrantyDate: string;
-  processor?: string;
-  os?: string;
-  memory?: string;
-  hdd?: string;
-  ip?: string;
-  specification?: string;
-  empImg?: string;
+	id: string;
+	code: string;
+	type: string;
+	deviceName: string;
+	serialNumber: string;
+	manufacturer: string;
+	model: string;
+	location: string;
+	department: string;
+	deviceStatus: "In Use" | "Available" | "Defective";
+	warrantyStatus: "Valid" | "Expired" | "NA";
+	verified: boolean;
+	verifiedDate?: string;
+	owner?: string;
+	name: string;
+	image?: string;
+	empId: string;
+	purchaseDate: string;
+	purchasePrice: string;
+	warrantyDate: string;
+	processor?: string;
+	os?: string;
+	memory?: string;
+	hdd?: string;
+	ip?: string;
+	specification?: string;
+	empImg?: string;
 };
 
 export const GET = async () => {
-  try {
-    await iss.$queryRaw`
+	try {
+		await db.$queryRaw`
       UPDATE assets
         SET purchaseDate = NULL
           WHERE purchaseDate IS NOT NULL
@@ -47,7 +47,7 @@ export const GET = async () => {
           OR YEAR(purchaseDate) = 0
         );`;
 
-    await iss.$queryRaw`
+		await db.$queryRaw`
       UPDATE assets
         SET warrantyDate = NULL
           WHERE warrantyDate IS NOT NULL
@@ -57,15 +57,15 @@ export const GET = async () => {
           OR YEAR(warrantyDate) = 0
         );`;
 
-    const assets = await iss.$queryRaw`
+		const assets = await db.$queryRaw`
       SELECT assets.id,assets.code,assets.serialNumber,assets.deviceName,assets.type,assets.location,assets.manufacturer,assets.model,assets.department,
       assets.processor,assets.os,assets.memory,assets.hdd,assets.ip,assets.specification,assets.image,employees.name as owner, employees.image as empImg FROM assets
       LEFT JOIN employees
       ON assets.empID = employees.empID
     `;
-    return NextResponse.json(assets, { status: 200 });
-  } catch (error) {
-    console.log("Error fetching assets:", error);
-    return new NextResponse(null, { status: 500 });
-  }
+		return NextResponse.json(assets, { status: 200 });
+	} catch (error) {
+		console.log("Error fetching assets:", error);
+		return new NextResponse(null, { status: 500 });
+	}
 };
