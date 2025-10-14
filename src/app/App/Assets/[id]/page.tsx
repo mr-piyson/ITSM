@@ -10,12 +10,12 @@ export interface AssetsWithLogs extends assets {
 	}[];
 }
 
-export default async function Page({
-	searchParams,
-}: {
-	searchParams: { id: string };
-}) {
-	const id = (await searchParams).id || null;
+interface PageProps {
+	params: Promise<{ id: string }>;
+}
+
+export default async function Page(props: PageProps) {
+	const id = (await props.params).id || null;
 	const asset = await db.assets.findFirst({
 		where: {
 			id: {

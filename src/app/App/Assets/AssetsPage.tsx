@@ -750,7 +750,7 @@ function AssetCard({ asset }: { asset: Asset }) {
 						)}
 					</div>
 					<Link
-						href={`/App/Assets/asset?id=${asset.id}`}
+						href={`/App/Assets/${asset.id}`}
 						className="group"
 						passHref
 					>

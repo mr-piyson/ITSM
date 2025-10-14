@@ -46,7 +46,7 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 
 		setIsSubmitting(true);
 		try {
-			const response = await fetch(`/api/Assets/asset?id=${asset.id}`, {
+			const response = await fetch(`/api/Assets/${asset.id}`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
@@ -56,7 +56,7 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 
 			if (response.ok) {
 				// Refresh the data
-				mutate(`/api/Assets/asset?id=${params.get("id")}`);
+				mutate(`/api/Assets/${params.get("id")}`);
 				setIsEditing(false);
 			} else {
 				console.error("Failed to update asset");
@@ -234,7 +234,7 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 							<div className="flex justify-between items-center">
 								<span className="font-medium text-foreground">Status</span>
 								<div className="flex flex-col gap-1 items-end">
-									{isEditing ? (
+									{isEditing && asset.deviceStatus ? (
 										<Select
 											value={editData.deviceStatus || asset.deviceStatus}
 											onValueChange={(value) =>
@@ -251,7 +251,7 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 											</SelectContent>
 										</Select>
 									) : (
-										getStatusBadge(asset.deviceStatus)
+										getStatusBadge(asset.deviceStatus || "Available")
 									)}
 									{asset.verified && (
 										<Badge
@@ -637,7 +637,7 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 								className="flex justify-center mx-auto "
 								bgColor="var(--card)"
 								fgColor="#000"
-								value={`${window.location.origin}/App/Assets/asset?id=${asset.id}`}
+								value={`${window.location.origin}/App/Assets/${asset.id}`}
 							/>
 							<Button
 								variant="outline"
