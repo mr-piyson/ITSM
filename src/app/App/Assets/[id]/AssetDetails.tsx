@@ -637,7 +637,7 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 								className="flex justify-center mx-auto "
 								bgColor="var(--card)"
 								fgColor="#000"
-								value={`http://172.16.1.84:3000/App/Assets/asset?id=${asset.id}`}
+								value={`${window.location.origin}/App/Assets/asset?id=${asset.id}`}
 							/>
 							<Button
 								variant="outline"

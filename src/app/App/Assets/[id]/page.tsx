@@ -16,7 +16,6 @@ export default async function Page({
 	searchParams: { id: string };
 }) {
 	const id = (await searchParams).id || null;
-	console.log(id);
 	const asset = await db.assets.findFirst({
 		where: {
 			id: {
@@ -49,7 +48,6 @@ export default async function Page({
 		...asset,
 		ownerChangeLogs: logs || [],
 	};
-	console.log(assetWithLogs);
 
 	return <AssetDetailsPage asset={assetWithLogs} />;
 }

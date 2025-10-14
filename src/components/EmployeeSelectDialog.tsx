@@ -172,7 +172,6 @@ export function EmployeeSelectDialog(props: EmployeeSelectDialogProps) {
 		setOpen(false);
 		setSearch("");
 		setDeferredSearch("");
-		console.log("Selected employee:", employee);
 		props.onSelect?.(employee);
 	}, []);
 
