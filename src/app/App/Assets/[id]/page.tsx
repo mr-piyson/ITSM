@@ -38,6 +38,7 @@ export default async function Page({
 	ON e2.empID = a.newOwnerID
 	WHERE a.assetID= ${id}
 	`;
+	await db.$disconnect();
 
 	if (!asset) {
 		// Handle asset not found, you can return an error or a fallback UI

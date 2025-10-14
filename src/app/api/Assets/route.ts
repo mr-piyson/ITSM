@@ -63,6 +63,7 @@ export const GET = async () => {
       LEFT JOIN employees
       ON assets.empID = employees.empID
     `;
+		await db.$disconnect();
 		return NextResponse.json(assets, { status: 200 });
 	} catch (error) {
 		console.log("Error fetching assets:", error);

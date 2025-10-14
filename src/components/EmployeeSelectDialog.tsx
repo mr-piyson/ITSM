@@ -18,6 +18,7 @@ import {
 import { getAllEmployees } from "@/server/employee";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 const ITEM_HEIGHT = 64; // Height of each employee item in pixels
 const VISIBLE_ITEMS = 8; // Number of items visible at once
@@ -61,7 +62,12 @@ const EmployeeItem = React.memo(
 
 EmployeeItem.displayName = "EmployeeItem";
 
-export function EmployeeSelectDialog() {
+type EmployeeSelectDialogProps = {
+	onSelect?: (employee: employees) => void;
+	children?: React.ReactNode;
+};
+
+export function EmployeeSelectDialog(props: EmployeeSelectDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [search, setSearch] = useState("");
 	const [deferredSearch, setDeferredSearch] = useState("");
@@ -167,6 +173,7 @@ export function EmployeeSelectDialog() {
 		setSearch("");
 		setDeferredSearch("");
 		console.log("Selected employee:", employee);
+		props.onSelect?.(employee);
 	}, []);
 
 	const handleKeyDown = useCallback(
@@ -188,6 +195,7 @@ export function EmployeeSelectDialog() {
 					e.preventDefault();
 					if (filteredEmployees[highlightedIndex]) {
 						handleSelect(filteredEmployees[highlightedIndex]);
+						// Call onSelect prop if provided
 					}
 					break;
 				case "Escape":
@@ -210,24 +218,24 @@ export function EmployeeSelectDialog() {
 	}, []);
 
 	return (
-		<div className="p-8">
+		<div>
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogTrigger asChild>
-					<Button className="px-4 py-2 bg-card text-foreground rounded-lg hover:bg-primary/90 transition-colors">
-						{selectedEmployee
-							? `${selectedEmployee.name} (${selectedEmployee.empID})`
-							: "Select Employee"}
-					</Button>
+					{props.children ?? (
+						<Button variant="outline" className="w-full justify-start">
+							Select Employee
+						</Button>
+					)}
 				</DialogTrigger>
-				<DialogContent className="max-w-2xl max-h-[600px] p-0 flex flex-col">
-					<DialogHeader className="p-6 pb-4">
+				<DialogContent className="max-w-2xl h-[80vh] p-0 flex flex-col overflow-hidden ">
+					<DialogHeader className="p-6 pb-4 bg-card">
 						<DialogTitle>Select Employee</DialogTitle>
 					</DialogHeader>
 
 					{/* Search Bar */}
 					<div className="px-6 pb-4">
 						<div className="relative">
-							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 " />
 							<input
 								ref={searchInputRef}
 								type="text"
@@ -235,7 +243,10 @@ export function EmployeeSelectDialog() {
 								value={search}
 								onChange={(e) => setSearch(e.target.value)}
 								onKeyDown={handleKeyDown}
-								className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+								autoComplete="off"
+								autoCorrect="off"
+								autoFocus
 							/>
 						</div>
 					</div>
@@ -277,36 +288,11 @@ export function EmployeeSelectDialog() {
 					</div>
 
 					{/* Footer Info */}
-					<div className="p-4 border-t bg-gray-50 text-xs text-gray-600">
+					<div className="p-4 border-t bg-card text-xs text-card-foreground">
 						Use ↑↓ arrow keys to navigate, Enter to select, Esc to close
 					</div>
 				</DialogContent>
 			</Dialog>
-
-			{/* Display Selected Employee */}
-			{selectedEmployee && (
-				<div className="mt-6 p-4 bg-gray-50 rounded-lg">
-					<h3 className="font-semibold mb-2">Selected Employee:</h3>
-					<div className="flex items-center gap-3">
-						<Avatar className="size-12">
-							<AvatarFallback>
-								<User className="w-6 h-6 text-gray-500" />
-							</AvatarFallback>
-							{selectedEmployee.image && (
-								<AvatarImage
-									src={`http://iss.bfginternational.com/ISS/itemsImages/${selectedEmployee.image}`}
-								/>
-							)}
-						</Avatar>
-						<div>
-							<p className="font-medium">{selectedEmployee.name}</p>
-							<p className="text-sm text-gray-600">
-								ID: {selectedEmployee.empID} • {selectedEmployee.email}
-							</p>
-						</div>
-					</div>
-				</div>
-			)}
 		</div>
 	);
 }

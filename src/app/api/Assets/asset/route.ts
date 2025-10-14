@@ -91,6 +91,7 @@ export const GET = async (request: Request) => {
 		//   return NextResponse.json({ ...asset, ownerChangeLogs: ownerChangelog });
 		// }
 		//
+		await db.$disconnect();
 		return NextResponse.json({ ...asset[0], ownerChangeLogs: logs });
 	}
 

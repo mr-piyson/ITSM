@@ -57,5 +57,6 @@ export default async function Assets(props: AssetsProps) {
           LEFT JOIN employees
           ON assets.empID = employees.empID
         `) as Asset[];
-	return <AssetsPage assets={assets}/>;
+	await db.$disconnect();
+	return <AssetsPage assets={assets} />;
 }
