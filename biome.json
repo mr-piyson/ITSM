@@ -23,6 +23,12 @@
 				"useUniqueElementIds": "off",
 				"useExhaustiveDependencies": "off"
 			},
+			"suspicious": {
+				"noArrayIndexKey": "off",
+				"noShadowRestrictedNames": "off",
+				"noTsIgnore": "off",
+				"noUnknownAtRules": "off"
+			},
 			"recommended": true
 		}
 	},

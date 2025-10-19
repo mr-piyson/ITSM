@@ -33,7 +33,11 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import type { AssetsWithLogs } from "./page";
 
-export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
+export default function AssetDetailsPage({
+	asset,
+}: {
+	asset: Partial<AssetsWithLogs>;
+}) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editData, setEditData] = useState<Partial<assets>>(asset);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -93,16 +97,17 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 		}
 	};
 
-	const getWarrantyBadge = (status: string) => {
-		switch (status) {
+	const getWarrantyBadge = (status: string | null | undefined) => {
+		const s = status ?? "Unknown";
+		switch (s) {
 			case "Valid":
-				return <Badge variant="success">{status}</Badge>;
+				return <Badge variant="success">{s}</Badge>;
 			case "Expired":
-				return <Badge variant="destructive">{status}</Badge>;
+				return <Badge variant="destructive">{s}</Badge>;
 			case "NA":
-				return <Badge variant="warning">{status}</Badge>;
+				return <Badge variant="warning">{s}</Badge>;
 			default:
-				return <Badge variant="outline">{status}</Badge>;
+				return <Badge variant="outline">{s}</Badge>;
 		}
 	};
 
@@ -307,7 +312,7 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 											className="object-cover"
 										/>
 										<AvatarFallback>
-											{asset.owner?.name?.charAt(0).toUpperCase() ?? "U"}
+											{asset.owner?.charAt(0).toUpperCase() ?? "U"}
 										</AvatarFallback>
 									</Avatar>
 									<span className="text-foreground">{asset.owner}</span>
@@ -319,18 +324,19 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 								<span className="font-medium text-foreground">
 									Purchase Date
 								</span>
-								{isEditing ? (
-									<Input
-										type="date"
-										value={editData.purchaseDate || ""}
-										onChange={(e) =>
-											handleInputChange("purchaseDate", e.target.value)
-										}
-										className="w-40 text-right"
-									/>
-								) : (
-									<span className="text-foreground">{asset.purchaseDate}</span>
-								)}
+								<Input
+									type="date"
+									readOnly={!isEditing}
+									value={
+										editData.purchaseDate instanceof Date
+											? editData.purchaseDate.toISOString().split("T")[0]
+											: editData.purchaseDate || ""
+									}
+									onChange={(e) =>
+										handleInputChange("purchaseDate", e.target.value)
+									}
+									className="w-40 text-right"
+								/>
 							</div>
 							<Separator />
 
@@ -529,7 +535,11 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 								</span>
 								{isEditing ? (
 									<Select
-										value={editData.warrantyStatus || asset.warrantyStatus}
+										value={
+											editData.warrantyStatus ??
+											asset.warrantyStatus ??
+											undefined
+										}
 										onValueChange={(value) =>
 											handleInputChange("warrantyStatus", value)
 										}
@@ -682,7 +692,7 @@ export default function AssetDetailsPage({ asset }: { asset: AssetsWithLogs }) {
 						</CardContent>
 					</Card>
 					{/* Owner Change Logs */}
-					{asset.ownerChangeLogs?.length > 0 && (
+					{asset.ownerChangeLogs && asset.ownerChangeLogs.length > 0 && (
 						<Card>
 							<CardHeader>
 								<CardTitle className="text-lg font-semibold text-primary">

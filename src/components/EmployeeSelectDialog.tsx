@@ -18,13 +18,19 @@ import {
 import { getAllEmployees } from "@/server/employee";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+
+type EmployeeItemProps = {
+	employee: employees;
+	isSelected: boolean;
+	onClick: () => void;
+	onMouseEnter: () => void;
+};
 
 const ITEM_HEIGHT = 64; // Height of each employee item in pixels
 const VISIBLE_ITEMS = 8; // Number of items visible at once
 
 const EmployeeItem = React.memo(
-	({ employee, isSelected, onClick, onMouseEnter }) => (
+	({ employee, isSelected, onClick, onMouseEnter }: EmployeeItemProps) => (
 		<div
 			className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
 				isSelected ? "bg-card border-l-4 border-primary" : "hover:bg-card/50"

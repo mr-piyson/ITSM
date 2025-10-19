@@ -5,7 +5,7 @@ import { Loader2, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { type Resolver, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -50,7 +50,7 @@ export const SignUpForm = (props: any) => {
 		setValue,
 		formState: { errors },
 	} = useForm<FormData>({
-		resolver: zodResolver(SignUpSchema),
+		resolver: zodResolver(SignUpSchema) as Resolver<FormData>,
 		defaultValues: {
 			name: "",
 			email: "",

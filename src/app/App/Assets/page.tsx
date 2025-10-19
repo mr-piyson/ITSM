@@ -30,7 +30,7 @@ type Asset = {
 	specification?: string;
 	empImg?: string;
 };
-export default async function Assets(props: AssetsProps) {
+export default async function Assets(props: any) {
 	await db.$queryRaw`
           UPDATE assets
             SET purchaseDate = NULL
@@ -52,10 +52,28 @@ export default async function Assets(props: AssetsProps) {
             );`;
 
 	const assets = (await db.$queryRaw`
-          SELECT assets.id,assets.code,assets.serialNumber,assets.deviceName,assets.type,assets.location,assets.manufacturer,assets.model,assets.department,
-          assets.processor,assets.os,assets.memory,assets.hdd,assets.ip,assets.specification,assets.image,employees.name as owner, employees.image as empImg FROM assets
-          LEFT JOIN employees
-          ON assets.empID = employees.empID
+          SELECT 
+		  a.id,
+		  a.code,
+		  a.serialNumber,
+		  a.deviceName,
+		  a.type,
+		  a.location,
+		  a.manufacturer,
+		  a.model,
+		  a.department,
+          a.processor,
+		  a.os,
+		  a.memory,
+		  a.hdd,
+		  a.ip,
+		  a.specification,
+		  a.image,
+		  e.name as owner,
+		  e.image as empImg 
+		  FROM assets a
+          LEFT JOIN employees e
+          ON a.empID = e.empID
         `) as Asset[];
 	await db.$disconnect();
 	return <AssetsPage assets={assets} />;
