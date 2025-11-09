@@ -50,6 +50,7 @@
 	--sidebar-accent-foreground: #17141d;
 	--sidebar-border: #e9e8f0;
 	--sidebar-ring: #aba8c1;
+	--bfg: #00b7b0;
 }
 
 .dark {
@@ -91,6 +92,7 @@
 	--sidebar-accent-foreground: #fbfbfb;
 	--sidebar-border: #2b2b2b;
 	--sidebar-ring: #6a6285;
+	--bfg: #00b7b0;
 }
 @theme inline {
 	--color-background: var(--background);
@@ -135,6 +137,7 @@
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
+	--color-bfg: var(--bfg);
 	--animate-accordion-down: accordion-down 0.2s ease-out;
 	--animate-accordion-up: accordion-up 0.2s ease-out;
 
