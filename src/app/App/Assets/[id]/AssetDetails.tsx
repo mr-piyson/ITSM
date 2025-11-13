@@ -129,7 +129,7 @@ export default function AssetDetailsPage({
 	return (
 		<div className="container mx-auto space-y-6">
 			{/* Header */}
-			<div className="sticky top-0 z-10 py-4 px-6  flex justify-between items-center  bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/60 flex-row sm:items-center sm:justify-between gap-4">
+			<div className="sticky top-0 z-10 py-4 px-6 bg-background  flex justify-between items-center flex-row sm:items-center sm:justify-between gap-4">
 				<div className="flex items-center gap-4">
 					<Button
 						variant="outline"

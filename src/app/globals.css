@@ -1,9 +1,9 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 @plugin "@iconify/tailwind4";
-@plugin "tailwindcss-animate";
 
 @theme {
 	--font-sans: var(--font-geist-sans);

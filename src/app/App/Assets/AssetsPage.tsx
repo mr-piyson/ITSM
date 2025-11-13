@@ -330,7 +330,7 @@ export default function AssetsPage({ assets }: { assets: Asset[] }) {
 	return (
 		<div className="container mx-auto p-6 space-y-6" ref={scrollContainerRef}>
 			{/* Search and Controls */}
-			<div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background border-b border-border py-2">
+			<div className="sticky top-0 z-10 bg-background/95 border-b border-border py-2">
 				<div>
 					{/* Search Bar, View Controls, and Add New Asset Button */}
 					<div className="flex flex-wrap flex-row gap-4">
@@ -749,11 +749,7 @@ function AssetCard({ asset }: { asset: Asset }) {
 							</Badge>
 						)}
 					</div>
-					<Link
-						href={`/App/Assets/${asset.id}`}
-						className="group"
-						passHref
-					>
+					<Link href={`/App/Assets/${asset.id}`} className="group" passHref>
 						<Button
 							size="sm"
 							// on Button hover make the icon go forwared a bit
