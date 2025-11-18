@@ -7,7 +7,6 @@ import {
   Briefcase,
   Building2,
   Calendar,
-  Clock,
   Heart,
   Mail,
   MapPin,
@@ -21,7 +20,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Employee {
@@ -68,18 +66,10 @@ interface Attendance {
 
 async function fetchEmployee(id: string) {
   const response = await fetch(
-    `http://${process.env.NEXT_PUBLIC_BASE_API}/api/employee.php?id=${id}`
+    `http://${process.env.NEXT_PUBLIC_BASE_API}/api/employees.php?id=${id}`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch employee");
-  }
-  return response.json();
-}
-
-async function fetchAttendance(id: string) {
-  const response = await fetch(`/api/employees/${id}/attendance`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch attendance");
   }
   return response.json();
 }
@@ -119,15 +109,7 @@ export default function EmployeeDetailPage({
     error: employeeError,
   } = useQuery<Employee>({
     queryKey: ["employee", id],
-    queryFn: () => fetchEmployee(id),
-  });
-
-  const { data: attendance, isLoading: attendanceLoading } = useQuery<
-    Attendance[]
-  >({
-    queryKey: ["attendance", id],
-    queryFn: () => fetchAttendance(id),
-    enabled: !!employee,
+    queryFn: async () => (await fetchEmployee(id))[0],
   });
 
   if (employeeError) {
@@ -185,13 +167,9 @@ export default function EmployeeDetailPage({
           <div className="flex flex-col md:flex-row items-start gap-6">
             <Avatar className="h-32 w-32 border-4 border-border">
               <AvatarImage
-                src={
-                  employee.photo ||
-                  `/placeholder.svg?height=128&width=128&query=${encodeURIComponent(
-                    employee.name
-                  )}`
-                }
+                src={`http://intranet.bfginternational.com:88/storage/employee/${employee.photo}`}
                 alt={employee.name}
+                style={{ objectFit: "cover" }}
               />
               <AvatarFallback className="text-3xl">
                 {employee.name}
@@ -364,67 +342,6 @@ export default function EmployeeDetailPage({
           </Card>
         )}
       </div>
-
-      {/* Attendance Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Attendance History
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {attendanceLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full" />
-              ))}
-            </div>
-          ) : attendance && attendance.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                      Date & Time
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                      Card No
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                      Device
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                      Location
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attendance.map((record, index) => (
-                    <tr
-                      key={index}
-                      className="border-b last:border-0 hover:bg-muted/50"
-                    >
-                      <td className="py-3 px-4 text-sm">
-                        {new Date(record.datetime).toLocaleString()}
-                      </td>
-                      <td className="py-3 px-4 text-sm">{record.card_no}</td>
-                      <td className="py-3 px-4 text-sm">
-                        {record.device_model || record.device_serial}
-                      </td>
-                      <td className="py-3 px-4 text-sm">{record.device_ip}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground py-8">
-              No attendance records found
-            </p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

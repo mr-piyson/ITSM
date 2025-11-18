@@ -24,7 +24,7 @@ try {
 // Step 1: Get all employees (or single employee if code is provided)
 // If no code is specified, return only specific fields
 $sql_employees = !empty($id)
-    ? "SELECT * FROM mes.employees e WHERE e.id = :code"
+    ? "SELECT * FROM mes.employees e WHERE e.id = :id"
     : "SELECT e.id,
      e.emp_code,
      e.name ,

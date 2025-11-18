@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Briefcase,
   Building2,
@@ -10,7 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -68,8 +69,167 @@ function EmployeeCardSkeleton() {
   );
 }
 
+function LazyAvatar({
+  src,
+  alt,
+  fallback,
+  access,
+}: {
+  src: string;
+  alt: string;
+  fallback: string;
+  access: number;
+}) {
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const imgRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = imgRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setShouldLoad(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        rootMargin: "100px", // Start loading 100px before coming into view
+      }
+    );
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={imgRef} className="relative flex-shrink-0">
+      <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
+        {shouldLoad ? (
+          <AvatarImage
+            src={src || "/placeholder.svg"}
+            alt={alt}
+            className="object-cover"
+          />
+        ) : null}
+        <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
+          {fallback}
+        </AvatarFallback>
+      </Avatar>
+      <div className="absolute -bottom-1 -right-1">
+        {access === 1 ? (
+          <div
+            className="h-4 w-4 rounded-full bg-green-500 border-2 border-background"
+            title="Active"
+          />
+        ) : (
+          <div
+            className="h-4 w-4 rounded-full bg-gray-400 border-2 border-background"
+            title="Inactive"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+const EmployeeCard = ({ employee }: { employee: Employee }) => {
+  const handleCopyEmail = (e: React.MouseEvent, email: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(email).then(() => {
+      toast.success("Email copied to clipboard");
+    });
+  };
+
+  return (
+    <Link href={`/app/employees/${employee.id}`}>
+      <Card className="overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300 cursor-pointer group h-full">
+        <div className="p-6">
+          <div className="flex items-start gap-4">
+            <LazyAvatar
+              src={`http://intranet.bfginternational.com:88/storage/employee/${employee.photo}`}
+              alt={employee.name}
+              fallback={employee.name
+                ?.split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
+              access={employee.access}
+            />
+
+            <div className="flex-1 min-w-0">
+              <div className="mb-3">
+                <h3 className="font-bold text-lg group-hover:text-primary transition-colors line-clamp-1 mb-1">
+                  {employee.name}
+                </h3>
+                <p className="text-xs text-muted-foreground font-mono">
+                  {employee.emp_code}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                {employee.emp_designation && (
+                  <div className="flex items-start gap-2 text-sm">
+                    <Briefcase className="h-4 w-4 flex-shrink-0 text-muted-foreground mt-0.5" />
+                    <span className="text-muted-foreground line-clamp-1 flex-1">
+                      {employee.emp_designation}
+                    </span>
+                  </div>
+                )}
+                {employee.emp_department && (
+                  <div className="flex items-start gap-2 text-sm">
+                    <Building2 className="h-4 w-4 flex-shrink-0 text-muted-foreground mt-0.5" />
+                    <span className="text-muted-foreground line-clamp-1 flex-1">
+                      {employee.emp_department}
+                    </span>
+                  </div>
+                )}
+                {employee.email && (
+                  <div className="flex items-start gap-2 text-sm">
+                    <Mail className="h-4 w-4 flex-shrink-0 text-muted-foreground mt-0.5" />
+                    <button
+                      onClick={(e) => handleCopyEmail(e, employee.email)}
+                      className="text-muted-foreground hover:text-primary transition-colors line-clamp-1 flex-1 underline-offset-2 hover:underline text-left"
+                      title={employee.email}
+                    >
+                      {employee.email}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </Link>
+  );
+};
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export default function EmployeesPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [departmentFilter, setDepartmentFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>(["active"]);
 
@@ -82,6 +242,22 @@ export default function EmployeesPage() {
     queryFn: fetchEmployees,
   });
 
+  const employeesWithSearchText = useMemo(() => {
+    return employees.map((employee: Employee) => ({
+      ...employee,
+      searchText: [
+        employee.name,
+        employee.emp_code,
+        employee.email,
+        employee.emp_designation,
+        employee.emp_department,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase(),
+    }));
+  }, [employees]);
+
   // Extract unique departments from all employees
   const departments = useMemo(() => {
     const uniqueDepts = new Set(
@@ -92,49 +268,76 @@ export default function EmployeesPage() {
     return Array.from(uniqueDepts).sort();
   }, [employees]);
 
-  // Filter employees based on search and filters
   const filteredEmployees = useMemo(() => {
-    return employees.filter((employee: Employee) => {
-      // Status filter - must pass if any status is selected
-      const matchesStatus =
-        statusFilter.length === 0 ||
-        (statusFilter.includes("active") && employee.access === 1) ||
-        (statusFilter.includes("inactive") && employee.access === 0);
+    const query = debouncedSearchQuery.toLowerCase().trim();
 
-      if (!matchesStatus) return false;
+    return employeesWithSearchText.filter((employee) => {
+      // Status filter check with early return
+      if (statusFilter.length > 0) {
+        const hasActiveFilter = statusFilter.includes("active");
+        const hasInactiveFilter = statusFilter.includes("inactive");
+        const isActive = employee.access === 1;
 
-      // Department filter - must pass if any departments are selected
-      const matchesDepartment =
-        departmentFilter.length === 0 ||
-        departmentFilter.includes(employee.emp_department);
+        if (
+          !((hasActiveFilter && isActive) || (hasInactiveFilter && !isActive))
+        ) {
+          return false;
+        }
+      }
 
-      if (!matchesDepartment) return false;
+      // Department filter check with early return
+      if (
+        departmentFilter.length > 0 &&
+        !departmentFilter.includes(employee.emp_department)
+      ) {
+        return false;
+      }
 
-      // Search filter - check multiple fields
-      if (searchQuery.trim() === "") return true;
+      // Search filter - use pre-processed search text
+      if (query) {
+        return employee.searchText.includes(query);
+      }
 
-      const query = searchQuery.toLowerCase().trim();
-      const searchableFields = [
-        employee.name,
-        employee.emp_code,
-        employee.email,
-        employee.emp_designation,
-        employee.emp_department,
-      ];
-
-      return searchableFields.some(
-        (field) => field && field.toLowerCase().includes(query)
-      );
+      return true;
     });
-  }, [employees, searchQuery, departmentFilter, statusFilter]);
+  }, [
+    employeesWithSearchText,
+    debouncedSearchQuery,
+    departmentFilter,
+    statusFilter,
+  ]);
 
-  const handleCopyEmail = (e: React.MouseEvent, email: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    navigator.clipboard.writeText(email).then(() => {
-      toast.success("Email copied to clipboard");
-    });
-  };
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  // Calculate columns based on screen size
+  const getColumnCount = useCallback(() => {
+    if (typeof window === "undefined") return 3;
+    const width = window.innerWidth;
+    if (width < 768) return 1;
+    if (width < 1024) return 2;
+    return 3;
+  }, []);
+
+  const [columns, setColumns] = useState(getColumnCount);
+
+  // Update columns on resize
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleResize = () => setColumns(getColumnCount());
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [getColumnCount]);
+
+  // Calculate rows for virtual scrolling
+  const rows = Math.ceil(filteredEmployees.length / columns);
+
+  const rowVirtualizer = useVirtualizer({
+    count: rows,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 240, // Estimated row height
+    overscan: 5, // Increased overscan for smoother scrolling
+  });
 
   if (error) {
     return (
@@ -153,26 +356,6 @@ export default function EmployeesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-b">
-        <div className="container mx-auto px-4 py-12 md:py-16">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Users className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-balance">
-                Team Directory
-              </h1>
-              <p className="text-muted-foreground mt-2 text-lg">
-                {isLoading
-                  ? "Loading employees..."
-                  : `${filteredEmployees.length} of ${employees.length} employees`}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="bg-background border-b sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -184,6 +367,11 @@ export default function EmployeesPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-11"
               />
+              {searchQuery !== debouncedSearchQuery && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
             </div>
 
             <DropdownMenu>
@@ -258,7 +446,10 @@ export default function EmployeesPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div
+        ref={parentRef}
+        className="container mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-hidden"
+      >
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -280,91 +471,39 @@ export default function EmployeesPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredEmployees.map((employee) => (
-              <Link href={`/app/employees/${employee.id}`} key={employee.id}>
-                <Card className="overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300 cursor-pointer group h-full">
-                  <div className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="relative flex-shrink-0">
-                        <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
-                          <AvatarImage
-                            src={`http://intranet.bfginternational.com:88/storage/employee/${employee.photo}`}
-                            alt={employee.name}
-                            className="object-cover"
-                          />
-                          <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
-                            {employee.name
-                              ?.split(" ")
-                              .map((n) => n[0])
-                              .join("")
-                              .toUpperCase()
-                              .slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-1 -right-1">
-                          {employee.access === 1 ? (
-                            <div
-                              className="h-4 w-4 rounded-full bg-green-500 border-2 border-background"
-                              title="Active"
-                            />
-                          ) : (
-                            <div
-                              className="h-4 w-4 rounded-full bg-gray-400 border-2 border-background"
-                              title="Inactive"
-                            />
-                          )}
-                        </div>
-                      </div>
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const startIndex = virtualRow.index * columns;
+              const employeesInRow = filteredEmployees.slice(
+                startIndex,
+                startIndex + columns
+              );
 
-                      <div className="flex-1 min-w-0">
-                        <div className="mb-3">
-                          <h3 className="font-bold text-lg group-hover:text-primary transition-colors line-clamp-1 mb-1">
-                            {employee.name}
-                          </h3>
-                          <p className="text-xs text-muted-foreground font-mono">
-                            {employee.emp_code}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          {employee.emp_designation && (
-                            <div className="flex items-start gap-2 text-sm">
-                              <Briefcase className="h-4 w-4 flex-shrink-0 text-muted-foreground mt-0.5" />
-                              <span className="text-muted-foreground line-clamp-1 flex-1">
-                                {employee.emp_designation}
-                              </span>
-                            </div>
-                          )}
-                          {employee.emp_department && (
-                            <div className="flex items-start gap-2 text-sm">
-                              <Building2 className="h-4 w-4 flex-shrink-0 text-muted-foreground mt-0.5" />
-                              <span className="text-muted-foreground line-clamp-1 flex-1">
-                                {employee.emp_department}
-                              </span>
-                            </div>
-                          )}
-                          {employee.email && (
-                            <div className="flex items-start gap-2 text-sm">
-                              <Mail className="h-4 w-4 flex-shrink-0 text-muted-foreground mt-0.5" />
-                              <button
-                                onClick={(e) =>
-                                  handleCopyEmail(e, employee.email)
-                                }
-                                className="text-muted-foreground hover:text-primary transition-colors line-clamp-1 flex-1 underline-offset-2 hover:underline text-left"
-                                title={employee.email}
-                              >
-                                {employee.email}
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+              return (
+                <div
+                  key={virtualRow.key}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {employeesInRow.map((employee) => (
+                      <EmployeeCard key={employee.id} employee={employee} />
+                    ))}
                   </div>
-                </Card>
-              </Link>
-            ))}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
