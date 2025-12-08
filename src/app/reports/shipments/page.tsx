@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTableTheme } from "@/hooks/use-TableTheme";
+import { useTableTheme } from "@/hooks/use-tableTheme";
 import { PanelCellRender } from "../CellsRender";
 import {
   type ApiReportData,

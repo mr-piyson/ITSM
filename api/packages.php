@@ -69,10 +69,10 @@ switch ($filter) {
         $params[':threeyears'] = date('Y-m-d', strtotime('-3 years'));
         break;
     case "all":
-        $sql .= ""; // No date filter
+        $sql .= "";
         break;
     default:
-        $filter = null; // Invalid filter
+        $filter = null;
         break;
 }
 

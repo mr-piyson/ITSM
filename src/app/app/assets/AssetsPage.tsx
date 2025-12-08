@@ -749,7 +749,7 @@ function AssetCard({ asset }: { asset: Asset }) {
               </Badge>
             )}
           </div>
-          <Link href={`/App/Assets/${asset.id}`} className="group" passHref>
+          <Link href={`/app/assets/${asset.id}`} className="group" passHref>
             <Button
               size="sm"
               // on Button hover make the icon go forwared a bit

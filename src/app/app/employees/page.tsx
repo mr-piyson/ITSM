@@ -11,7 +11,8 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 
 interface Employee {
   id: number;
@@ -69,6 +69,64 @@ function EmployeeCardSkeleton() {
   );
 }
 
+class ImageCacheManager {
+  private cache: Map<string, string> = new Map();
+  private loading: Map<string, Promise<string>> = new Map();
+
+  async getImage(url: string): Promise<string> {
+    // Return cached image if available
+    if (this.cache.has(url)) {
+      return this.cache.get(url)!;
+    }
+
+    // Return existing promise if already loading
+    if (this.loading.has(url)) {
+      return this.loading.get(url)!;
+    }
+
+    // Start loading the image
+    const loadPromise = this.loadImage(url);
+    this.loading.set(url, loadPromise);
+
+    try {
+      const blobUrl = await loadPromise;
+      this.cache.set(url, blobUrl);
+      this.loading.delete(url);
+      return blobUrl;
+    } catch (error) {
+      this.loading.delete(url);
+      throw error;
+    }
+  }
+
+  private async loadImage(url: string): Promise<string> {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to load image");
+      const blob = await response.blob();
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error(`Failed to cache image: ${url}`, error);
+      // Return original URL as fallback
+      return url;
+    }
+  }
+
+  clear() {
+    // Revoke all blob URLs to free memory
+    this.cache.forEach((blobUrl) => {
+      if (blobUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    });
+    this.cache.clear();
+    this.loading.clear();
+  }
+}
+
+// Create singleton instance
+const imageCache = new ImageCacheManager();
+
 function LazyAvatar({
   src,
   alt,
@@ -81,6 +139,7 @@ function LazyAvatar({
   access: number;
 }) {
   const [shouldLoad, setShouldLoad] = useState(false);
+  const [cachedSrc, setCachedSrc] = useState<string | null>(null);
   const imgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -97,7 +156,7 @@ function LazyAvatar({
         });
       },
       {
-        rootMargin: "100px", // Start loading 100px before coming into view
+        rootMargin: "100px",
       }
     );
 
@@ -106,12 +165,18 @@ function LazyAvatar({
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (shouldLoad && src && !cachedSrc) {
+      imageCache.getImage(src).then(setCachedSrc).catch(console.error);
+    }
+  }, [shouldLoad, src, cachedSrc]);
+
   return (
     <div ref={imgRef} className="relative flex-shrink-0">
       <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
-        {shouldLoad ? (
+        {cachedSrc ? (
           <AvatarImage
-            src={src || "/placeholder.svg"}
+            src={cachedSrc || "/placeholder.svg"}
             alt={alt}
             className="object-cover"
           />
@@ -137,7 +202,7 @@ function LazyAvatar({
   );
 }
 
-const EmployeeCard = ({ employee }: { employee: Employee }) => {
+const EmployeeCard = memo(({ employee }: { employee: Employee }) => {
   const handleCopyEmail = (e: React.MouseEvent, email: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -209,7 +274,9 @@ const EmployeeCard = ({ employee }: { employee: Employee }) => {
       </Card>
     </Link>
   );
-};
+});
+
+EmployeeCard.displayName = "EmployeeCard";
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -242,6 +309,12 @@ export default function EmployeesPage() {
     queryFn: fetchEmployees,
   });
 
+  useEffect(() => {
+    return () => {
+      imageCache.clear();
+    };
+  }, []);
+
   const employeesWithSearchText = useMemo(() => {
     return employees.map((employee: Employee) => ({
       ...employee,
@@ -258,7 +331,6 @@ export default function EmployeesPage() {
     }));
   }, [employees]);
 
-  // Extract unique departments from all employees
   const departments = useMemo(() => {
     const uniqueDepts = new Set(
       employees
@@ -272,7 +344,6 @@ export default function EmployeesPage() {
     const query = debouncedSearchQuery.toLowerCase().trim();
 
     return employeesWithSearchText.filter((employee) => {
-      // Status filter check with early return
       if (statusFilter.length > 0) {
         const hasActiveFilter = statusFilter.includes("active");
         const hasInactiveFilter = statusFilter.includes("inactive");
@@ -285,7 +356,6 @@ export default function EmployeesPage() {
         }
       }
 
-      // Department filter check with early return
       if (
         departmentFilter.length > 0 &&
         !departmentFilter.includes(employee.emp_department)
@@ -293,7 +363,6 @@ export default function EmployeesPage() {
         return false;
       }
 
-      // Search filter - use pre-processed search text
       if (query) {
         return employee.searchText.includes(query);
       }
@@ -309,7 +378,6 @@ export default function EmployeesPage() {
 
   const parentRef = useRef<HTMLDivElement>(null);
 
-  // Calculate columns based on screen size
   const getColumnCount = useCallback(() => {
     if (typeof window === "undefined") return 3;
     const width = window.innerWidth;
@@ -320,7 +388,6 @@ export default function EmployeesPage() {
 
   const [columns, setColumns] = useState(getColumnCount);
 
-  // Update columns on resize
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -329,14 +396,13 @@ export default function EmployeesPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, [getColumnCount]);
 
-  // Calculate rows for virtual scrolling
   const rows = Math.ceil(filteredEmployees.length / columns);
 
   const rowVirtualizer = useVirtualizer({
     count: rows,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 240, // Estimated row height
-    overscan: 5, // Increased overscan for smoother scrolling
+    estimateSize: () => 240,
+    overscan: 5,
   });
 
   if (error) {
@@ -448,7 +514,7 @@ export default function EmployeesPage() {
 
       <div
         ref={parentRef}
-        className="container mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-hidden"
+        className="container mx-auto px-4 py-8 flex-1 overflow-scroll"
       >
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
