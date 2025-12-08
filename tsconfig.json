@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -19,9 +23,15 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@prisma/iss": ["./node_modules/.prisma/iss"],
-      "@prisma/mes": ["./node_modules/.prisma/mes"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@prisma/iss": [
+        "./node_modules/.prisma/iss"
+      ],
+      "@prisma/mes": [
+        "./node_modules/.prisma/mes"
+      ]
     }
   },
   "include": [
@@ -31,7 +41,11 @@
     "next-env.d.ts",
     "src/app/assets/page.ts",
     "src/middleware.ts",
-    "build/types/**/*.ts"
+    "build/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "./src/components/Table/**/*"]
+  "exclude": [
+    "node_modules",
+    "./src/components/Table/**/*"
+  ]
 }

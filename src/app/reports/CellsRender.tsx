@@ -109,9 +109,9 @@ export const RouteCellRenderer = ({ value }: { value: string[] }) => {
     <div className="flex-row gap-1">
       {value && value.length > 0 ? (
         value.map((step, index) => (
-          <div key={index} className="inline-flex items-center">
+          <div key={step} className="inline-flex items-center">
             <Badge
-              key={index}
+              key={step}
               className="m-1 text-foreground border-1 border-success-foreground/50"
               variant="success"
               title={`Step ${index + 1}`}
