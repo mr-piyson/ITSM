@@ -35,10 +35,10 @@ export default function App(props: AppProps) {
   return (
     <QueryClientProvider client={new QueryClient()}>
       <SidebarProvider className="flex h-screen overflow-hidden">
-        <AppSidebar account={props.account} />
+        <AppSidebar />
         <div className="relative flex flex-col flex-1 min-h-full">
           {/* Toolbar fixed at top */}
-          <Toolbar className="sticky top-0 z-10" account={props.account} />
+          <Toolbar className="sticky top-0 z-10" />
 
           {/* Scrollable main area */}
           <div className="flex-1 overflow-auto relative">{props.children}</div>
@@ -57,18 +57,14 @@ import {
 
 // This is sample data.
 
-interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  account: users | null;
-}
-
-export function AppSidebar({ ...props }: AppSidebarProps) {
+export function AppSidebar({ ...props }: any) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <AppSidebarContent role={props.account?.type} />
+        <AppSidebarContent />
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
@@ -109,7 +105,7 @@ import { cn } from "@/lib/utils";
 import Toolbar from "./Toobar";
 
 // This component renders the user profile in the sidebar, allowing users to switch themes and log out.
-export function UserMenu({ account }: { account: users | null }) {
+export function UserMenu(props: any) {
   const { isMobile } = useSidebar();
 
   return (
@@ -121,14 +117,14 @@ export function UserMenu({ account }: { account: users | null }) {
         >
           <Avatar className="h-8 w-8">
             <AvatarImage
-              // src={account?.image ?? undefined}
-              alt={account?.name}
+            // src={account?.image ?? undefined}
+            // alt={account?.name}
             />
-            <AvatarFallback>{account?.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>U</AvatarFallback>
           </Avatar>
           <div className="max-sm:hidden grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">{account?.name}</span>
-            <span className="truncate text-xs">{account?.email}</span>
+            <span className="truncate font-semibold">Name</span>
+            <span className="truncate text-xs">Email</span>
           </div>
           <ChevronsUpDown className="max-sm:hidden ml-auto size-4" />
         </Button>
@@ -144,14 +140,14 @@ export function UserMenu({ account }: { account: users | null }) {
             <Avatar className="h-8 w-8 ">
               <AvatarImage
                 // src={account?.image ?? undefined}
-                alt={account?.name}
+                alt={"Name"}
                 covered
               />
-              <AvatarFallback>{account?.name.charAt(0)}</AvatarFallback>
+              <AvatarFallback>{"name"}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">{account?.name}</span>
-              <span className="truncate text-xs">{account?.email}</span>
+              <span className="truncate font-semibold">{"name"}</span>
+              <span className="truncate text-xs">{"email"}</span>
             </div>
           </div>
         </DropdownMenuLabel>
@@ -180,7 +176,7 @@ export function UserMenu({ account }: { account: users | null }) {
 }
 
 // Sidebar navigation for the main activities of the application.
-export function AppSidebarContent(props: { role: string | undefined }) {
+export function AppSidebarContent(props: any) {
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
   const path = usePathname();

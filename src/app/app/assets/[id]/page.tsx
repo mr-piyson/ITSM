@@ -21,42 +21,24 @@ export default async function Page(props: PageProps) {
   const numId = Number(id);
 
   // Run queries in parallel to minimize wait time
-  const [assetResult, logsResult] = await Promise.all([
+  const [[assetResult], [logsResult]] = await Promise.all([
     // Query 1: Get asset with current employee (single row)
-    db.$queryRaw<
-      Array<{
-        id: number;
-        empID: number | null;
-        owner: string | null;
-        empImg: string | null;
-        // ... other asset fields
-      }>
-    >`	SELECT a.*, e.name as owner, e.image as empImg
+    db.iss.query(`	SELECT a.*, e.name as owner, e.image as empImg
 			FROM assets a
 			LEFT JOIN employees e ON e.empID = a.empID
 			WHERE a.id = ${numId}
 			LIMIT 1
-		`,
-
+		`),
     // Query 2: Get logs only (multiple rows)
-    db.$queryRaw<
-      Array<{
-        old: string | null;
-        new: string | null;
-        date: Date;
-        image: string | null;
-      }>
-    >`
+    db.iss.query(`
 			SELECT e1.name as old, e2.name as new, a.date, e2.image
 			FROM assestOwnerUpdateLogs a
 			LEFT JOIN employees e1 ON e1.empID = a.oldOwnerEmpID
 			LEFT JOIN employees e2 ON e2.empID = a.newOwnerID
 			WHERE a.assetID = ${numId}
 			ORDER BY a.date ASC
-		`,
+		`),
   ]);
-
-  await db.$disconnect();
 
   if (!assetResult.length) {
     return <div>Asset not found</div>;

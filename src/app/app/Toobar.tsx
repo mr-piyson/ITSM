@@ -7,12 +7,7 @@ import { cn } from "@/lib/utils";
 import { UserMenu } from "./App";
 import { NotificationDropdown } from "./notifications/notification-dropdown";
 
-type ToolbarProps = {
-  account: users | null;
-  className?: string;
-};
-
-export default function Toolbar(props: ToolbarProps) {
+export default function Toolbar(props: any) {
   return (
     <header
       className={cn(
@@ -30,7 +25,7 @@ export default function Toolbar(props: ToolbarProps) {
       {/* Right hand side */}
       <div className="flex items-center gap-2">
         <NotificationDropdown />
-        <UserMenu account={props.account} />
+        <UserMenu />
       </div>
     </header>
   );

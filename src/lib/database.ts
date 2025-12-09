@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-const db = new PrismaClient();
-export default db;
+const prisma = new PrismaClient();
 
 // setup my sql
 
@@ -13,3 +12,17 @@ export const mes = await mysql.createConnection({
   waitForConnections: true,
   connectionLimit: 10,
 });
+
+export const iss = await mysql.createConnection({
+  uri: process.env.ISS_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
+});
+
+const db = {
+  prisma,
+  mes,
+  iss,
+};
+
+export default db;

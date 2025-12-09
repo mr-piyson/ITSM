@@ -31,7 +31,7 @@ type Asset = {
   empImg?: string;
 };
 export default async function Assets(props: any) {
-  await db.$queryRaw`
+  await db.iss.execute(`
           UPDATE assets
             SET purchaseDate = NULL
               WHERE purchaseDate IS NOT NULL
@@ -39,9 +39,9 @@ export default async function Assets(props: any) {
               MONTH(purchaseDate) = 0
               OR DAY(purchaseDate) = 0
               OR YEAR(purchaseDate) = 0
-            );`;
+            );`);
 
-  await db.$queryRaw`
+  await db.iss.execute(`
           UPDATE assets
             SET warrantyDate = NULL
               WHERE warrantyDate IS NOT NULL
@@ -49,9 +49,9 @@ export default async function Assets(props: any) {
               MONTH(warrantyDate) = 0
               OR DAY(warrantyDate) = 0
               OR YEAR(warrantyDate) = 0
-            );`;
+            );`);
 
-  const assets = (await db.$queryRaw`
+  const [resAssets] = await db.iss.query(`
           SELECT 
 		  a.id,
 		  a.code,
@@ -62,7 +62,7 @@ export default async function Assets(props: any) {
 		  a.manufacturer,
 		  a.model,
 		  a.department,
-          a.processor,
+      a.processor,
 		  a.os,
 		  a.memory,
 		  a.hdd,
@@ -74,7 +74,8 @@ export default async function Assets(props: any) {
 		  FROM assets a
           LEFT JOIN employees e
           ON a.empID = e.empID
-        `) as Asset[];
-  await db.$disconnect();
+        `);
+
+  const assets = resAssets as Asset[];
   return <AssetsPage assets={assets} />;
 }

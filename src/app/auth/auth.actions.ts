@@ -22,11 +22,9 @@ export async function getUser(): Promise<users | undefined | null> {
     return null;
   }
 
-  const user = await db.users.findFirst({
-    where: {
-      token: sessionToken,
-    },
-  });
+  const [user] = await db.iss.query(
+    `select * from users where token = '${sessionToken}';`
+  );
 
   if (!user) {
     return null;
@@ -46,11 +44,10 @@ export async function signIn(formData: z.infer<typeof SignInSchema>) {
   }
 
   try {
-    const account = await db.users.findFirst({
-      where: {
-        email: email.toLowerCase(),
-      },
-    });
+    const [resAccount] = await db.iss.execute(
+      `select * from users where email = '${email}' limit 1;`
+    );
+    const account = resAccount[0] as users;
 
     // Verify password (in a real app, use hashed passwords and a library like bcrypt)
     // Here we assume the password is stored in plain text for simplicity (not recommended)
