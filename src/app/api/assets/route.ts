@@ -1,7 +1,7 @@
 "use server";
 
 import { NextResponse } from "next/server";
-import db from "@/lib/prisma";
+import db from "@/lib/database";
 
 // GET http://localhost:3000/api/assets
 

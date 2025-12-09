@@ -1,37 +1,37 @@
-import db from "@/lib/prisma";
+import db from "@/lib/database";
 import AssetsPage from "./AssetsPage";
 
 type Asset = {
-	id: string;
-	code: string;
-	type: string;
-	deviceName: string;
-	serialNumber: string;
-	manufacturer: string;
-	model: string;
-	location: string;
-	department: string;
-	deviceStatus: "In Use" | "Available" | "Defective";
-	warrantyStatus: "Valid" | "Expired" | "NA";
-	verified: boolean;
-	verifiedDate?: string;
-	owner?: string;
-	name: string;
-	image?: string;
-	empId: string;
-	purchaseDate: string;
-	purchasePrice: string;
-	warrantyDate: string;
-	processor?: string;
-	os?: string;
-	memory?: string;
-	hdd?: string;
-	ip?: string;
-	specification?: string;
-	empImg?: string;
+  id: string;
+  code: string;
+  type: string;
+  deviceName: string;
+  serialNumber: string;
+  manufacturer: string;
+  model: string;
+  location: string;
+  department: string;
+  deviceStatus: "In Use" | "Available" | "Defective";
+  warrantyStatus: "Valid" | "Expired" | "NA";
+  verified: boolean;
+  verifiedDate?: string;
+  owner?: string;
+  name: string;
+  image?: string;
+  empId: string;
+  purchaseDate: string;
+  purchasePrice: string;
+  warrantyDate: string;
+  processor?: string;
+  os?: string;
+  memory?: string;
+  hdd?: string;
+  ip?: string;
+  specification?: string;
+  empImg?: string;
 };
 export default async function Assets(props: any) {
-	await db.$queryRaw`
+  await db.$queryRaw`
           UPDATE assets
             SET purchaseDate = NULL
               WHERE purchaseDate IS NOT NULL
@@ -41,7 +41,7 @@ export default async function Assets(props: any) {
               OR YEAR(purchaseDate) = 0
             );`;
 
-	await db.$queryRaw`
+  await db.$queryRaw`
           UPDATE assets
             SET warrantyDate = NULL
               WHERE warrantyDate IS NOT NULL
@@ -51,7 +51,7 @@ export default async function Assets(props: any) {
               OR YEAR(warrantyDate) = 0
             );`;
 
-	const assets = (await db.$queryRaw`
+  const assets = (await db.$queryRaw`
           SELECT 
 		  a.id,
 		  a.code,
@@ -75,6 +75,6 @@ export default async function Assets(props: any) {
           LEFT JOIN employees e
           ON a.empID = e.empID
         `) as Asset[];
-	await db.$disconnect();
-	return <AssetsPage assets={assets} />;
+  await db.$disconnect();
+  return <AssetsPage assets={assets} />;
 }

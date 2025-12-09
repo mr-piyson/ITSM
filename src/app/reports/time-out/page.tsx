@@ -97,9 +97,7 @@ export default function ReportPage() {
   });
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
-    const res = await axios.get(
-      `http://${process.env.NEXT_PUBLIC_BASE_API}/api/gate-time-out.php?filter=${filter}`
-    );
+    const res = await axios.get(`/api/reports/time-out?filter=${filter}`);
     const data = getPivotData(res.data);
     return data;
   }, [filter]);

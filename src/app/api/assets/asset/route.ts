@@ -1,44 +1,44 @@
 "use server";
 import { NextResponse } from "next/server";
 // app/api/assets/asset/route.ts
-import db from "@/lib/prisma";
+import db from "@/lib/database";
 
 type ResponseAsset = {
-	id: string;
-	code: string;
-	serialNumber: string;
-	deviceName: string;
-	type: string;
-	location: string;
-	manufacturer: string;
-	model: string;
-	department: string;
-	processor: string;
-	os: string;
-	memory: string;
-	hdd: string;
-	ip: string;
-	specification: string;
-	image: string;
-	firmwareVer: string;
-	owner: string;
-	empImg: string;
-	macAddress: string;
-	deviceStatus: string;
-	purchaseDate: string;
-	purchasePrice: string;
-	warrantyDate: string;
-	warrantyStatus: string;
-	verified: string;
+  id: string;
+  code: string;
+  serialNumber: string;
+  deviceName: string;
+  type: string;
+  location: string;
+  manufacturer: string;
+  model: string;
+  department: string;
+  processor: string;
+  os: string;
+  memory: string;
+  hdd: string;
+  ip: string;
+  specification: string;
+  image: string;
+  firmwareVer: string;
+  owner: string;
+  empImg: string;
+  macAddress: string;
+  deviceStatus: string;
+  purchaseDate: string;
+  purchasePrice: string;
+  warrantyDate: string;
+  warrantyStatus: string;
+  verified: string;
 };
 
 export const GET = async (request: Request) => {
-	const { searchParams } = new URL(request.url);
-	const id = searchParams.get("id");
-	const serialNumber = searchParams.get("serialNumber");
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  const serialNumber = searchParams.get("serialNumber");
 
-	if (id) {
-		const asset: ResponseAsset[] = await db.$queryRaw`
+  if (id) {
+    const asset: ResponseAsset[] = await db.$queryRaw`
     SELECT assets.id,
     assets.code,
     assets.serialNumber,
@@ -70,7 +70,7 @@ export const GET = async (request: Request) => {
     ON assets.empID = employees.empID
     WHERE assets.id = ${id}
     `;
-		const logs = await db.$queryRaw`
+    const logs = await db.$queryRaw`
     SELECT a.oldOwnerEmpID,a.newOwnerID,a.date,e1.name as old,e2.name as new
     FROM assestOwnerUpdateLogs a
     LEFT JOIN employees e1
@@ -79,31 +79,31 @@ export const GET = async (request: Request) => {
     ON e2.empID = a.newOwnerID
     WHERE a.assetID= ${id}
     `;
-		// const asset = await db.assets.findUnique({
-		//   where: { id: Number(id) },
-		// });
-		// if (asset) {
-		//   const ownerChangelog = await db.assestOwnerUpdateLogs.findMany({
-		//     where: {
-		//       assetID: asset.id,
-		//     },
-		//   });
-		//   return NextResponse.json({ ...asset, ownerChangeLogs: ownerChangelog });
-		// }
-		//
-		await db.$disconnect();
-		return NextResponse.json({ ...asset[0], ownerChangeLogs: logs });
-	}
+    // const asset = await db.assets.findUnique({
+    //   where: { id: Number(id) },
+    // });
+    // if (asset) {
+    //   const ownerChangelog = await db.assestOwnerUpdateLogs.findMany({
+    //     where: {
+    //       assetID: asset.id,
+    //     },
+    //   });
+    //   return NextResponse.json({ ...asset, ownerChangeLogs: ownerChangelog });
+    // }
+    //
+    await db.$disconnect();
+    return NextResponse.json({ ...asset[0], ownerChangeLogs: logs });
+  }
 
-	if (serialNumber) {
-		const asset = await db.assets.findUnique({
-			where: { serialNumber: serialNumber },
-		});
-		return NextResponse.json(asset);
-	}
+  if (serialNumber) {
+    const asset = await db.assets.findUnique({
+      where: { serialNumber: serialNumber },
+    });
+    return NextResponse.json(asset);
+  }
 
-	return NextResponse.json(
-		{ error: "Please provide either id or serialNumber" },
-		{ status: 400 },
-	);
+  return NextResponse.json(
+    { error: "Please provide either id or serialNumber" },
+    { status: 400 }
+  );
 };

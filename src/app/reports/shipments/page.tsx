@@ -9,7 +9,7 @@ import {
 import { AgGridReact } from "ag-grid-react";
 import axios from "axios";
 import { useAtom } from "jotai";
-import { Search, SearchIcon } from "lucide-react";
+import { Search } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -115,7 +115,7 @@ export default function ReportPage() {
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const response = await axios.get(
-      `http://${process.env.NEXT_PUBLIC_BASE_API}/api/shipments.php?year=${year}&month=${month}`
+      `/api/reports/shipments?year=${year}&month=${month}`
     );
     const data = response.data.map(
       (panel: ApiReportData): ReportData => ({

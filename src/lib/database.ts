@@ -10,4 +10,6 @@ import mysql from "mysql2/promise";
 // You can use environment variables for security
 export const mes = await mysql.createConnection({
   uri: process.env.MES_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
 });

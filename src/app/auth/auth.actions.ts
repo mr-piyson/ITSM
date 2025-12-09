@@ -5,7 +5,7 @@ import * as bcrypt from "bcrypt";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { z } from "zod";
-import db from "@/lib/prisma";
+import db from "@/lib/database";
 import type { SignInSchema } from "./SignIn";
 
 // Session duration in milliseconds (1 days)

@@ -40,9 +40,7 @@ interface Employee {
 }
 
 async function fetchEmployees(): Promise<Employee[]> {
-  const response = await fetch(
-    `http://${process.env.NEXT_PUBLIC_BASE_API}/api/employees.php`
-  );
+  const response = await fetch(`/api/employees`);
   if (!response.ok) {
     throw new Error("Failed to fetch employees");
   }
@@ -241,7 +239,7 @@ const EmployeeCard = memo(({ employee }: { employee: Employee }) => {
               <div className="space-y-2">
                 {employee.emp_designation && (
                   <div className="flex items-start gap-2 text-sm">
-                    <Briefcase className="h-4 w-4 flex-shrink-0 text-muted-foreground mt-0.5" />
+                    <Briefcase className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
                     <span className="text-muted-foreground line-clamp-1 flex-1">
                       {employee.emp_designation}
                     </span>
@@ -249,7 +247,7 @@ const EmployeeCard = memo(({ employee }: { employee: Employee }) => {
                 )}
                 {employee.emp_department && (
                   <div className="flex items-start gap-2 text-sm">
-                    <Building2 className="h-4 w-4 flex-shrink-0 text-muted-foreground mt-0.5" />
+                    <Building2 className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
                     <span className="text-muted-foreground line-clamp-1 flex-1">
                       {employee.emp_department}
                     </span>
@@ -257,8 +255,9 @@ const EmployeeCard = memo(({ employee }: { employee: Employee }) => {
                 )}
                 {employee.email && (
                   <div className="flex items-start gap-2 text-sm">
-                    <Mail className="h-4 w-4 flex-shrink-0 text-muted-foreground mt-0.5" />
+                    <Mail className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
                     <button
+                      type="button"
                       onClick={(e) => handleCopyEmail(e, employee.email)}
                       className="text-muted-foreground hover:text-primary transition-colors line-clamp-1 flex-1 underline-offset-2 hover:underline text-left"
                       title={employee.email}

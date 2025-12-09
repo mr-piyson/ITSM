@@ -10,14 +10,13 @@ import { AgGridReact } from "ag-grid-react";
 import axios from "axios";
 import { useAtom } from "jotai";
 import { SearchIcon } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -132,9 +131,7 @@ export default function ReportPage() {
   const theme = useTableTheme();
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
-    const response = await axios.get(
-      `http://${process.env.NEXT_PUBLIC_BASE_API}/api/panels.php?filter=${filter}`
-    );
+    const response = await axios.get(`/api/reports/panels?filter=${filter}`);
 
     const filteredData: ReportData[] = [];
 
@@ -165,7 +162,6 @@ export default function ReportPage() {
     return filteredData;
   }, [filter]);
 
-  // React Query for data fetching
   // React Query for data fetching
   const {
     data: tableData = [],

@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import z from "zod";
-import { mes } from "@/lib/prisma";
+import { mes } from "@/lib/database";
 
 function getTableName(date: Date) {
   const year = date.getFullYear();

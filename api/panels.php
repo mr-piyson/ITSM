@@ -19,13 +19,6 @@ try {
     exit;
 }
 
-// Get 'from' and 'to' from query params, with defaults
-function validate_date($date, $default)
-{
-    $d = DateTime::createFromFormat('Y-m-d', $date);
-    return ($d && $d->format('Y-m-d') === $date) ? $date : $default;
-}
-
 $sql = "SELECT
       i.qr_code as panel_id,
       i.panel_ref AS description,

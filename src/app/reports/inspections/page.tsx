@@ -103,7 +103,7 @@ export default function ReportPage() {
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const response = await axios.get(
-      `http://${process.env.NEXT_PUBLIC_BASE_API}/api/Inspections.php?filter=${filter}`
+      `/api/reports/inspections?filter=${filter}`
     );
 
     return response.data.map((item: ApiReportData) => ({
