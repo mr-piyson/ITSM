@@ -1,7 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../../prisma/generated/prisma/client";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+const adapter = new PrismaBetterSqlite3({
+  url: process.env.DATABASE_URL || "file:./db.sqlite",
+});
 
-const prisma = new PrismaClient();
-
+export const prisma = new PrismaClient({ adapter });
 // setup my sql
 
 import mysql from "mysql2/promise";
