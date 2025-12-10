@@ -3,7 +3,18 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // add images support
   images: {
-    domains: ["iss.bfginternational.com", "intranet.bfginternational.com"],
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "iss.bfginternational.com",
+        pathname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "intranet.bfginternational.com",
+        pathname: "**",
+      },
+    ],
   },
 };
 

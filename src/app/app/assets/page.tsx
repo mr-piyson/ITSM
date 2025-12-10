@@ -1,7 +1,7 @@
 import db from "@/lib/database";
 import AssetsPage from "./AssetsPage";
 
-type Asset = {
+export type Asset = {
   id: string;
   code: string;
   type: string;

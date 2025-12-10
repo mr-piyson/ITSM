@@ -22,9 +22,10 @@ export async function getUser(): Promise<users | undefined | null> {
     return null;
   }
 
-  const [user] = await db.iss.query(
+  const [resUser] = await db.iss.query(
     `select * from users where token = '${sessionToken}';`
   );
+  const user = resUser[0] as users;
 
   if (!user) {
     return null;

@@ -44,6 +44,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Link from "next/link";
+import { assetCategories } from "@/lib/AssetsCategories";
+import { Asset } from "./page";
 
 const getColorClasses = (color: string) => {
   const colorMap = {
@@ -240,10 +243,6 @@ const getAssetTypeConfig = (type: string) => {
   return { name: type, icon: Monitor, color: "default" as const };
 };
 
-import Link from "next/link";
-import type { Asset } from "@/app/api/assets/route";
-import { assetCategories } from "@/lib/AssetsCategories";
-
 export default function AssetsPage({ assets }: { assets: Asset[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -326,6 +325,12 @@ export default function AssetsPage({ assets }: { assets: Asset[] }) {
   useEffect(() => {
     setDisplayCount(20);
   }, []);
+
+  displayedAssets.forEach((asset) => {
+    console.log(
+      `http://iss.bfginternational.com/ISS/itemsImages/${asset.image}`
+    );
+  });
 
   return (
     <div className="container mx-auto p-6 space-y-6" ref={scrollContainerRef}>
@@ -656,21 +661,16 @@ function AssetCard({ asset }: { asset: Asset }) {
 
   return (
     <Card className="pt-0 h-full group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-primary overflow-hidden flex flex-col ">
-      <div className="relative h-48 bg-gradient-to-br from-muted/50 to-muted overflow-hidden">
+      <div className="relative h-48 bg-linear-to-br from-muted/50 to-muted overflow-hidden">
         {asset.image ? (
-          <Image
-            width={300}
-            height={200}
-            src={
-              "http://iss.bfginternational.com/ISS/itemsImages/" + asset.image
-            }
-            alt={asset.deviceName ?? "Asset Image"}
+          <img
+            src={`http://iss.bfginternational.com/ISS/itemsImages/${asset.image}`}
             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
+            alt="item image"
           />
         ) : (
           <div
-            className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${colorClasses.bgGradientFrom} ${colorClasses.bgGradientTo} ${colorClasses.bgGradientFromDark} ${colorClasses.bgGradientToDark}`}
+            className={`w-full h-full flex items-center justify-center bg-linear-to-br ${colorClasses.bgGradientFrom} ${colorClasses.bgGradientTo} ${colorClasses.bgGradientFromDark} ${colorClasses.bgGradientToDark}`}
           >
             <Icon
               className={`h-16 w-16 ${colorClasses.text} ${colorClasses.textDark}`}
