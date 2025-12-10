@@ -101,7 +101,7 @@ interface DailyAttendance {
 
 export async function GET(
   req: NextRequest,
-  ctx: RouteContext<"/api/employee/[id]/attendance">
+  ctx: RouteContext<"/api/employees/[id]/attendance">
 ) {
   try {
     const empCode = (await ctx.params).id;

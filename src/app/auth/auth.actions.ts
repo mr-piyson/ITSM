@@ -1,35 +1,43 @@
 "use server";
 
-import type { users } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { z } from "zod";
 import db from "@/lib/database";
 import type { SignInSchema } from "./SignIn";
+import { RowDataPacket } from "mysql2";
 
 // Session duration in milliseconds (1 days)
 const SESSION_DURATION = 24 * 60 * 60 * 1000;
 
 // Interface for user session
 
+type UserRow = RowDataPacket & {
+  name: string;
+  id: number;
+  username: string;
+  password: string;
+  empCode: number;
+  type: string;
+  token: string;
+  email: string;
+};
 /**
  * Get the current user session from the cookies
  */
-export async function getUser(): Promise<users | undefined | null> {
+export async function getUser(): Promise<UserRow | null> {
   const sessionToken = (await cookies()).get("session_token")?.value;
   if (!sessionToken) {
     return null;
   }
 
-  const [resUser] = await db.iss.query(
-    `select * from users where token = '${sessionToken}';`
+  const [rows] = await db.iss.query<UserRow[]>(
+    "SELECT * FROM users WHERE token = ?",
+    [sessionToken]
   );
-  const user = resUser[0] as users;
 
-  if (!user) {
-    return null;
-  }
+  const user = rows[0] ?? null;
 
   return user;
 }
@@ -45,10 +53,10 @@ export async function signIn(formData: z.infer<typeof SignInSchema>) {
   }
 
   try {
-    const [resAccount] = await db.iss.execute(
+    const [resAccount] = await db.iss.execute<UserRow[]>(
       `select * from users where email = '${email}' limit 1;`
     );
-    const account = resAccount[0] as users;
+    const account = resAccount[0] as UserRow | undefined;
 
     // Verify password (in a real app, use hashed passwords and a library like bcrypt)
     // Here we assume the password is stored in plain text for simplicity (not recommended)
