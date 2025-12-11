@@ -100,9 +100,9 @@ import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { signOut } from "@/app/auth/auth.actions";
 import { Button } from "@/components/ui/button";
-import { Activities } from "@/lib/Activities";
+import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
-import Toolbar from "./Toobar";
+import Toolbar from "./Toolbar";
 
 // This component renders the user profile in the sidebar, allowing users to switch themes and log out.
 export function UserMenu(props: any) {
@@ -196,7 +196,7 @@ export function AppSidebarContent(props: any) {
   return (
     <SidebarGroup>
       <SidebarMenu>
-        {Activities(props.role).map(({ title, url, icon }) => (
+        {routes.appSidebar.map(({ title, url, icon }) => (
           <SidebarMenuItem key={title}>
             <SidebarMenuButton
               isActive={isActive(url)}

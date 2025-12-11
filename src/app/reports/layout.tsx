@@ -2,10 +2,15 @@
 import {
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import MESLogo from "@/assets/Icons/MESLogo";
+import { ModeToggle } from "@/components/ui/mode-toggle";
+import { routes } from "@/lib/routes";
 
 export default function Page(props: any) {
   return (
@@ -32,9 +37,6 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 function SiteHeader() {
-  const path = usePathname();
-  const title = path?.split("/").pop()?.replace(/-/g, " ");
-  const { theme, setTheme } = useTheme();
   return (
     <header className="bg-sidebar flex h-(--header-height) shrink-0 items-center gap-2  transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
@@ -43,8 +45,6 @@ function SiteHeader() {
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"
         />
-        <h1 className="text-base font-medium">{title}</h1>
-        {/* Left Side */}
         <div className="ml-auto flex items-center gap-2">
           <ModeToggle />
         </div>
@@ -65,8 +65,10 @@ import {
 } from "@/components/ui/sidebar";
 
 function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const path = usePathname();
   return (
     <Sidebar collapsible="offcanvas" {...props}>
+      {/* This is the App Sidebar header */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -74,74 +76,32 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      {/* This is the App Sidebar Content */}
       <SidebarContent>
-        <NavMain items={mesSidebarMenu} />
-      </SidebarContent>
-    </Sidebar>
-  );
-}
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
-import MESLogo from "@/assets/Icons/MESLogo";
-import { ModeToggle } from "@/components/ui/mode-toggle";
-import { mesSidebarMenu } from "@/lib/MES-Sidebar";
-
-function NavMain({
-  items,
-}: {
-  // write generic type for
-  items: {
-    [key: string]: {
-      title: string;
-      url: string;
-      icon: string;
-      dev?: boolean;
-    }[];
-  };
-}) {
-  const path = usePathname();
-
-  return (
-    <SidebarGroup>
-      <SidebarGroupContent className="flex flex-col gap-2">
-        {Object.keys(items).map((section) => (
-          <SidebarGroup key={section}>
-            <SidebarGroupLabel className="text-sm font-semibold">
-              {section.charAt(0).toUpperCase() + section.slice(1)}
-            </SidebarGroupLabel>
-            <SidebarGroupContent className="flex flex-col gap-2">
+        <SidebarGroup>
+          <SidebarGroupContent className="flex flex-col gap-2">
+            <SidebarGroup>
               <Separator className="my-2" />
               <SidebarMenu className="gap-1">
-                {items[section].map(
-                  (item: {
-                    title: string;
-                    url: string;
-                    icon: string;
-                    dev?: boolean;
-                  }) => (
-                    <Link href={item.url} key={item.title}>
-                      <SidebarMenuItem>
-                        <SidebarMenuButton
-                          isActive={path === item.url}
-                          className="data-[active=true]:border-bfg border-2 border-transparent"
-                          tooltip={item.title}
-                        >
-                          <i className={`${item.icon} size-6`}></i>
-                          <span className="text-md ">{item.title}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    </Link>
-                  )
-                )}
+                {routes.mesReports.map((item) => (
+                  <Link href={item.url} key={item.title}>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={path === item.url}
+                        className="data-[active=true]:border-bfg border-2 border-transparent"
+                        tooltip={item.title}
+                      >
+                        <i className={`${item.icon} size-6`}></i>
+                        <span className="text-md ">{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </Link>
+                ))}
               </SidebarMenu>
-              {/* <Separator className="my-2" /> */}
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-      </SidebarGroupContent>
-    </SidebarGroup>
+            </SidebarGroup>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 }

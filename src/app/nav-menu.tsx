@@ -31,8 +31,8 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Separator } from "@/components/ui/separator";
-import { mesSidebarMenu } from "@/lib/MES-Sidebar";
 import { cn } from "@/lib/utils";
+import { routes } from "@/lib/routes";
 
 const documents: { title: string; href: string; description: string }[] = [
   {
@@ -202,7 +202,7 @@ export function NavigationToolbar(props: any) {
                         MES Reports
                       </NavigationMenuTrigger>
                       <NavigationMenuContent className="flex flex-col !w-[220px] ">
-                        {mesSidebarMenu.reports.map((item) => (
+                        {routes.mesReports.map((item) => (
                           <NavigationMenuLink key={item.title} asChild>
                             <Link href={item.url}>
                               <span>
