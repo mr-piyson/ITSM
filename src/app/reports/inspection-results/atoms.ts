@@ -8,7 +8,7 @@ export type InspectionResult = {
   datetime: Date;
   datetime_new: Date;
   date: Date;
-  gate: number;
+  gate: string;
   inspection_result: boolean;
   inspector: string;
   user: string;
@@ -17,5 +17,6 @@ export type InspectionResult = {
 
 export const initData = atom<InspectionResult[]>([]);
 export const filteredData = atom<InspectionResult[]>([]);
-export const fromStore = atom<string>("");
-export const toStore = atom<string>("");
+export const fromStore = atom<Date>();
+export const toStore = atom<Date>();
+export const toGate = atom<number>();

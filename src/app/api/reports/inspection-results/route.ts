@@ -70,21 +70,20 @@ export async function GET(
       ? `WHERE ${conditions.join(" AND ")}`
       : "";
 
-    const query = `
-        SELECT 
-        id,
-        panel_serial,
-        project,
-        product_ref,
-        datetime,
-        datetime_new,
-        date,
-        gate,
-        inspection_result,
-        inspector,
-        user,
-        factory
-      FROM quality.inspection_results
+    const query = `SELECT 
+        ir.id,
+        ir.panel_serial,
+        ir.project,
+        ir.product_ref,
+        ir.datetime,
+        ir.datetime_new,
+        ir.date,
+        ir.gate,
+        ir.inspection_result,
+        ir.inspector,
+        ir.user,
+        ir.factory
+      FROM quality.inspection_results ir
       ${whereClause}
       ORDER BY date;
     `;
