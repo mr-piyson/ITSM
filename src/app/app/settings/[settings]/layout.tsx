@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { settingsNavItems } from "@/lib/settings";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +10,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { DialogTitle } from "@/components/ui/dialog";
+import { routes } from "@/lib/routes";
 
 interface SettingsLayoutProps {
   params: Promise<{ settings: string }>;
@@ -22,19 +22,20 @@ export default async function SettingsLayout(props: SettingsLayoutProps) {
 
   const SettingsItemList = () => (
     <>
-      {settingsNavItems.map((item) => {
+      {routes.settings.map((item) => {
         const isActive = pathname === item.title;
         return (
           <Link
-            key={item.href}
-            href={item.href}
+            key={item.url}
+            href={item.url}
             className={cn(
               "flex items-center px-3 py-2 text-sm rounded-md group",
               isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
             )}
           >
-            <item.icon
+            <svg
               className={cn(
+                item.icon,
                 "mr-3 h-5 w-5",
                 isActive
                   ? "text-primary-foreground"

@@ -64,22 +64,22 @@ export const routes = {
   settings: [
     {
       title: "Profile",
-      href: "/app/settings/profile",
+      url: "/app/settings/profile",
       icon: "icon-[lucide-user]",
     },
     {
       title: "Account",
-      href: "/app/settings/account",
+      url: "/app/settings/account",
       icon: "icon-[lucide-credit-card]",
     },
     {
       title: "Security",
-      href: "/app/settings/security",
+      url: "/app/settings/security",
       icon: "icon-[lucide-lock]",
     },
     {
       title: "Appearance",
-      href: "/app/settings/appearance",
+      url: "/app/settings/appearance",
       icon: "icon-[lucide-palette]",
     },
   ],
