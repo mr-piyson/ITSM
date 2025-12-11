@@ -79,7 +79,7 @@ export function TeamSwitcher() {
       <SidebarMenuItem>
         <SidebarMenuButton
           size="lg"
-          className="!opacity-100 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          className="opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           disabled
         >
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">

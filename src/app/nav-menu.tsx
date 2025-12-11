@@ -69,8 +69,8 @@ export function NavigationToolbar(props: any) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
+              <div className="shrink-0 flex items-center">
+                <div className="w-10 h-10 bg-linear-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
                   <Monitor className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <span className="ml-3 text-xl font-bold text-foreground">
@@ -84,7 +84,7 @@ export function NavigationToolbar(props: any) {
               <div className="flex items-baseline space-x-4">
                 <NavigationMenu
                   viewport={false}
-                  className="[&_[data-slot=navigation-menu-trigger]]:bg-transparent"
+                  className="**:data-[slot=navigation-menu-trigger]:bg-transparent"
                 >
                   <NavigationMenuList>
                     <NavigationMenuItem className="">
@@ -201,7 +201,7 @@ export function NavigationToolbar(props: any) {
                         <BarChartHorizontalBig className="me-2 size-4" />
                         MES Reports
                       </NavigationMenuTrigger>
-                      <NavigationMenuContent className="flex flex-col !w-[220px] ">
+                      <NavigationMenuContent className="flex flex-col w-[220px]! ">
                         {routes.mesReports.map((item) => (
                           <NavigationMenuLink key={item.title} asChild>
                             <Link href={item.url}>
@@ -259,7 +259,7 @@ export function NavigationToolbar(props: any) {
                 <DrawerContent className="w-[300px] sm:w-[400px]">
                   <div className="flex flex-col space-y-4 mt-8">
                     <div className="flex items-center mb-4">
-                      <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-linear-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
                         <Monitor className="w-5 h-5 text-primary-foreground" />
                       </div>
                       <span className="ml-2 text-lg font-bold">ITSM</span>

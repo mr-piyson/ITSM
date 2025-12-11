@@ -53,7 +53,7 @@ export default async function SettingsLayout(props: SettingsLayoutProps) {
     <div className=" mx-auto  h-full">
       <div className="flex flex-col md:flex-row gap-8 h-full">
         {/* Sidebar */}
-        <div className="md:w-64 flex-shrink-0 min-lg:border-r pr-4 p-8">
+        <div className="md:w-64 shrink-0 lg:border-r pr-4 p-8">
           <h1 className="flex items-center justify-between mb-8">
             <span className="text-4xl font-bold tracking-tight">Settings</span>
             <Drawer direction="bottom">
