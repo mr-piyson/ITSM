@@ -1,19 +1,5 @@
 import { atom } from "jotai";
 
-//   pk.code as box_code,
-//   i.project_category as project,
-//   i.qr_code as part_id,
-//   i.panel_ref AS description,
-//   c.code as container_id,
-//   ci.created_at as date,
-//   c.shipped_by ,
-//   c.code as mes_container_id,
-//   u.key1 as job_id,
-//   u.shortchar01 as epicor_asm_part_no,
-//   u.shortchar01 as epicor_part_no
-
-// Types
-
 export interface ApiReportData {
 	box_code: string;
 	project: string;

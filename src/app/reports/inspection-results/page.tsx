@@ -22,18 +22,18 @@ import {
 } from "@/components/ui/select";
 import { useTableTheme } from "@/hooks/use-tableTheme";
 import {
-  BoxCellRenderer,
   DateCellRenderer,
   PanelCellRender,
+  StatusCellRenderer,
 } from "../CellsRender";
 import {
-  type ApiReportData,
   filteredData,
   initData,
-  monthStore,
-  type ReportData,
-  yearStore,
+  InspectionResult,
+  fromStore,
+  toStore,
 } from "./atoms";
+import { APIInspectionResult } from "@/app/api/reports/inspection-results/route";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
@@ -41,9 +41,9 @@ ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
 export default function ReportPage() {
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
-  const [selectedRows, setSelectedRows] = useState<ReportData[]>([]);
-  const [year, setYear] = useAtom(yearStore);
-  const [month, setMonth] = useAtom(monthStore);
+  const [selectedRows, setSelectedRows] = useState<InspectionResult[]>([]);
+  const [from, setYear] = useAtom(fromStore);
+  const [to, setMonth] = useAtom(toStore);
   const [, setInitPanels] = useAtom(initData);
   const [panels, setPanels] = useAtom(filteredData);
   const theme = useTableTheme();
@@ -56,7 +56,7 @@ export default function ReportPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["shipment", year, month],
+    queryKey: ["shipment", from, to],
     queryFn: async () => {
       const data = await fetchPanels();
       setInitPanels(data);
@@ -70,95 +70,91 @@ export default function ReportPage() {
     enabled: false,
   });
 
-  const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
+  const gateMap = {
+    1: "Mold",
+    2: "Gelcoating",
+    3: "Trimming",
+    4: "Finishing",
+    5: "Painting",
+    6: "Final",
+    10: "Demolding",
+    11: "Drilling",
+    12: "Bonding",
+    15: "Paint Prep",
+    16: "Wrapping",
+    17: "Packing",
+    18: "Mixing",
+    19: "Casting",
+    20: "Pullout Test",
+    21: "Curing",
+    22: "After Trimming",
+  };
+
+  const fetchPanels = useCallback(async (): Promise<InspectionResult[]> => {
     const response = await axios.get(
-      `/api/reports/shipments?year=${year}&month=${month}`
+      `/api/reports/shipments?from=${from}&to=${to}&gate=6`
     );
     const data = response.data.map(
-      (panel: ApiReportData): ReportData => ({
-        box_code: panel.box_code.toUpperCase(),
+      (panel: APIInspectionResult): InspectionResult => ({
+        id: panel.id,
+        panel_serial: panel.box_code.toUpperCase(),
         project: panel.project,
-        part_id: panel.part_id.toUpperCase(),
-        description: panel.description,
-        container_id: panel.container_id,
         date: new Date(panel.date),
-        shipped_by: panel.shipped_by,
-        epicor_asm_part_no: panel.epicor_asm_part_no,
-        epicor_part_no: panel.epicor_part_no,
-        job_id: panel.job_id,
+        datetime: new Date(panel.date),
+        datetime_new: new Date(panel.date),
+        factory: panel.factory,
+        gate: gateMap[panel.gate],
+        inspection_result: panel.inspection_result === "OK" ? true : false,
+        inspector: panel.inspector,
+        user: panel.user,
+        product_ref: panel.product_ref,
       })
     );
     return data;
-  }, [year, month]);
+  }, [from, to]);
 
   // Memoized column definitions
-  const columnDefs: ColDef<ReportData>[] = useMemo(
+  const columnDefs: ColDef<InspectionResult>[] = useMemo(
     () => [
       {
-        headerName: "Panel ID",
-        field: "part_id",
+        headerName: "Panel Serial",
+        field: "panel_serial",
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
+        pinned: "left",
+        width: 280,
         cellRenderer: PanelCellRender,
       },
-
       {
-        headerName: "Description",
-        field: "description",
-        editable: true,
-        sortable: true,
-        filter: true,
-        flex: 1,
-      },
-      {
-        headerName: "Box Code",
-        field: "box_code",
-        editable: true,
-        sortable: true,
-        filter: true,
-        flex: 1,
-        cellRenderer: BoxCellRenderer,
-      },
-      {
-        headerName: "Project Name",
+        headerName: "Project",
         field: "project",
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
       },
       {
-        headerName: "Shipped By",
-        field: "shipped_by",
+        headerName: "Date & Time",
+        field: "datetime",
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
-      },
-      {
-        headerName: "Date",
-        field: "date",
-        sortable: true,
-        filter: "agDateColumnFilter",
         cellRenderer: DateCellRenderer,
       },
       {
-        headerName: "Job ID",
-        field: "job_id",
+        headerName: "Factory",
+        field: "factory",
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
       },
       {
-        headerName: "Container ID",
-        field: "container_id",
+        headerName: "Inspection Result",
+        field: "inspection_result",
         editable: true,
         sortable: true,
         filter: true,
-        flex: 1,
+        cellRenderer: StatusCellRenderer,
       },
     ],
     []
@@ -192,7 +188,7 @@ export default function ReportPage() {
       gridApi.resetColumnState();
     }
     refetch();
-  }, [gridApi, year, month]);
+  }, [gridApi, from, to]);
 
   const exportRows = useCallback(() => {
     if (gridApi) {
@@ -256,7 +252,7 @@ export default function ReportPage() {
 
         {/* Right Controls */}
         <div className="flex flex-1 flex-row justify-end gap-2">
-          <Select value={year} onValueChange={setYear}>
+          <Select value={from} onValueChange={setYear}>
             <SelectTrigger className=" border-border">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
@@ -271,7 +267,7 @@ export default function ReportPage() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={month} onValueChange={setMonth}>
+          <Select value={to} onValueChange={setMonth}>
             <SelectTrigger className="border-border">
               <SelectValue placeholder="Month" />
             </SelectTrigger>

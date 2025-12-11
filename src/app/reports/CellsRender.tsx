@@ -75,14 +75,14 @@ export const BoxCellRenderer = ({ data }: { data: ReportData }) => (
   </div>
 );
 
-const DateCellRenderer = ({ value }: { value: string }) => {
-  if (!value) return null;
-  const date = new Date(value);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
+// const DateCellRenderer = ({ value }: { value: string }) => {
+//   if (!value) return null;
+//   const date = new Date(value);
+//   const day = String(date.getDate()).padStart(2, "0");
+//   const month = String(date.getMonth() + 1).padStart(2, "0");
+//   const year = date.getFullYear();
+//   return `${day}/${month}/${year}`;
+// };
 
 export const JobCellRenderer = ({ value }: { value: string }) => {
   if (!value) return null;
@@ -130,4 +130,17 @@ export const RouteCellRenderer = ({ value }: { value: string[] }) => {
       )}
     </div>
   );
+};
+
+export const DateCellRenderer = ({ value }: { value: string }) => {
+  if (!value) return null;
+  const date = new Date(value);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`;
 };

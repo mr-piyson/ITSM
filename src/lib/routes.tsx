@@ -85,28 +85,33 @@ export const routes = {
   ],
   mesReports: [
     {
-      title: "Panel Report",
+      title: "Panel",
       url: "/reports/panels",
       icon: "icon-[mingcute--board-line]",
     },
     {
-      title: "Package Report",
+      title: "Packages",
       url: "/reports/packages",
       icon: "icon-[solar--box-outline]",
     },
     {
-      title: "Inspection Report",
-      url: "/reports/inspections",
+      title: "Inspection Routes",
+      url: "/reports/inspection-routes",
       icon: "icon-[lucide--route]",
     },
     {
-      title: "Panel Out Times",
+      title: "Inspection Results",
+      url: "/reports/inspection-results",
+      icon: "icon-[fluent--screen-search-24-regular]",
+    },
+    {
+      title: "Panel Traceability",
       url: "/reports/time-out",
       icon: "icon-[famicons--log-out-outline]",
       dev: true,
     },
     {
-      title: "Shipment Report",
+      title: "Shipments",
       url: "/reports/shipments",
       icon: "icon-[ph--shipping-container]",
       dev: true,

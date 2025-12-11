@@ -2,7 +2,7 @@ import db from "@/lib/database";
 import { RowDataPacket } from "mysql2";
 import { NextRequest, NextResponse } from "next/server";
 
-type InspectionResultRow = RowDataPacket & {
+export type APIInspectionResult = RowDataPacket & {
   id: number;
   panel_serial: string;
   project: string;
@@ -10,7 +10,7 @@ type InspectionResultRow = RowDataPacket & {
   datetime: Date;
   datetime_new: Date;
   date: Date;
-  gate: 6;
+  gate: number;
   inspection_result: string;
   inspector: string;
   user: string;
@@ -89,7 +89,7 @@ export async function GET(
       ORDER BY date;
     `;
 
-    const [rows] = await db.mes.execute<InspectionResultRow[]>(query, values);
+    const [rows] = await db.mes.execute<APIInspectionResult[]>(query, values);
 
     return NextResponse.json(rows);
   } catch (error) {
