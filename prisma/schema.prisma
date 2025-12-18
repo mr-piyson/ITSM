@@ -1,0 +1,355 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model assestOwnerUpdateLogs {
+  id            Int      @id @default(autoincrement())
+  user          Int
+  oldOwnerEmpID Int
+  oldOwnerText  String?
+  newOwnerID    Int
+  date          DateTime
+  assetID       Int
+}
+
+model assetBooking {
+  id             Int      @id @default(autoincrement())
+  empID          Int
+  assetID        Int
+  bookingDate    DateTime
+  returnDate     DateTime
+  bookingPurpose String
+  status         String
+  user           Int
+  addedTime      DateTime
+  otherInfo      String?
+}
+
+model assets {
+  id             Int       @id @default(autoincrement())
+  code           String    @unique(map: "code")
+  serialNumber   String    @unique(map: "serialNumber")
+  deviceName     String?
+  type           String?
+  location       String?
+  manufacturer   String?
+  model          String?
+  processor      String?
+  os             String?
+  memory         String?
+  hdd            String?
+  ip             String?
+  owner          String?
+  specification  String?
+  inActive       Boolean
+  image          String?
+  empID          Int?      @default(0)
+  department     String?
+  firmwareVer    String?
+  macAddress     String?
+  deviceStatus   String?
+  purchaseDate   DateTime?
+  purchasePrice  String?
+  warrantyDate   DateTime?
+  warrantyStatus String?
+  verified       DateTime?
+}
+
+model changes_logs {
+  id       Int      @id @default(autoincrement())
+  userID   Int
+  date     DateTime
+  action   String
+  node     String
+  nodeID   Int
+  assetsId Int?
+}
+
+model contracts {
+  id          Int      @id @default(autoincrement())
+  productName String
+  vendorID    Int
+  startDate   DateTime
+  endDate     DateTime
+  notes       String
+  support     String
+  account     String
+  cost        String
+  currency    String
+  bilingCycle String
+  inActive    Boolean
+  docslink    String?
+}
+
+model employees {
+  id       Int     @id @default(autoincrement())
+  empID    Int     @unique(map: "empID")
+  name     String
+  user     Int
+  image    String?
+  inActive Boolean
+  email    String?
+}
+
+model employeesDetails {
+  id                          Int     @id @default(autoincrement())
+  empID                       Int
+  license                     String
+  msProject                   Boolean
+  powerPi                     Boolean
+  authenticationTwoFactor     Boolean
+  authenticationAuthenticator Boolean
+  authenticationPhone         Boolean
+  recipientLimit              String
+  oneDrive                    Boolean
+  mailType                    String
+  mailStorageSize             String
+  onlineMailboxArchive        Boolean
+  onlineArchiveStorageSize    String
+}
+
+model employeesGroupDetails {
+  id        Int    @id @default(autoincrement())
+  empID     Int
+  groupName String
+}
+
+model items {
+  id       Int     @id @default(autoincrement())
+  name     String
+  stock    Int
+  brand    String
+  user     Int
+  img      String
+  inActive Boolean
+  category String
+}
+
+model logins_logs {
+  id            Int      @id @default(autoincrement())
+  ip            String
+  date          DateTime
+  userID        Int
+  login_success Boolean
+}
+
+model printerActions {
+  id          Int      @id @default(autoincrement())
+  printerID   Int
+  actionType  String
+  actionDate  DateTime
+  actionBy    String
+  note        String
+  itemID      Int
+  requestedBy String
+  recievedBy  String
+}
+
+model printerInfo {
+  id            Int      @id @default(autoincrement())
+  printerID     Int
+  model         String?
+  serialNumber  String?
+  firmware      String?
+  RFID          Boolean?
+  darkness      String?
+  printSpeed    Int?
+  tearOffAdjust Int?
+  printMode     String?
+  mediaType     String?
+  sensorSelect  String?
+  printMethod   String?
+  printWidth    Int?
+  labelLength   Int?
+  labelTop      Int?
+  leftPosition  Int?
+  manufacturer  String
+}
+
+model printers {
+  id          Int     @id @default(autoincrement())
+  name        String
+  location    String
+  usedBy      String
+  img         String
+  inActive    Boolean
+  department  String?
+  printerLink String?
+  empID       Int?
+}
+
+model printersToners {
+  id        Int @id @default(autoincrement())
+  tonerID   Int
+  PrinterID Int
+}
+
+model provide {
+  id         Int      @id @default(autoincrement())
+  date       DateTime
+  empID      Int
+  requestBy  Int
+  provideBy  String
+  recievedBy Int
+  notes      String
+  user       Int
+}
+
+model provideItems {
+  id        Int @id @default(autoincrement())
+  itemID    Int
+  quantity  Int
+  provideID Int
+}
+
+model purchase {
+  id             Int       @id @default(autoincrement())
+  vendorID       Int
+  quotationDate  DateTime?
+  buyer          String
+  poNumber       Int
+  forWho         String
+  notes          String
+  mrnNumber      String
+  currentTotal   String
+  vat            String
+  grandTotal     String
+  advanceRequest Boolean
+  LPO            Boolean
+  invoice        Boolean
+  deliveryNote   Boolean
+  mrn            Boolean
+  paidDate       DateTime?
+  currency       String
+  user           Int
+  date           DateTime
+  link           String
+  ServiceType    Boolean
+}
+
+model purchaseItems {
+  id         Int    @id @default(autoincrement())
+  purchaseID Int
+  itemID     Int
+  quantity   Int
+  price      String
+}
+
+model purchaseServices {
+  id           Int    @id @default(autoincrement())
+  purchaseID   Int
+  serviceName  String
+  servicePrice String
+}
+
+model requestReplies {
+  id        Int      @id @default(autoincrement())
+  requestID Int
+  reply     String
+  replyDate DateTime
+  userID    Int
+}
+
+model requests {
+  id            Int       @id @default(autoincrement())
+  user          Int
+  pgtype        String?
+  newpg         String?
+  slctname      String?
+  otherpg       String?
+  modifi        String?
+  descrip       String?
+  imagefilePath String?
+  status        String?
+  submitDate    DateTime?
+  requestPrio   String?
+}
+
+model serverActions {
+  id                Int      @id @default(autoincrement())
+  serverID          Int
+  actionType        String
+  actionDate        DateTime
+  actionDescription String
+  actionImage       String?
+  user              Int
+  actionPeriod      String
+}
+
+model servers {
+  serverID        Int      @id @default(autoincrement())
+  name            String
+  type            String
+  os              String
+  serverIP        String
+  host            String
+  hostIP          String
+  maintenanceLast DateTime
+  maintenanceDue  DateTime
+  cpu             String
+  ram             String
+  disk            String
+  diskType        String
+  diskAmount      String
+  location        String
+  backupStatus    String
+  backupSoftware  String
+  descrip         String?
+  notes           String?
+  serverStatus    String
+  Applications    String
+  inActive        Boolean?
+  image           String?
+  disk2           String
+  diskType2       String
+  location2       String
+}
+
+model tapes {
+  id          Int       @id @default(autoincrement())
+  tapeID      String    @unique(map: "tapeID")
+  location    String?
+  month       String?
+  year        Int?
+  status      String?
+  sequenceNum Int?
+  lastWritten DateTime?
+  expire      DateTime?
+  capacity    String?
+  free        String?
+  inActive    Boolean
+}
+
+model users {
+  id       Int    @id @default(autoincrement())
+  username String
+  password String
+  name     String
+  empCode  Int
+  type     String
+  token    String
+  email    String
+}
+
+model vendors {
+  id       Int     @id @default(autoincrement())
+  name     String
+  notes    String
+  user     Int
+  inActive Boolean
+  image    String?
+}
+
+model vendorsContacts {
+  id             Int     @id @default(autoincrement())
+  vendorID       Int
+  contactType    String
+  contactName    String
+  contact        String
+  personPosition String?
+}
