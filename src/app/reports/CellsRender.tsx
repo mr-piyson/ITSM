@@ -2,19 +2,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ReportData } from "./panels/atoms";
 
-export const StatusCellRenderer = ({
-  value,
-  whenFalse = "False",
-  whenTrue = "True",
-}: {
-  value: { value: boolean };
+export const StatusCellRenderer = (props: {
+  value: boolean;
   whenFalse?: React.ReactNode;
   whenTrue?: React.ReactNode;
 }) => {
-  const bool = value.value;
+  const bool = props.value;
+
+  const content = bool ? (props.whenTrue ?? "Yes") : (props.whenFalse ?? "No");
+
   return (
     <Badge variant={bool ? "default" : "destructive"} className="text-xs">
-      {bool ? whenTrue : whenFalse}
+      {content}
     </Badge>
   );
 };

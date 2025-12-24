@@ -174,7 +174,11 @@ export default function ReportPage() {
         sortable: true,
         filter: true,
         cellRenderer: (value: any) => (
-          <StatusCellRenderer value={value} whenFalse={"NOK"} whenTrue={"OK"} />
+          <StatusCellRenderer
+            value={value.value}
+            whenFalse={"NOK"}
+            whenTrue={"OK"}
+          />
         ),
       },
     ],
