@@ -1,120 +1,159 @@
+export type RouteItem = {
+  title: string;
+  href?: string;
+  icon: string;
+  children?: RouteItem[];
+};
+
 export const routes = {
   appSidebar: [
     {
       title: "Dashboard",
-      url: "/app/dashboard",
+      href: "/app/dashboard",
       icon: "icon-[solar--chart-square-linear]",
     },
     {
       title: "Tasks",
-      url: "/app/tasks",
+      href: "/app/tasks",
       icon: "icon-[solar--ticket-linear]",
     },
     {
       title: "Assets",
-      url: "/app/assets",
+      href: "/app/assets",
       icon: "icon-[streamline--computer-pc-desktop]",
     },
     {
       title: "Printers",
-      url: "/app/printers",
+      href: "/app/printers",
       icon: "icon-[streamline-plump--printer]",
     },
     {
       title: "Employees",
-      url: "/app/employees",
+      href: "/app/employees",
       icon: "icon-[solar--user-circle-linear]",
     },
     {
       title: "Notifications",
-      url: "/app/notifications",
+      href: "/app/notifications",
       icon: "icon-[hugeicons--notification-01]",
     },
     {
       title: "Contracts",
-      url: `/app/contracts`,
+      href: `/app/contracts`,
       icon: "icon-[hugeicons--contracts]",
     },
     {
       title: "Accounts",
-      url: "/app/accounts",
+      href: "/app/accounts",
       icon: "icon-[hugeicons--user-account]",
     },
     {
       title: "Stock",
-      url: "/app/stock",
+      href: "/app/stock",
       icon: "icon-[solar--box-outline]",
     },
     {
       title: "Vendors",
-      url: "/app/vendors",
+      href: "/app/vendors",
       icon: "icon-[icon-park-outline--weixin-market]",
     },
     {
       title: "Reports",
-      url: "/app/reports",
+      href: "/app/reports",
       icon: "icon-[iconoir--reports]",
     },
     {
       title: "Settings",
-      url: "/app/settings",
+      href: "/app/settings",
       icon: "icon-[solar--settings-linear]",
     },
   ],
   settings: [
     {
       title: "Profile",
-      url: "/app/settings/profile",
+      href: "/app/settings/profile",
       icon: "icon-[lucide--user]",
     },
     {
       title: "Account",
-      url: "/app/settings/account",
+      href: "/app/settings/account",
       icon: "icon-[lucide--credit-card]",
     },
     {
       title: "Security",
-      url: "/app/settings/security",
+      href: "/app/settings/security",
       icon: "icon-[lucide--lock]",
     },
     {
       title: "Appearance",
-      url: "/app/settings/appearance",
+      href: "/app/settings/appearance",
       icon: "icon-[lucide--palette]",
     },
   ],
   mesReports: [
     {
       title: "Panel",
-      url: "/reports/panels",
+      href: "/reports/panels",
       icon: "icon-[mingcute--board-line]",
     },
     {
       title: "Packages",
-      url: "/reports/packages",
+      href: "/reports/packages",
       icon: "icon-[solar--box-outline]",
     },
     {
       title: "Inspection Routes",
-      url: "/reports/inspection-routes",
+      href: "/reports/inspection-routes",
       icon: "icon-[lucide--route]",
     },
     {
       title: "Inspection Results",
-      url: "/reports/inspection-results",
+      href: "/reports/inspection-results",
       icon: "icon-[fluent--screen-search-24-regular]",
     },
     {
       title: "Panel Time Out",
-      url: "/reports/time-out",
+      href: "/reports/time-out",
       icon: "icon-[famicons--log-out-outline]",
       dev: true,
     },
     {
       title: "Shipments",
-      url: "/reports/shipments",
+      href: "/reports/shipments",
       icon: "icon-[ph--shipping-container]",
       dev: true,
     },
   ],
-} as const;
+  landingPage: [
+    {
+      title: "Documents",
+      icon: "icon-[lucide--file-text]",
+      children: [
+        {
+          title: "IT Request From",
+          href: "/",
+          icon: "icon-[lucide--file-text]",
+        },
+        {
+          title: "Pity Cash Form",
+          href: "/",
+          icon: "icon-[lucide--file-text]",
+        },
+        {
+          title: "HR Leave Request Form",
+          href: "/",
+          icon: "icon-[lucide--file-text]",
+        },
+      ],
+    },
+    {
+      title: "Tools",
+      icon: "icon-[lucide--file-text]",
+    },
+    {
+      title: "MES Reports",
+      href: "/reports",
+      icon: "icon-[lucide--chart-bar-big]",
+    },
+  ],
+} as Record<string, RouteItem[]>;

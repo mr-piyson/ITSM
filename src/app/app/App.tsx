@@ -194,17 +194,17 @@ export function AppSidebarContent(props: any) {
   return (
     <SidebarGroup>
       <SidebarMenu>
-        {routes.appSidebar.map(({ title, url, icon }) => (
+        {routes.appSidebar.map(({ title, href, icon }) => (
           <SidebarMenuItem key={title}>
             <SidebarMenuButton
-              isActive={isActive(url)}
+              isActive={isActive(href)}
               className="flex data-[active=true]:bg-primary data-[active=false]:text-primary-foreground"
               tooltip={title}
               size={"lg"}
               onClick={() => {
                 const match = path.match(/^\/App\/[^/]+/);
-                match && match[0] === url ? setLoading("") : setLoading(url);
-                router.push(url);
+                match && match[0] === href ? setLoading("") : setLoading(href);
+                router.push(href);
               }}
             >
               {/* <Link href={url} className="flex justify-center items-center"> */}
@@ -212,21 +212,21 @@ export function AppSidebarContent(props: any) {
                 className={cn(
                   "ms-1 size-6 shrink-0",
                   icon,
-                  isActive(url) ? "text-white" : "text-foreground/92",
-                  loading === url && !open && !isMobile ? "hidden" : ""
+                  isActive(href) ? "text-white" : "text-foreground/92",
+                  loading === href && !open && !isMobile ? "hidden" : ""
                 )}
               />
               <div className="flex items-center justify-between w-full">
                 <span
                   className={cn(
                     " text-base",
-                    isActive(url) ? "text-white" : "text-foreground/92",
-                    loading === url && !open && !isMobile ? "hidden" : ""
+                    isActive(href) ? "text-white" : "text-foreground/92",
+                    loading === href && !open && !isMobile ? "hidden" : ""
                   )}
                 >
                   {title}
                 </span>
-                {loading === url && (
+                {loading === href && (
                   <Loader2 className="mx-2 size-3 animate-spin text-foreground" />
                 )}
               </div>

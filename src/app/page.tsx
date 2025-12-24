@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,7 +10,6 @@ import {
   Zap,
   Users,
   ArrowRight,
-  Check,
   Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,7 +78,7 @@ const EmblaCarousel = () => {
   const handleMouseLeave = () => setIsAutoPlaying(true);
 
   return (
-    <Card className="relative w-full h-96 md:h-[500px] overflow-hidden border-0 p-0 shadow-2xl">
+    <Card className="relative w-full h-96 md:h-125 overflow-hidden border-0 p-0 shadow-2xl">
       <div
         className="relative w-full h-full"
         onMouseEnter={handleMouseEnter}
@@ -90,8 +89,8 @@ const EmblaCarousel = () => {
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {slides.map((slide, index) => (
-            <div key={index} className="w-full flex-shrink-0 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/60 z-10" />
+            <div key={index} className="w-full shrink-0 relative">
+              <div className="absolute inset-0 bg-linear-to-r from-primary/80 to-primary/60 z-10" />
               <img
                 src={slide.image}
                 alt={slide.title}
@@ -257,7 +256,7 @@ const ITSMLandingPage = () => {
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
               Transform Your
-              <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                 {" "}
                 IT Operations
               </span>
@@ -403,7 +402,7 @@ const ITSMLandingPage = () => {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-linear-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
                   <Monitor className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <span className="ml-2 text-lg font-bold">ITSM</span>

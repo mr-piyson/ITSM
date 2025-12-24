@@ -1,56 +1,37 @@
 "use client";
 
-import {
-  Apple,
-  BarChartHorizontalBig,
-  Download,
-  FilePenLineIcon,
-  Menu,
-  Monitor,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { Monitor } from "lucide-react";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { useState } from "react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import { Separator } from "@/components/ui/separator";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { routes } from "@/lib/routes";
-
-const documents: { title: string; href: string; description: string }[] = [
-  {
-    title: "IT Request From",
-    href: "/Requests/IT-Request",
-    description:
-      "Submit and track your IT support requests, including hardware, software, and access issues.",
-  },
-  {
-    title: "HR Leave Form",
-    href: "",
-    description: "Apply for leave and manage your time-off requests.",
-  },
-];
+import { RouteItem, routes } from "@/lib/routes";
 
 export function NavigationToolbar(props: any) {
   const [isScrolled, setIsScrolled] = React.useState(false);
-  const { setTheme } = useTheme();
 
   React.useLayoutEffect(() => {
     const handleScroll = () => {
@@ -79,198 +60,14 @@ export function NavigationToolbar(props: any) {
               </div>
             </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:block">
-              <div className="flex items-baseline space-x-4">
-                <NavigationMenu
-                  viewport={false}
-                  className="**:data-[slot=navigation-menu-trigger]:bg-transparent"
-                >
-                  <NavigationMenuList>
-                    <NavigationMenuItem className="">
-                      <NavigationMenuTrigger>Home</NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid gap-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                          <li className="row-span-3">
-                            <NavigationMenuLink asChild>
-                              <a
-                                className="from-muted/50 to-muted flex h-full w-full flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-hidden select-none focus:shadow-md"
-                                href="/"
-                              >
-                                <div className="mt-4 mb-2 text-lg font-medium">
-                                  shadcn/ui
-                                </div>
-                                <p className="text-muted-foreground text-sm leading-tight">
-                                  Beautifully designed components built with
-                                  Tailwind CSS.
-                                </p>
-                              </a>
-                            </NavigationMenuLink>
-                          </li>
-                          <ListItem href="/docs" title="Introduction">
-                            Re-usable components built using Radix UI and
-                            Tailwind CSS.
-                          </ListItem>
-                          <ListItem
-                            href="/docs/installation"
-                            title="Installation"
-                          >
-                            How to install dependencies and structure your app.
-                          </ListItem>
-                          <ListItem
-                            href="/docs/primitives/typography"
-                            title="Typography"
-                          >
-                            Styles for headings, paragraphs, lists...etc
-                          </ListItem>
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger>
-                        <FilePenLineIcon className="me-3 size-4" />
-                        Documents
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid w-[400px] gap-2 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                          {documents.map((component) => (
-                            <ListItem
-                              key={component.title}
-                              title={component.title}
-                              href={component.href}
-                            >
-                              {component.description}
-                            </ListItem>
-                          ))}
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                      <NavigationMenuLink
-                        asChild
-                        className={navigationMenuTriggerStyle()}
-                      ></NavigationMenuLink>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                      <NavigationMenuLink className="flex flex-row items-center gap-2 px-2 py-1">
-                        <Monitor className="text-foreground size-4" />
-                        Data Capture
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
-
-                    {/* Download with sub-items */}
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger className="flex items-center gap-2">
-                        <Download className="size-4" />
-                        Download
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid gap-2 p-4 w-40">
-                          <li>
-                            <NavigationMenuLink
-                              href="/download/windows"
-                              className="flex items-center gap-2 px-2 py-1"
-                            >
-                              <Monitor />
-                              Windows
-                            </NavigationMenuLink>
-                          </li>
-                          <li>
-                            <NavigationMenuLink
-                              href="/download/ios"
-                              className="flex items-center gap-2 px-2 py-1"
-                            >
-                              <Apple />
-                              iOS
-                            </NavigationMenuLink>
-                          </li>
-                          <li>
-                            <NavigationMenuLink
-                              href="/download/linux"
-                              className="flex items-center gap-2 px-2 py-1"
-                            >
-                              {/* <Linux  /> */}
-                              Linux
-                            </NavigationMenuLink>
-                          </li>
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger>
-                        <BarChartHorizontalBig className="me-2 size-4" />
-                        MES Reports
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent className="flex flex-col w-[220px]! ">
-                        {routes.mesReports.map((item) => (
-                          <NavigationMenuLink key={item.title} asChild>
-                            <Link href={item.url}>
-                              <span>
-                                <i className={cn(item.icon, "me-2")}></i>
-                                {item.title}
-                              </span>
-                            </Link>
-                          </NavigationMenuLink>
-                        ))}
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  </NavigationMenuList>
-                </NavigationMenu>
-              </div>
-            </div>
-
-            {/* Theme Toggle */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-                  <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
-                  Light
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
-                  Dark
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}>
-                  System
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Navigation  Menu */}
+            <NavMenu />
 
             {/* Desktop Sign In Button */}
             <div className="hidden md:block">
               <Link href="/auth">
                 <Button>Sign In</Button>
               </Link>
-            </div>
-
-            {/* Mobile Navigation */}
-            <div className="md:hidden">
-              <Drawer>
-                <DrawerTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Menu className="w-6 h-6" />
-                  </Button>
-                </DrawerTrigger>
-                <DrawerContent className="w-[300px] sm:w-[400px]">
-                  <div className="flex flex-col space-y-4 mt-8">
-                    <div className="flex items-center mb-4">
-                      <div className="w-8 h-8 bg-linear-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
-                        <Monitor className="w-5 h-5 text-primary-foreground" />
-                      </div>
-                      <span className="ml-2 text-lg font-bold">ITSM</span>
-                    </div>
-                    <Separator />
-                    <Link href="/auth">
-                      <Button>Sign In</Button>
-                    </Link>
-                  </div>
-                </DrawerContent>
-              </Drawer>
             </div>
           </div>
         </div>
@@ -280,22 +77,176 @@ export function NavigationToolbar(props: any) {
   );
 }
 
-function ListItem({
-  title,
-  children,
-  href,
-  ...props
-}: React.ComponentPropsWithoutRef<"li"> & { href: string }) {
+function DesktopNavItem({ item }: { item: RouteItem }) {
+  const Icon = item.icon;
+
+  if (item.children) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="flex items-center gap-2">
+            <svg className={item.icon} />
+            {item.title}
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-48">
+          {item.children.map((child) => (
+            <DesktopDropdownItem key={child.title} item={child} />
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
   return (
-    <li {...props}>
-      <NavigationMenuLink asChild>
-        <Link href={href}>
-          <div className="text-sm leading-none font-medium">{title}</div>
-          <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
-            {children}
-          </p>
-        </Link>
-      </NavigationMenuLink>
-    </li>
+    <Button variant="ghost" asChild>
+      <Link href={item.href || "#"} className="flex items-center gap-2">
+        <svg className={item.icon} />
+        {item.title}
+      </Link>
+    </Button>
+  );
+}
+
+function DesktopDropdownItem({ item }: { item: RouteItem }) {
+  const Icon = item.icon;
+
+  if (item.children) {
+    return (
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger className="flex items-center gap-2">
+          <svg className={item.icon} />
+          {item.title}
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent className="w-48">
+          {item.children.map((child) => (
+            <DesktopDropdownItem key={child.title} item={child} />
+          ))}
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+    );
+  }
+
+  return (
+    <DropdownMenuItem asChild>
+      <Link
+        href={item.href || "#"}
+        className="flex items-center gap-2 cursor-pointer"
+      >
+        <svg className={item.icon} />
+        {item.title}
+      </Link>
+    </DropdownMenuItem>
+  );
+}
+
+function MobileNavItem({
+  item,
+  onNavigate,
+  depth = 0,
+}: {
+  item: RouteItem;
+  onNavigate: () => void;
+  depth?: number;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const Icon = item.icon;
+
+  if (item.children) {
+    return (
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger
+          className="flex items-center justify-between w-full px-4 py-3 text-sm hover:bg-accent rounded-md transition-colors"
+          style={{ paddingLeft: `${1 + depth * 0.75}rem` }}
+        >
+          <div className="flex items-center gap-3">
+            <svg className={item.icon} />
+            <span>{item.title}</span>
+          </div>
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 transition-transform",
+              isOpen && "rotate-180"
+            )}
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-1 mt-1">
+          {item.children.map((child) => (
+            <MobileNavItem
+              key={child.title}
+              item={child}
+              onNavigate={onNavigate}
+              depth={depth + 1}
+            />
+          ))}
+        </CollapsibleContent>
+      </Collapsible>
+    );
+  }
+
+  return (
+    <Link
+      href={item.href || "#"}
+      onClick={onNavigate}
+      className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent rounded-md transition-colors"
+      style={{ paddingLeft: `${1 + depth * 0.75}rem` }}
+    >
+      <svg className={item.icon} />
+      {item.title}
+    </Link>
+  );
+}
+
+export function NavMenu() {
+  const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  const handleNavigate = () => {
+    setOpen(false);
+  };
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerTrigger asChild>
+          <Button variant="ghost" size="icon" className="md:hidden">
+            <Menu className="h-6 w-6" />
+            <span className="sr-only">Toggle navigation menu</span>
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="h-[85vh]">
+          <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between p-4 border-b">
+              <DrawerTitle>Navigation</DrawerTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+              {routes.landingPage.map((item) => (
+                <MobileNavItem
+                  key={item.title}
+                  item={item}
+                  onNavigate={handleNavigate}
+                />
+              ))}
+            </nav>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  return (
+    <nav className="hidden md:flex items-center gap-2">
+      {routes.landingPage.map((item) => (
+        <DesktopNavItem key={item.title} item={item} />
+      ))}
+    </nav>
   );
 }

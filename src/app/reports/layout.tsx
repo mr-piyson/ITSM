@@ -84,10 +84,10 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Separator className="my-2" />
               <SidebarMenu className="gap-1">
                 {routes.mesReports.map((item) => (
-                  <Link href={item.url} key={item.title}>
+                  <Link href={item.href} key={item.title}>
                     <SidebarMenuItem>
                       <SidebarMenuButton
-                        isActive={path === item.url}
+                        isActive={path === item.href}
                         className="data-[active=true]:border-bfg border-2 border-transparent"
                         tooltip={item.title}
                       >

@@ -26,8 +26,8 @@ export default async function SettingsLayout(props: SettingsLayoutProps) {
         const isActive = pathname === item.title;
         return (
           <Link
-            key={item.url}
-            href={item.url}
+            key={item.href}
+            href={item.href}
             className={cn(
               "flex items-center px-3 py-2 text-sm rounded-md group",
               isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
