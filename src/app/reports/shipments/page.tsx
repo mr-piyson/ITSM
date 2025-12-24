@@ -61,7 +61,6 @@ export default function ReportPage() {
       const data = await fetchPanels();
       setInitPanels(data);
       setPanels(data);
-      console.log(data);
       return data;
     },
     refetchOnWindowFocus: false,

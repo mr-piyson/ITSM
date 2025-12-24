@@ -170,10 +170,8 @@ export default function ReportPage() {
       setPanels(data);
       return data;
     },
-    refetchOnWindowFocus: false,
     gcTime: Infinity,
     staleTime: Infinity,
-    enabled: false,
   });
 
   // Memoized column definitions
@@ -375,7 +373,7 @@ export default function ReportPage() {
           <Select onValueChange={handleProjectFilter}>
             <SelectTrigger
               disabled={Array.from(projects).length === 0 || isLoading}
-              className="w-[180px] border-border"
+              className="w-45 border-border"
             >
               <SelectValue />
             </SelectTrigger>
@@ -395,8 +393,8 @@ export default function ReportPage() {
 
         {/* Right Controls */}
         <div className="flex flex-1 flex-row justify-end">
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[160px] border-border">
+          <Select value={filter} onValueChange={(value) => setFilter(value)}>
+            <SelectTrigger className="w-40 border-border">
               <SelectValue placeholder="Filter by date" />
             </SelectTrigger>
             <SelectContent>

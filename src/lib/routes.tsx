@@ -105,7 +105,7 @@ export const routes = {
       icon: "icon-[fluent--screen-search-24-regular]",
     },
     {
-      title: "Panel Traceability",
+      title: "Panel Time Out",
       url: "/reports/time-out",
       icon: "icon-[famicons--log-out-outline]",
       dev: true,

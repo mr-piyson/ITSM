@@ -60,6 +60,5 @@ export default async function Page(props: PageProps) {
     ownerChangeLogs: logs,
   };
 
-  console.log("Asset Details:", assetDetails);
   return <AssetDetailsPage asset={assetDetails} />;
 }

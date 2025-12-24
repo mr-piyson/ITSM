@@ -325,11 +325,6 @@ export default function AssetsPage({ assets }: { assets: Asset[] }) {
     setDisplayCount(20);
   }, []);
 
-  displayedAssets.forEach((asset) => {
-    console.log(
-      `http://iss.bfginternational.com/ISS/itemsImages/${asset.image}`
-    );
-  });
 
   return (
     <div className="container mx-auto p-6 space-y-6" ref={scrollContainerRef}>
