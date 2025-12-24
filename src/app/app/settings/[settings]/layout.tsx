@@ -25,25 +25,31 @@ export default async function SettingsLayout(props: SettingsLayoutProps) {
       {routes.settings.map((item) => {
         const isActive = pathname === item.title;
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center px-3 py-2 text-sm rounded-md group",
-              isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+          <>
+            {item.href && (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center px-3 py-2 text-sm rounded-md group",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                )}
+              >
+                <svg
+                  className={cn(
+                    item.icon,
+                    "mr-3 h-5 w-5",
+                    isActive
+                      ? "text-primary-foreground"
+                      : "text-muted-foreground group-hover:text-foreground"
+                  )}
+                />
+                <span>{item.title}</span>
+              </Link>
             )}
-          >
-            <svg
-              className={cn(
-                item.icon,
-                "mr-3 h-5 w-5",
-                isActive
-                  ? "text-primary-foreground"
-                  : "text-muted-foreground group-hover:text-foreground"
-              )}
-            />
-            <span>{item.title}</span>
-          </Link>
+          </>
         );
       })}
     </>

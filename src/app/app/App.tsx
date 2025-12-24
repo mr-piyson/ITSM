@@ -187,7 +187,7 @@ export function AppSidebarContent(props: any) {
     }
   }, [path, setOpenMobile, loading]);
 
-  const isActive = (Activity: string) => {
+  const isActive = (Activity: string | undefined) => {
     const url = path.split("/").slice(0, 3).join("/");
     return url === Activity;
   };
@@ -203,8 +203,10 @@ export function AppSidebarContent(props: any) {
               size={"lg"}
               onClick={() => {
                 const match = path.match(/^\/App\/[^/]+/);
-                match && match[0] === href ? setLoading("") : setLoading(href);
-                router.push(href);
+                match && match[0] === href
+                  ? setLoading("")
+                  : setLoading(href as string);
+                href && router.push(href);
               }}
             >
               {/* <Link href={url} className="flex justify-center items-center"> */}
