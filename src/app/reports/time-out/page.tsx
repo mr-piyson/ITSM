@@ -94,7 +94,6 @@ export default function ReportPage() {
     refetchOnWindowFocus: false,
     gcTime: Infinity,
     staleTime: Infinity,
-    enabled: false,
   });
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
