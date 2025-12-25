@@ -35,7 +35,7 @@ import { SearchDialog } from "./SearchPanels";
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
 const DateCellRenderer = ({ value }: { value: string }) => {
-  if (!value) return null;
+  if (!value) return "";
   const date = new Date(value);
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -110,16 +110,16 @@ export default function ReportPage() {
         headerName: "Panel Serial",
         editable: true,
       },
-      { field: "Mold" },
-      { field: "Gelcoating" },
-      { field: "Demolding" },
-      { field: "Trimming" },
-      { field: "Drilling" },
-      { field: "Bonding" },
-      { field: "Paint Prep" },
-      { field: "Painting" },
+      { field: "Mold", valueFormatter: DateCellRenderer },
+      { field: "Gelcoating", valueFormatter: DateCellRenderer },
+      { field: "Demolding", valueFormatter: DateCellRenderer },
+      { field: "Trimming", valueFormatter: DateCellRenderer },
+      { field: "Drilling", valueFormatter: DateCellRenderer },
+      { field: "Bonding", valueFormatter: DateCellRenderer },
+      { field: "Paint Prep", valueFormatter: DateCellRenderer },
+      { field: "Painting", valueFormatter: DateCellRenderer },
+      { field: "Final", valueFormatter: DateCellRenderer },
       // { field: "Finishing" },
-      { field: "Final" },
       // { field: "Wrapping" },
       // { field: "Packing" },
       // { field: "Mixing" },
@@ -224,7 +224,7 @@ export default function ReportPage() {
         {/* Right Controls */}
         <div className="flex flex-1 flex-row justify-end">
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[160px] border-border">
+            <SelectTrigger className="w-40 border-border">
               <SelectValue placeholder="Filter by date" />
             </SelectTrigger>
             <SelectContent>
