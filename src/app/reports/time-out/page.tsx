@@ -109,6 +109,7 @@ export default function ReportPage() {
         field: "panel_serial",
         headerName: "Panel Serial",
         editable: true,
+        valueFormatter: (value) => String(value.value).toUpperCase(),
       },
       { field: "Mold", valueFormatter: DateCellRenderer },
       { field: "Gelcoating", valueFormatter: DateCellRenderer },

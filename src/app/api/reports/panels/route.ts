@@ -80,6 +80,7 @@ export async function GET(request: NextRequest) {
 
     // Execute query
     const [rows] = await mes.execute(sql);
+    
 
     return NextResponse.json(rows);
   } catch (error) {

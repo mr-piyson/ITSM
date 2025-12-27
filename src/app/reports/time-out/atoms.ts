@@ -41,38 +41,35 @@ export function getPivotData(
   api: ApiReportData[],
   mode: Mode = "max"
 ): ReportData[] {
-  const panelMap = new Map<string, Record<string, string>>();
+  const panelMap = new Map<string, Record<string, Date>>();
 
-  for (let i = 0; i < api.length; i++) {
-    const { panel_serial, datetime_out, gate } = api[i] as ApiReportData;
+  for (const { panel_serial, datetime_out, gate } of api) {
     const workstationName = workstation[Number(gate)];
     if (!workstationName) continue;
 
-    let record = panelMap.get(panel_serial.toUpperCase());
+    // SINGLE SOURCE OF TRUTH
+    const normalizedPanel = panel_serial.trim().toUpperCase();
+
+    let record = panelMap.get(normalizedPanel);
     if (!record) {
       record = {};
-      panelMap.set(panel_serial, record);
+      panelMap.set(normalizedPanel, record);
     }
 
-    const currentValue = record[workstationName];
-    if (!currentValue) {
-      record[workstationName] = datetime_out;
-      continue;
-    }
-
-    const currentTime = Date.parse(currentValue);
-    const newTime = Date.parse(datetime_out);
+    const newTime = new Date(datetime_out);
+    const currentTime = record[workstationName];
 
     if (
+      !currentTime ||
       (mode === "min" && newTime < currentTime) ||
       (mode === "max" && newTime > currentTime)
     ) {
-      record[workstationName] = datetime_out;
+      record[workstationName] = newTime;
     }
   }
 
-  return Array.from(panelMap, ([panel_serial, workstationData]) => ({
-    panel_serial,
+  return Array.from(panelMap.entries(), ([panel_serial, workstationData]) => ({
+    panel_serial, // already uppercase
     ...workstationData,
   }));
 }
