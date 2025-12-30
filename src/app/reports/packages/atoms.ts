@@ -10,17 +10,8 @@ export interface ReportData {
   height_cm: number;
   weight_kg: number;
   created_at: Date;
-}
-
-export interface ApiReportData {
-  id: string;
-  code: string;
-  project_name: string;
-  length_cm: number;
-  width_cm: number;
-  height_cm: number;
-  weight_kg: number;
-  created_at: string;
+  container: string;
+  shipped_at: string;
 }
 
 export const initData = atom<ReportData[]>([]);

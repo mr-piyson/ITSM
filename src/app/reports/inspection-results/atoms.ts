@@ -9,6 +9,7 @@ export type InspectionResult = {
   datetime_new: Date;
   date: Date;
   gate: string;
+  epicor_asm_part_no: string;
   inspection_result: boolean;
   inspector: string;
   user: string;

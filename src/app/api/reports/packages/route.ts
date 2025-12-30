@@ -3,24 +3,40 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { mes } from "@/lib/database";
 
+export interface ApiReportData {
+  id: string;
+  code: string;
+  project_name: string;
+  length_cm: number;
+  width_cm: number;
+  height_cm: number;
+  weight_kg: number;
+  created_at: string;
+  container: string;
+  shipped_at: string;
+}
+
 export async function GET(request: NextRequest) {
   // 1. Get the 'filter' query parameter
   const { searchParams } = new URL(request.url);
   const filter = searchParams.get("filter");
 
   // 2. Initial SQL query and parameters setup
-  let sql = `
-    SELECT
-        p.id,
+  let sql = `SELECT p.id,
         p.code,
         p.project_name,
         p.length_cm,
         p.width_cm,
         p.height_cm,
         p.weight_kg,
-        p.created_at
-    FROM mes.packages p
-  `;
+        p.created_at,
+      c.code as container,
+      c.created_at as shipped_at  from mes.packages p 
+      LEFT JOIN 
+      mes.container_items ci ON ci.item_id = p.code
+      LEFT JOIN 
+      mes.containers c ON c.id = ci.container_id
+      `;
   const params: (string | Date)[] = []; // Array to hold query parameters
 
   // 3. Handle default case (as in PHP, if filter is not provided)

@@ -107,6 +107,7 @@ export default function ReportPage() {
         inspector: panel.inspector,
         user: panel.user,
         product_ref: panel.product_ref,
+        epicor_asm_part_no: panel.epicor_asm_part_no,
       })
     );
     return data;
@@ -144,6 +145,13 @@ export default function ReportPage() {
         filter: true,
         flex: 1,
         cellRenderer: PanelCellRender,
+      },
+      {
+        headerName: "ASM Part No",
+        field: "epicor_asm_part_no",
+        editable: true,
+        sortable: true,
+        filter: true,
       },
       {
         headerName: "Project",

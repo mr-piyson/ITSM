@@ -6,12 +6,13 @@ export type APIInspectionResult = RowDataPacket & {
   id: number;
   panel_serial: string;
   project: string;
-  product_ref: string;
+  // product_ref: string;
   datetime: Date;
-  datetime_new: Date;
-  date: Date;
+  // datetime_new: Date;
+  // date: Date;
   gate: number;
   inspection_result: string;
+  epicor_asm_part_no: string;
   inspector: string;
   user: string;
   factory: string;
@@ -51,18 +52,18 @@ export async function GET(
     const values = [];
 
     if (fromDate) {
-      conditions.push("date >= ?");
+      conditions.push("ir.date >= ?");
       values.push(fromDate);
     }
 
     if (toDate) {
-      conditions.push("date <= ?");
+      conditions.push("ir.date <= ?");
       values.push(toDate);
     }
 
     if (gates.length > 0) {
       const placeholders = gates.map(() => "?").join(",");
-      conditions.push(`gate = ${placeholders}`);
+      conditions.push(`ir.gate = ${placeholders}`);
       values.push(...gates);
     }
 
@@ -73,21 +74,24 @@ export async function GET(
     const query = `SELECT 
         ir.id,
         ir.panel_serial,
+        u.shortchar01 as epicor_asm_part_no,
         ir.project,
-        ir.product_ref,
+       -- ir.product_ref,
         ir.datetime,
-        ir.datetime_new,
+       -- ir.datetime_new,
         ir.date,
         ir.gate,
         ir.inspection_result,
         ir.inspector,
-        ir.user,
+       -- ir.user,
         ir.factory
-      FROM quality.inspection_results ir
+    FROM quality.inspection_results ir
+	  LEFT JOIN 
+      label_app.ud31 u ON u.key5 = ir.panel_serial
       ${whereClause}
-      ORDER BY date;
+      ORDER by ir.datetime DESC;
     `;
-
+    console.log(query);
     const [rows] = await db.mes.execute<APIInspectionResult[]>(query, values);
 
     return NextResponse.json(rows);

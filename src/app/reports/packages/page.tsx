@@ -21,14 +21,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useTableTheme } from "@/hooks/use-tableTheme";
-import {
-  type ApiReportData,
-  filteredData,
-  filterStore,
-  initData,
-  type ReportData,
-} from "./atoms";
+import { filteredData, filterStore, initData, type ReportData } from "./atoms";
 import { SearchDialog } from "./SearchPanels";
+import { ApiReportData } from "@/app/api/reports/packages/route";
 
 const searchOptions: { value: keyof ReportData; label: string }[] = [
   { value: "code", label: "Panel Code" },
@@ -119,6 +114,8 @@ export default function ReportPage() {
         height_cm: panel.height_cm,
         weight_kg: panel.weight_kg,
         created_at: new Date(panel.created_at),
+        container: panel.container,
+        shipped_at: panel.shipped_at,
       })
     );
   }, [filter]);
@@ -188,6 +185,21 @@ export default function ReportPage() {
         sortable: true,
         flex: 1,
         filter: "agNumberColumnFilter",
+      },
+      {
+        headerName: "Container",
+        field: "container",
+        editable: true,
+        sortable: true,
+        flex: 1,
+      },
+      {
+        headerName: "Shipped At",
+        field: "shipped_at",
+        editable: true,
+        sortable: true,
+        flex: 1,
+        cellRenderer: DateCellRenderer,
       },
     ],
     []
