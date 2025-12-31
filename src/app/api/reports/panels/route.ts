@@ -73,6 +73,8 @@ export async function GET(request: NextRequest) {
       case "5years":
         sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 5 YEAR";
         break;
+      case "all":
+        break;
       default:
         // Invalid filter - return empty array
         return NextResponse.json([]);
@@ -80,7 +82,6 @@ export async function GET(request: NextRequest) {
 
     // Execute query
     const [rows] = await mes.execute(sql);
-    
 
     return NextResponse.json(rows);
   } catch (error) {

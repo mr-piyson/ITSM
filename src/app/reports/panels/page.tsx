@@ -406,6 +406,7 @@ export default function ReportPage() {
               <SelectItem value="2years">Last 2 Years</SelectItem>
               <SelectItem value="3years">Last 3 Years</SelectItem>
               <SelectItem value="5years">Last 5 Years</SelectItem>
+              <SelectItem value="all">All Times</SelectItem>
             </SelectContent>
           </Select>
         </div>

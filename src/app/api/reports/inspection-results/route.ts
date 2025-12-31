@@ -91,7 +91,7 @@ export async function GET(
       ${whereClause}
       ORDER by ir.datetime DESC;
     `;
-    console.log(query);
+
     const [rows] = await db.mes.execute<APIInspectionResult[]>(query, values);
 
     return NextResponse.json(rows);
