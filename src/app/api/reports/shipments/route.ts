@@ -8,10 +8,7 @@ export async function GET(request: NextRequest) {
 
   // Validate year and month
   if (!year || !month) {
-    return NextResponse.json(
-      { error: "Year and month parameters are required" },
-      { status: 400 }
-    );
+    return NextResponse.json([]);
   }
 
   const yearNum = parseInt(year, 10);
@@ -36,7 +33,7 @@ export async function GET(request: NextRequest) {
   try {
     // Create database connection
     const sql = `SELECT DISTINCT
-        pk.code as box_code,
+        pk.code as package,
         i.project_category as project,
         i.qr_code as part_id,
         i.panel_ref AS description,

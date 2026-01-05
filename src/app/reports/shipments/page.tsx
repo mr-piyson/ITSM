@@ -66,6 +66,7 @@ export default function ReportPage() {
     refetchOnWindowFocus: false,
     gcTime: Infinity,
     staleTime: Infinity,
+    enabled: false,
   });
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
@@ -74,7 +75,7 @@ export default function ReportPage() {
     );
     const data = response.data.map(
       (panel: ApiReportData): ReportData => ({
-        box_code: panel.box_code.toUpperCase(),
+        package: panel.package.toUpperCase(),
         project: panel.project,
         part_id: panel.part_id.toUpperCase(),
         description: panel.description,
@@ -112,7 +113,7 @@ export default function ReportPage() {
       },
       {
         headerName: "Box Code",
-        field: "box_code",
+        field: "package",
         editable: true,
         sortable: true,
         filter: true,

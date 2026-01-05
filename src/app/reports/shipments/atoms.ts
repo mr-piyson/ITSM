@@ -1,29 +1,29 @@
 import { atom } from "jotai";
 
 export interface ApiReportData {
-	box_code: string;
-	project: string;
-	part_id: string;
-	description: string;
-	container_id: string;
-	date: string;
-	shipped_by: string;
-	job_id: string;
-	epicor_asm_part_no: string;
-	epicor_part_no: string;
+  package: string;
+  project: string;
+  part_id: string;
+  description: string;
+  container_id: string;
+  date: string;
+  shipped_by: string;
+  job_id: string;
+  epicor_asm_part_no: string;
+  epicor_part_no: string;
 }
 
 export interface ReportData {
-	box_code: string;
-	project: string;
-	part_id: string;
-	description: string;
-	container_id: string;
-	date: Date;
-	shipped_by: string;
-	job_id: string;
-	epicor_asm_part_no: string;
-	epicor_part_no: string;
+  package: string;
+  project: string;
+  part_id: string;
+  description: string;
+  container_id: string;
+  date: Date;
+  shipped_by: string;
+  job_id: string;
+  epicor_asm_part_no: string;
+  epicor_part_no: string;
 }
 
 export const initData = atom<ReportData[]>([]);
