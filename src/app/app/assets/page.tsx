@@ -31,28 +31,7 @@ export type Asset = {
   empImg?: string;
 };
 export default async function Assets(props: any) {
-  await db.iss.execute(`
-          UPDATE assets
-            SET purchaseDate = NULL
-              WHERE purchaseDate IS NOT NULL
-            AND (
-              MONTH(purchaseDate) = 0
-              OR DAY(purchaseDate) = 0
-              OR YEAR(purchaseDate) = 0
-            );`);
-
-  await db.iss.execute(`
-          UPDATE assets
-            SET warrantyDate = NULL
-              WHERE warrantyDate IS NOT NULL
-            AND (
-              MONTH(warrantyDate) = 0
-              OR DAY(warrantyDate) = 0
-              OR YEAR(warrantyDate) = 0
-            );`);
-
-  const [resAssets] = await db.iss.query(`
-          SELECT 
+  const [resAssets] = await db.iss.execute(`SELECT 
 		  a.id,
 		  a.code,
 		  a.serialNumber,
@@ -71,8 +50,8 @@ export default async function Assets(props: any) {
 		  a.image,
 		  e.name as owner,
 		  e.image as empImg 
-		  FROM assets a
-          LEFT JOIN employees e
+		  FROM ISS.assets a
+          LEFT JOIN ISS.employees e
           ON a.empID = e.empID
         `);
 
