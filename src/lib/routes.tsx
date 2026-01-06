@@ -131,7 +131,7 @@ export const routes = {
       children: [
         {
           title: "IT Request From",
-          href: "/",
+          href: "/documents/IT-Request",
           icon: "icon-[lucide--file-text]",
         },
         {
