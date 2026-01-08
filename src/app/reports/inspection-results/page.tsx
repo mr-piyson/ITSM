@@ -27,16 +27,22 @@ import {
   fromStore,
   toStore,
 } from "./atoms";
-import { APIInspectionResult } from "@/app/api/reports/inspection-results/route";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { SelectSeparator } from "@/components/ui/select";
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from "@/components/ui/button-group";
+import { APIInspectionResult } from "@/app/api/reports/inspection-results/route";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
 const gateOptions = [
+  { value: "0", label: "All" },
   { value: "1", label: "Mold" },
   { value: "2", label: "Gelcoating" },
   { value: "10", label: "Demolding" },
@@ -46,26 +52,6 @@ const gateOptions = [
   { value: "5", label: "Painting" },
   { value: "6", label: "Final" },
 ];
-
-const gateMap: Record<number, string> = {
-  1: "Mold",
-  2: "Gelcoating",
-  3: "Trimming",
-  4: "Finishing",
-  5: "Painting",
-  6: "Final",
-  10: "Demolding",
-  11: "Drilling",
-  12: "Bonding",
-  15: "Paint Prep",
-  16: "Wrapping",
-  17: "Packing",
-  18: "Mixing",
-  19: "Casting",
-  20: "Pullout Test",
-  21: "Curing",
-  22: "After Trimming",
-};
 
 // Helper function to format date for API (YYYY-MM-DD)
 function formatDateForAPI(date: Date): string {
@@ -80,9 +66,9 @@ export default function ReportPage() {
   const [selectedRows, setSelectedRows] = useState<InspectionResult[]>([]);
   const [from, setFrom] = useAtom(fromStore);
   const [to, setTo] = useAtom(toStore);
-  const [gate, setGate] = useState<string>("1");
+  const [gate, setGate] = useState<string>("0");
   const [, setInitPanels] = useAtom(initData);
-  const [panels, setPanels] = useAtom(filteredData);
+  const [inspections, setPanels] = useAtom(filteredData);
   const theme = useTableTheme();
 
   const fetchPanels = useCallback(async (): Promise<InspectionResult[]> => {
@@ -92,26 +78,16 @@ export default function ReportPage() {
     const response = await fetch(
       `/api/reports/inspection-results?from=${fromParam}&to=${toParam}&gate=${gate}`
     );
-    const json = await response.json();
-    const data = json.map(
-      (panel: APIInspectionResult): InspectionResult => ({
-        id: panel.id,
-        panel_serial: panel.panel_serial.toUpperCase(),
-        project: panel.project,
-        date: new Date(panel.date),
-        datetime: new Date(panel.datetime),
-        datetime_new: new Date(panel.datetime_new),
-        factory: panel.factory,
-        gate: gateMap[panel.gate],
-        inspection_result: panel.inspection_result === "OK" ? true : false,
-        inspector: panel.inspector,
-        user: panel.user,
-        product_ref: panel.product_ref,
-        epicor_asm_part_no: panel.epicor_asm_part_no,
-      })
-    );
-    return data;
+    return await response.json();
   }, [from, to, gate]);
+
+  function defectCount(data: InspectionResult[]) {
+    return data.filter((r) => !r.inspection_result).length;
+  }
+
+  const defectPercentage = inspections.length
+    ? (defectCount(inspections) / inspections.length) * 100
+    : 0;
 
   // React Query for data fetching
   const {
@@ -149,6 +125,13 @@ export default function ReportPage() {
       {
         headerName: "ASM Part No",
         field: "epicor_asm_part_no",
+        editable: true,
+        sortable: true,
+        filter: true,
+      },
+      {
+        headerName: "Gate",
+        field: "gate",
         editable: true,
         sortable: true,
         filter: true,
@@ -261,27 +244,11 @@ export default function ReportPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Full Width Header */}
-      <Card className="w-full border-0 rounded-none">
-        <CardContent className=" space-y-4">
-          {/* Gates Tab Switcher */}
-          <div className="w-full overflow-x-auto">
-            <Tabs value={gate} onValueChange={setGate} className="w-full">
-              <TabsList className="inline-flex w-auto min-w-full">
-                {gateOptions.map((option) => (
-                  <TabsTrigger
-                    key={option.value}
-                    value={option.value}
-                    className="whitespace-nowrap"
-                  >
-                    {option.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
-
+      <div className="w-full border-0 rounded-none bg-card">
+        <div className=" space-y-4 p-2 ">
           {/* Date Range Picker and Search */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Calender From */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -310,7 +277,7 @@ export default function ReportPage() {
                 />
               </PopoverContent>
             </Popover>
-
+            {/* Calender To */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -353,16 +320,45 @@ export default function ReportPage() {
               <i className="icon-[vscode-icons--file-type-excel] size-4 mr-2" />
               Export
             </Button>
+            <div className="inline-flex flex-wrap flex-1 w-full gap-4  justify-end">
+              <div className=" p-4 bg-card shadow-md gap-3 border rounded-2xl flex items-center">
+                <p className="text-sm text-muted-foreground">Defect Rate :</p>
+                <p className=" text-3xl font-bold text-destructive">
+                  {defectPercentage.toFixed(2)}%
+                </p>
+              </div>
+              <div className=" p-4 bg-card shadow-md gap-3 border rounded-2xl flex items-center">
+                <p className="text-sm text-muted-foreground">Total Ins :</p>
+                <p className=" text-3xl font-bold ">{inspections.length}</p>
+              </div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Gates Tab Switcher */}
+          <div className="w-full overflow-x-auto">
+            <Tabs value={gate} onValueChange={setGate} className="w-full">
+              <TabsList className="inline-flex w-auto min-w-full">
+                {gateOptions.map((option) => (
+                  <TabsTrigger
+                    key={option.value}
+                    value={option.value}
+                    className="whitespace-nowrap"
+                  >
+                    {option.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+      </div>
 
       {/* Data Grid */}
       <Card className="flex-1 p-0 gap-0">
         <CardContent className="p-0 h-full">
           <div className="ag-theme-alpine h-full w-full">
             <AgGridReact
-              rowData={panels}
+              rowData={inspections}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               onGridReady={onGridReady}
@@ -374,17 +370,6 @@ export default function ReportPage() {
             />
           </div>
         </CardContent>
-
-        <CardFooter>
-          <div className="text-sm text-muted-foreground flex items-center gap-2">
-            <span>Total Inspection: {tableData.length}</span>
-            {selectedRows.length > 0 && (
-              <span className="pl-4 ml-2 border-l-2 border-foreground">
-                Selected Panels: {selectedRows.length}
-              </span>
-            )}
-          </div>
-        </CardFooter>
       </Card>
     </div>
   );
