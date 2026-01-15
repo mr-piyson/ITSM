@@ -32,12 +32,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { SelectSeparator } from "@/components/ui/select";
-import {
-  ButtonGroup,
-  ButtonGroupSeparator,
-} from "@/components/ui/button-group";
-import { APIInspectionResult } from "@/app/api/reports/inspection-results/route";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 

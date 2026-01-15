@@ -123,6 +123,12 @@ export const routes = {
       icon: "icon-[ph--shipping-container]",
       dev: true,
     },
+    {
+      title: "Jobs",
+      href: "/reports/jobs",
+      icon: "icon-[solar--suitcase-outline]",
+      dev: true,
+    },
   ],
   landingPage: [
     {
