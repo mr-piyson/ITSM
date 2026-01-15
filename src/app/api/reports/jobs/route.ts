@@ -13,8 +13,8 @@ export interface ApiJobsData {
   total_panels: string;
   printed_panels: number;
   inspected_panels: number;
-  has_printed_panel: boolean; // Changed from number
-  has_inspected_panel: boolean; // Changed from number
+  has_printed_panel: boolean;
+  has_inspected_panel: boolean;
 }
 
 const FilterSchema = z
@@ -69,8 +69,7 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    const sql = `
-      SELECT 
+    const sql = `SELECT 
         u.key1 AS job_id,
         u.date06 AS date,
         u.shortchar06 AS project_code,

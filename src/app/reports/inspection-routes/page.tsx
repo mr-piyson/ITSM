@@ -248,7 +248,7 @@ export default function ReportPage() {
         {/* Right Controls */}
         <div className="flex flex-1 flex-row justify-end">
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[160px] border-border">
+            <SelectTrigger className="w-40 border-border">
               <SelectValue placeholder="Filter by date" />
             </SelectTrigger>
             <SelectContent>
@@ -256,9 +256,10 @@ export default function ReportPage() {
               <SelectItem value="last7days">Last 7 Days</SelectItem>
               <SelectItem value="last30days">Last 30 Days</SelectItem>
               <SelectItem value="last90days">Last 90 Days</SelectItem>
-              <SelectItem value="1year">Last Year</SelectItem>
+              <SelectItem value="1year">Last 1 Year</SelectItem>
               <SelectItem value="2years">Last 2 Years</SelectItem>
               <SelectItem value="3years">Last 3 Years</SelectItem>
+              <SelectItem value="5years">Last 5 Years</SelectItem>
               <SelectItem value="all">All Time</SelectItem>
             </SelectContent>
           </Select>
