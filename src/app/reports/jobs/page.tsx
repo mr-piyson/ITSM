@@ -247,12 +247,12 @@ export default function ReportPage() {
 
       <CardFooter>
         <div className="text-sm text-muted-foreground flex items-center gap-2">
-          <span>Total Panels: {tableData.length}</span>
-          {selectedRows.length > 0 && (
+          <span>Total Jobs: {tableData.length}</span>
+          {/* {selectedRows.length > 0 && (
             <span className="pl-4 ml-2 border-l-2 border-foreground">
               Selected Panels: {selectedRows.length}
             </span>
-          )}
+          )} */}
         </div>
       </CardFooter>
     </Card>
