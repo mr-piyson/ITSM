@@ -154,8 +154,20 @@ export const routes = {
     },
     {
       title: "Tools",
-      icon: "icon-[lucide--file-text]",
+      icon: "icon-[hugeicons--tools]",
       href: "downloads/keyboard Tester.exe",
+      children: [
+        {
+          title: "Keyboard Tester Tool",
+          icon: "icon-[solar--keyboard-outline]",
+          href: "downloads/keyboard Tester.exe",
+        },
+        {
+          title: "Mouse Tester Tool",
+          icon: "icon-[solar--mouse-outline]",
+          href: "#",
+        },
+      ],
     },
     {
       title: "MES Reports",
