@@ -155,6 +155,7 @@ export const routes = {
     {
       title: "Tools",
       icon: "icon-[lucide--file-text]",
+      href: "downloads/keyboard Tester.exe",
     },
     {
       title: "MES Reports",
