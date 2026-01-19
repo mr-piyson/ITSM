@@ -1,18 +1,14 @@
 "use client";
 import React, { useState, useRef } from "react";
 import {
-  RotateCcw,
-  Trash2,
   Mouse,
   CircleDot,
   RectangleVertical,
   ArrowDown,
-  FileText,
   Home,
   ArrowUp,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { NavigationToolbar } from "@/app/nav-menu";
 
 interface Stats {
@@ -139,33 +135,7 @@ export default function MouseTestingApp() {
     }
   };
 
-  const clearLog = () => {
-    setEventLog([]);
-    setTimeout(() => {
-      addToLog("Log cleared by user", "text-muted-foreground");
-    }, 10);
-  };
 
-  const resetAll = () => {
-    setStats({
-      leftClicks: 0,
-      rightClicks: 0,
-      middleClicks: 0,
-      scrollEvents: 0,
-    });
-    setLastClickType("None");
-    setLastClickPos("-");
-    setScrollDirection("-");
-    setLastScrollDelta("-");
-    setScrollPos("0px");
-    if (scrollZoneRef.current) {
-      scrollZoneRef.current.scrollTop = 0;
-    }
-    setEventLog([]);
-    setTimeout(() => {
-      addToLog("All statistics reset", "text-red-600");
-    }, 10);
-  };
 
   return (
     <div className="min-h-screen bg-background">
