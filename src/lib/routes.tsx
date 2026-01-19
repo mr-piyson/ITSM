@@ -165,7 +165,7 @@ export const routes = {
         {
           title: "Mouse Tester Tool",
           icon: "icon-[solar--mouse-outline]",
-          href: "#",
+          href: "/tools/mouse-tester",
         },
       ],
     },

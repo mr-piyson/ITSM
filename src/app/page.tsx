@@ -272,9 +272,6 @@ const ITSMLandingPage = () => {
                   Sign in
                 </Button>
               </Link>
-              {/* <Button variant="outline" size="lg" className="text-lg">
-                Watch Demo
-              </Button> */}
             </div>
           </div>
 
