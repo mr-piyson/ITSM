@@ -12,11 +12,11 @@ export const routes = {
       href: "/app/dashboard",
       icon: "icon-[solar--chart-square-linear]",
     },
-    {
-      title: "Tasks",
-      href: "/app/tasks",
-      icon: "icon-[solar--ticket-linear]",
-    },
+    // {
+    //   title: "Tasks",
+    //   href: "/app/tasks",
+    //   icon: "icon-[solar--ticket-linear]",
+    // },
     {
       title: "Assets",
       href: "/app/assets",
@@ -32,41 +32,41 @@ export const routes = {
       href: "/app/employees",
       icon: "icon-[solar--user-circle-linear]",
     },
-    {
-      title: "Notifications",
-      href: "/app/notifications",
-      icon: "icon-[hugeicons--notification-01]",
-    },
-    {
-      title: "Contracts",
-      href: `/app/contracts`,
-      icon: "icon-[hugeicons--contracts]",
-    },
-    {
-      title: "Accounts",
-      href: "/app/accounts",
-      icon: "icon-[hugeicons--user-account]",
-    },
-    {
-      title: "Stock",
-      href: "/app/stock",
-      icon: "icon-[solar--box-outline]",
-    },
-    {
-      title: "Vendors",
-      href: "/app/vendors",
-      icon: "icon-[icon-park-outline--weixin-market]",
-    },
-    {
-      title: "Reports",
-      href: "/app/reports",
-      icon: "icon-[iconoir--reports]",
-    },
-    {
-      title: "Settings",
-      href: "/app/settings",
-      icon: "icon-[solar--settings-linear]",
-    },
+    // {
+    //   title: "Notifications",
+    //   href: "/app/notifications",
+    //   icon: "icon-[hugeicons--notification-01]",
+    // },
+    // {
+    //   title: "Contracts",
+    //   href: `/app/contracts`,
+    //   icon: "icon-[hugeicons--contracts]",
+    // },
+    // {
+    //   title: "Accounts",
+    //   href: "/app/accounts",
+    //   icon: "icon-[hugeicons--user-account]",
+    // },
+    // {
+    //   title: "Stock",
+    //   href: "/app/stock",
+    //   icon: "icon-[solar--box-outline]",
+    // },
+    // {
+    //   title: "Vendors",
+    //   href: "/app/vendors",
+    //   icon: "icon-[icon-park-outline--weixin-market]",
+    // },
+    // {
+    //   title: "Reports",
+    //   href: "/app/reports",
+    //   icon: "icon-[iconoir--reports]",
+    // },
+    // {
+    //   title: "Settings",
+    //   href: "/app/settings",
+    //   icon: "icon-[solar--settings-linear]",
+    // },
   ],
   settings: [
     {
@@ -173,6 +173,11 @@ export const routes = {
       title: "MES Reports",
       href: "/reports",
       icon: "icon-[lucide--chart-bar-big]",
+    },
+    {
+      title: "Staff",
+      href: "/staff/attendance",
+      icon: "icon-[lucide--table-2]",
     },
   ],
 } as Record<string, RouteItem[]>;
