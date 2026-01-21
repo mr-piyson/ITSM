@@ -69,6 +69,11 @@ export async function GET(request: Request) {
 
     let totalMinutesMonth = 0;
 
+    const isWeekend = (dateString: string) => {
+      const day = new Date(dateString).getDay();
+      return day === 5 || day === 6; // 5 = Friday, 6 = Saturday
+    };
+
     const result = allDays.map((dateObj) => {
       const dateKey = format(dateObj, "yyyy-MM-dd");
       const record = attendanceMap[dateKey];
@@ -78,6 +83,18 @@ export async function GET(request: Request) {
         return {
           date: dateKey,
           status: "Absent",
+          startTime: "-",
+          endTime: "-",
+          hours: "00:00",
+          imageStart: null,
+          imageEnd: null,
+        };
+      }
+      // Case: Weekend
+      if (isWeekend(dateKey)) {
+        return {
+          date: dateKey,
+          status: "Weekend",
           startTime: "-",
           endTime: "-",
           hours: "00:00",

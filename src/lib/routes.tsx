@@ -32,6 +32,11 @@ export const routes = {
       href: "/app/employees",
       icon: "icon-[solar--user-circle-linear]",
     },
+    {
+      title: "Attendance",
+      href: "/app/attendance",
+      icon: "icon-[lucide--table-2]",
+    },
     // {
     //   title: "Notifications",
     //   href: "/app/notifications",
@@ -173,11 +178,6 @@ export const routes = {
       title: "MES Reports",
       href: "/reports",
       icon: "icon-[lucide--chart-bar-big]",
-    },
-    {
-      title: "Staff",
-      href: "/staff/attendance",
-      icon: "icon-[lucide--table-2]",
     },
   ],
 } as Record<string, RouteItem[]>;

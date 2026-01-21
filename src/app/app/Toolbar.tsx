@@ -4,14 +4,13 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./App";
-import { NotificationDropdown } from "./notifications/notification-dropdown";
 
 export default function Toolbar(props: any) {
   return (
     <header
       className={cn(
         "flex sticky z-10 top-0 bg-sidebar/95 h-12 shrink-0 items-center gap-2 border-b px-4 flex-nowrap ",
-        props.className
+        props.className,
       )}
     >
       {/* Left hand side */}
@@ -22,7 +21,6 @@ export default function Toolbar(props: any) {
       </div>
       {/* Right hand side */}
       <div className="flex items-center gap-2">
-        <NotificationDropdown />
         <UserMenu />
       </div>
     </header>
