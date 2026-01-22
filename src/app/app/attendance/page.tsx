@@ -45,6 +45,9 @@ export default function AttendancePage() {
   const [month, setMonth] = useState("01");
   const [workerId, setWorkerId] = useState("");
 
+  const [firstSeen, setFirstSeen] = useState("");
+  const [lastSeen, setLastSeen] = useState("");
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -73,13 +76,28 @@ export default function AttendancePage() {
     return day === 5 || day === 6; // 5 = Friday, 6 = Saturday
   };
 
+  // get day of week from date string
+  const getDayOfWeek = (dateString: string) => {
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const dayIndex = new Date(dateString).getDay();
+    return days[dayIndex];
+  };
+
   return (
     <div className="container mx-auto p-6 max-w-5xl space-y-8">
       {/* Header */}
       <div className="flex items-center space-x-4 mb-6">
         <div className="h-12 w-1 bg-teal-600 rounded-full"></div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight ">
             BFG International
           </h1>
           <p className="text-slate-500">Worker Attendance Portal</p>
@@ -106,6 +124,10 @@ export default function AttendancePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="2021">2021</SelectItem>
+                  <SelectItem value="2022">2022</SelectItem>
+                  <SelectItem value="2023">2023</SelectItem>
+                  <SelectItem value="2024">2024</SelectItem>
                   <SelectItem value="2025">2025</SelectItem>
                   <SelectItem value="2026">2026</SelectItem>
                 </SelectContent>
@@ -162,28 +184,15 @@ export default function AttendancePage() {
       {summary && (
         <div className="space-y-6">
           {/* Summary Stats */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-1">
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="">
                 <CardTitle className="text-sm font-medium text-slate-500">
                   Employee Name
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{summary.employeeName}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-500">
-                  Total Hours Worked
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-teal-600 flex items-center">
-                  <Clock className="mr-2 h-6 w-6" />
-                  {summary.totalHours}
-                </div>
               </CardContent>
             </Card>
           </div>
@@ -197,6 +206,7 @@ export default function AttendancePage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Day of week</TableHead>
                     <TableHead className="w-45">Date</TableHead>
                     <TableHead>First In</TableHead>
                     <TableHead>Last Out</TableHead>
@@ -210,14 +220,19 @@ export default function AttendancePage() {
                       key={day.date}
                       className={
                         isWeekend(day.date)
-                          ? "bg-slate-100/50"
+                          ? "bg-background/50"
                           : day.status === "Absent"
-                            ? "bg-slate-50/60"
+                            ? "bg-background/60"
                             : ""
                       }
                     >
-                      <TableCell className="font-medium flex items-center text-slate-700">
-                        <CalendarDays className="mr-2 h-4 w-4 text-slate-400" />
+                      {/* Day of week Column */}
+                      <TableCell className="font-bold capitalize">
+                        {getDayOfWeek(day.date)}
+                      </TableCell>
+                      {/* Date Column */}
+                      <TableCell className="font-medium flex items-center text-muted-foreground">
+                        <CalendarDays className="mr-2 h-4 w-4 text-muted-foreground" />
                         {day.date}
                       </TableCell>
 
@@ -227,7 +242,7 @@ export default function AttendancePage() {
                           <a
                             href={day.imageStart}
                             target="_blank"
-                            className="inline-flex items-center text-blue-600 hover:underline font-medium"
+                            className="inline-flex items-center text-primary hover:underline font-medium"
                           >
                             {day.startTime}{" "}
                             <ExternalLink className="h-3 w-3 ml-1 opacity-50" />
@@ -243,7 +258,7 @@ export default function AttendancePage() {
                           <a
                             href={day.imageEnd}
                             target="_blank"
-                            className="inline-flex items-center text-blue-600 hover:underline font-medium"
+                            className="inline-flex items-center text-primary hover:underline font-medium"
                           >
                             {day.endTime}{" "}
                             <ExternalLink className="h-3 w-3 ml-1 opacity-50" />
@@ -257,7 +272,7 @@ export default function AttendancePage() {
                         {isWeekend(day.date) ? (
                           <Badge
                             variant="outline"
-                            className="bg-slate-200 text-slate-700 border-slate-300"
+                            className="bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
                           >
                             Weekend
                           </Badge>
@@ -266,10 +281,10 @@ export default function AttendancePage() {
                             variant="outline"
                             className={
                               day.status === "Present"
-                                ? "bg-green-50 text-green-700 border-green-200"
+                                ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-700"
                                 : day.status === "Incomplete"
-                                  ? "bg-orange-50 text-orange-700 border-orange-200"
-                                  : "bg-red-50 text-red-600 border-red-200"
+                                  ? "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900 dark:text-orange-300 dark:border-orange-700"
+                                  : "bg-red-50 text-red-600 border-red-200 dark:bg-red-900 dark:text-red-300 dark:border-red-700"
                             }
                           >
                             {day.status}
@@ -277,7 +292,7 @@ export default function AttendancePage() {
                         )}
                       </TableCell>
 
-                      <TableCell className="text-right font-mono font-bold text-slate-700">
+                      <TableCell className="text-right font-mono font-bold text-muted-foreground">
                         {day.hours !== "00:00" ? (
                           day.hours
                         ) : (
