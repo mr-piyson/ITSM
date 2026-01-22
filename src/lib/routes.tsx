@@ -37,6 +37,11 @@ export const routes = {
       href: "/app/attendance",
       icon: "icon-[lucide--table-2]",
     },
+    {
+      title: "Panel Tracker",
+      href: "/app/panel_tracker",
+      icon: "icon-[mingcute--board-line]",
+    },
     // {
     //   title: "Notifications",
     //   href: "/app/notifications",
