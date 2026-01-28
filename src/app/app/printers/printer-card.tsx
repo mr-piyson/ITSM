@@ -1,7 +1,6 @@
 "use client"
 
 import { ExternalLink, MapPin, Printer, User } from "lucide-react"
-import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -17,7 +16,7 @@ export function PrinterCard({ printer, onViewDetails }: PrinterCardProps) {
       <CardContent className="p-6">
         <div className="w-full h-32 rounded-lg bg-white border border-border/20 overflow-hidden shadow-sm mb-4">
           {printer.img && (
-            <Image
+            <img
               width={300}
               height={200}
               src={
