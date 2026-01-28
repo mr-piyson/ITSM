@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import * as AvatarPrimitive from "@radix-ui/react-avatar";
+import * as AvatarPrimitive from "@radix-ui/react-avatar"
+import * as React from "react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 function Avatar({
   className,
@@ -18,12 +18,13 @@ function Avatar({
       )}
       {...props}
     />
-  );
+  )
 }
 
-interface AvatarImageProps
-  extends React.ComponentProps<typeof AvatarPrimitive.Image> {
-  covered?: boolean;
+interface AvatarImageProps extends React.ComponentProps<
+  typeof AvatarPrimitive.Image
+> {
+  covered?: boolean
 }
 
 function AvatarImage({ className, covered, ...props }: AvatarImageProps) {
@@ -37,7 +38,7 @@ function AvatarImage({ className, covered, ...props }: AvatarImageProps) {
       )}
       {...props}
     />
-  );
+  )
 }
 
 function AvatarFallback({
@@ -53,7 +54,7 @@ function AvatarFallback({
       )}
       {...props}
     />
-  );
+  )
 }
 
-export { Avatar, AvatarImage, AvatarFallback };
+export { Avatar, AvatarImage, AvatarFallback }

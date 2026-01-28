@@ -1,16 +1,28 @@
-"use client";
+"use client"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import type * as React from "react"
+
+import MESLogo from "@/assets/icons/MESLogo"
+import { ModeToggle } from "@/components/ui/mode-toggle"
+import { Separator } from "@/components/ui/separator"
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarInset,
   SidebarProvider,
-} from "@/components/ui/sidebar";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import MESLogo from "@/assets/icons/MESLogo";
-import { ModeToggle } from "@/components/ui/mode-toggle";
-import { routes } from "@/lib/routes";
+} from "@/components/ui/sidebar"
+import { SidebarTrigger } from "@/components/ui/sidebar"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar"
+import { routes } from "@/lib/routes"
 
 export default function Page(props: any) {
   return (
@@ -30,11 +42,8 @@ export default function Page(props: any) {
         </SidebarInset>
       </SidebarProvider>
     </QueryClientProvider>
-  );
+  )
 }
-
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 function SiteHeader() {
   return (
@@ -50,22 +59,11 @@ function SiteHeader() {
         </div>
       </div>
     </header>
-  );
+  )
 }
 
-import type * as React from "react";
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
-
 function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const path = usePathname();
+  const path = usePathname()
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       {/* This is the App Sidebar header */}
@@ -103,5 +101,5 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  );
+  )
 }

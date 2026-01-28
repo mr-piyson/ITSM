@@ -1,28 +1,29 @@
-"use client";
+"use client"
 
-import { Laptop, Monitor } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import type React from "react";
-import { useState } from "react";
-import MESLogo from "@/assets/icons/MESLogo";
-import epicor from "@/assets/images/epicor.jpg";
-import office365 from "@/assets/images/office.webp";
-import { Button } from "@/components/ui/button";
+import { Laptop, Monitor } from "lucide-react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import type React from "react"
+import { useState } from "react"
+
+import MESLogo from "@/assets/icons/MESLogo"
+import epicor from "@/assets/images/epicor.jpg"
+import office365 from "@/assets/images/office.webp"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function ITRequestForm() {
-  const router = useRouter();
+  const router = useRouter()
   const [formData, setFormData] = useState({
     requesterName: "",
     requesterManager: "",
@@ -38,7 +39,7 @@ export default function ITRequestForm() {
     sharedFilesAccess: "",
     othersSpecify: "",
     justification: "",
-  });
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     // e.preventDefault();
@@ -66,11 +67,11 @@ export default function ITRequestForm() {
     // } else {
     // 	toast.error(res.error);
     // }
-  };
+  }
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
@@ -505,5 +506,5 @@ export default function ITRequestForm() {
         </Card>
       </div>
     </div>
-  );
+  )
 }

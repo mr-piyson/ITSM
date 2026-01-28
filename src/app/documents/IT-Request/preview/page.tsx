@@ -1,53 +1,54 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { Printer, ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Printer } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+
+import { Button } from "@/components/ui/button"
 
 interface RequestData {
-  requestId: string;
-  submittedDate: string;
-  requesterName: string;
-  requesterManager: string;
-  department: string;
-  location: string;
-  softwareMES: boolean;
-  softwareOffice365: boolean;
-  softwareEPICOR: boolean;
-  softwareOther: string;
-  similarPermissions: string;
-  hardwareSelection: string;
-  hardwareOther: string;
-  sharedFilesAccess: string;
-  othersSpecify: string;
-  justification: string;
+  requestId: string
+  submittedDate: string
+  requesterName: string
+  requesterManager: string
+  department: string
+  location: string
+  softwareMES: boolean
+  softwareOffice365: boolean
+  softwareEPICOR: boolean
+  softwareOther: string
+  similarPermissions: string
+  hardwareSelection: string
+  hardwareOther: string
+  sharedFilesAccess: string
+  othersSpecify: string
+  justification: string
 }
 
 export default function RequestPreview() {
-  const router = useRouter();
-  const [requestData, setRequestData] = useState<RequestData | null>(null);
+  const router = useRouter()
+  const [requestData, setRequestData] = useState<RequestData | null>(null)
 
   useEffect(() => {
     // Retrieve data from localStorage
-    const data = localStorage.getItem("currentRequest");
+    const data = localStorage.getItem("currentRequest")
     if (data) {
-      setRequestData(JSON.parse(data));
+      setRequestData(JSON.parse(data))
     } else {
-      router.push("/");
+      router.push("/")
     }
-  }, [router]);
+  }, [router])
 
   const handlePrint = () => {
-    window.print();
-  };
+    window.print()
+  }
 
   if (!requestData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Loading...</p>
       </div>
-    );
+    )
   }
 
   const formatDate = (dateString: string) => {
@@ -55,8 +56,8 @@ export default function RequestPreview() {
       year: "numeric",
       month: "long",
       day: "numeric",
-    });
-  };
+    })
+  }
 
   return (
     <>
@@ -302,5 +303,5 @@ export default function RequestPreview() {
         }
       `}</style>
     </>
-  );
+  )
 }

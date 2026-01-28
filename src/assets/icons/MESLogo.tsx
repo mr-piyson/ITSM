@@ -1,4 +1,5 @@
-import * as React from "react";
+import * as React from "react"
+
 export default function MESLogo(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -21,5 +22,5 @@ export default function MESLogo(props: React.SVGProps<SVGSVGElement>) {
         className="st0"
       />
     </svg>
-  );
+  )
 }

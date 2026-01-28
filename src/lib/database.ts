@@ -1,9 +1,9 @@
-import mysql from "mysql2/promise";
-import type { Pool } from "mysql2/promise";
+import mysql from "mysql2/promise"
+import type { Pool } from "mysql2/promise"
 
 class DatabaseManager {
-  private static mesPool: Pool | null = null;
-  private static issPool: Pool | null = null;
+  private static mesPool: Pool | null = null
+  private static issPool: Pool | null = null
 
   static getMesPool(): Pool {
     if (!this.mesPool) {
@@ -14,9 +14,9 @@ class DatabaseManager {
         queueLimit: 0,
         enableKeepAlive: true,
         keepAliveInitialDelay: 0,
-      });
+      })
     }
-    return this.mesPool;
+    return this.mesPool
   }
 
   static getIssPool(): Pool {
@@ -28,14 +28,14 @@ class DatabaseManager {
         queueLimit: 0,
         enableKeepAlive: true,
         keepAliveInitialDelay: 0,
-      });
+      })
     }
-    return this.issPool;
+    return this.issPool
   }
 }
 
-export const mes = DatabaseManager.getMesPool();
-export const iss = DatabaseManager.getIssPool();
+export const mes = DatabaseManager.getMesPool()
+export const iss = DatabaseManager.getIssPool()
 
-const db = { mes, iss };
-export default db;
+const db = { mes, iss }
+export default db

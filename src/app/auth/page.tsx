@@ -1,13 +1,15 @@
-import { redirect } from "next/navigation";
-import { getUser } from "./auth.actions";
-import SignInTab from "./SignIn";
-import SignUpTab from "./SignUp";
-import { TabSwitcher } from "./TabSwitcher";
-import AppLogo from "@/assets/icons/Logo";
+import { redirect } from "next/navigation"
+
+import AppLogo from "@/assets/icons/Logo"
+
+import SignInTab from "./SignIn"
+import SignUpTab from "./SignUp"
+import { TabSwitcher } from "./TabSwitcher"
+import { getUser } from "./auth.actions"
 
 export default async function Auth(props: any) {
-  const session = await getUser();
-  if (session) redirect("/app");
+  const session = await getUser()
+  if (session) redirect("/app")
 
   return (
     <div className=" relative  h-screen items-center justify-center lg:grid  lg:grid-cols-2 ">
@@ -24,5 +26,5 @@ export default async function Auth(props: any) {
         <TabSwitcher TabOne={<SignInTab />} TabTow={<SignUpTab />} />
       </div>
     </div>
-  );
+  )
 }

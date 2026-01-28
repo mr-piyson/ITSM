@@ -71,14 +71,14 @@ const currenciesArray = [
       flag: "sa",
     },
   ],
-];
+]
 
 export const currencies = new Map(
   currenciesArray[0].map((currency) => [currency.code, currency])
-);
+)
 
 export const getCurrency = (code: string) => {
-  const currency = currencies.get(code);
+  const currency = currencies.get(code)
   if (!currency) {
     return {
       code: "USD",
@@ -86,7 +86,7 @@ export const getCurrency = (code: string) => {
       symbol: "$",
       decimals: 2,
       flag: "us",
-    };
+    }
   }
-  return currency;
-};
+  return currency
+}

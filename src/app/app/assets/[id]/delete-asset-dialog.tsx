@@ -1,60 +1,61 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react"
+import { useState } from "react"
+
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+} from "@/components/ui/dialog"
 
 interface Asset {
-  id: string;
-  code: string;
-  type: string;
-  deviceName: string;
-  serialNumber: string;
-  manufacturer: string;
-  model: string;
-  location: string;
-  department: string;
-  deviceStatus: "In Use" | "Available" | "Defective";
-  warrantyStatus: "Valid" | "Expired" | "NA";
-  verified: boolean;
-  verifiedDate?: string;
+  id: string
+  code: string
+  type: string
+  deviceName: string
+  serialNumber: string
+  manufacturer: string
+  model: string
+  location: string
+  department: string
+  deviceStatus: "In Use" | "Available" | "Defective"
+  warrantyStatus: "Valid" | "Expired" | "NA"
+  verified: boolean
+  verifiedDate?: string
   owner: {
-    name: string;
-    image?: string;
-    empId: string;
-  };
-  purchaseDate: string;
-  purchasePrice: string;
-  warrantyDate: string;
-  processor: string;
-  os: string;
-  memory: string;
-  hdd: string;
-  ip: string;
-  macAddress: string;
-  firmwareVer: string;
-  specification: string;
-  image?: string;
+    name: string
+    image?: string
+    empId: string
+  }
+  purchaseDate: string
+  purchasePrice: string
+  warrantyDate: string
+  processor: string
+  os: string
+  memory: string
+  hdd: string
+  ip: string
+  macAddress: string
+  firmwareVer: string
+  specification: string
+  image?: string
   ownerChangeLogs: Array<{
-    date: string;
-    oldOwner: string;
-    newOwner: string;
-  }>;
+    date: string
+    oldOwner: string
+    newOwner: string
+  }>
 }
 
 interface DeleteAssetDialogProps {
-  asset: Asset;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onDelete: () => void;
+  asset: Asset
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onDelete: () => void
 }
 
 export function DeleteAssetDialog({
@@ -63,17 +64,17 @@ export function DeleteAssetDialog({
   onOpenChange,
   onDelete,
 }: DeleteAssetDialogProps) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   const handleDelete = async () => {
-    setLoading(true);
+    setLoading(true)
 
     // Simulate API call
     setTimeout(() => {
-      onDelete();
-      setLoading(false);
-    }, 1000);
-  };
+      onDelete()
+      setLoading(false)
+    }, 1000)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -122,5 +123,5 @@ export function DeleteAssetDialog({
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

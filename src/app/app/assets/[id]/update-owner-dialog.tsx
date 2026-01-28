@@ -1,66 +1,67 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search } from "lucide-react"
+import { useState } from "react"
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 
 interface Asset {
-  id: string;
-  code: string;
-  type: string;
-  deviceName: string;
-  serialNumber: string;
-  manufacturer: string;
-  model: string;
-  location: string;
-  department: string;
-  deviceStatus: "In Use" | "Available" | "Defective";
-  warrantyStatus: "Valid" | "Expired" | "NA";
-  verified: boolean;
-  verifiedDate?: string;
+  id: string
+  code: string
+  type: string
+  deviceName: string
+  serialNumber: string
+  manufacturer: string
+  model: string
+  location: string
+  department: string
+  deviceStatus: "In Use" | "Available" | "Defective"
+  warrantyStatus: "Valid" | "Expired" | "NA"
+  verified: boolean
+  verifiedDate?: string
   owner: {
-    name: string;
-    image?: string;
-    empId: string;
-  };
-  purchaseDate: string;
-  purchasePrice: string;
-  warrantyDate: string;
-  processor: string;
-  os: string;
-  memory: string;
-  hdd: string;
-  ip: string;
-  macAddress: string;
-  firmwareVer: string;
-  specification: string;
-  image?: string;
+    name: string
+    image?: string
+    empId: string
+  }
+  purchaseDate: string
+  purchasePrice: string
+  warrantyDate: string
+  processor: string
+  os: string
+  memory: string
+  hdd: string
+  ip: string
+  macAddress: string
+  firmwareVer: string
+  specification: string
+  image?: string
   ownerChangeLogs: Array<{
-    date: string;
-    oldOwner: string;
-    newOwner: string;
-  }>;
+    date: string
+    oldOwner: string
+    newOwner: string
+  }>
 }
 
 interface Employee {
-  empId: string;
-  name: string;
-  image?: string;
-  department: string;
+  empId: string
+  name: string
+  image?: string
+  department: string
 }
 
 interface UpdateOwnerDialogProps {
-  asset: Asset;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onUpdate: (asset: Asset) => void;
+  asset: Asset
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onUpdate: (asset: Asset) => void
 }
 
 export function UpdateOwnerDialog({
@@ -69,8 +70,8 @@ export function UpdateOwnerDialog({
   onOpenChange,
   onUpdate,
 }: UpdateOwnerDialogProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("")
+  const [loading, setLoading] = useState(false)
 
   // Mock employees data
   const employees: Employee[] = [
@@ -104,16 +105,16 @@ export function UpdateOwnerDialog({
       image: "/professional-headshot.png",
       department: "Engineering",
     },
-  ];
+  ]
 
   const filteredEmployees = employees.filter(
     (emp) =>
       emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.empId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )
 
   const handleSelectEmployee = async (employee: Employee) => {
-    setLoading(true);
+    setLoading(true)
 
     // Simulate API call
     setTimeout(() => {
@@ -132,12 +133,12 @@ export function UpdateOwnerDialog({
           },
           ...asset.ownerChangeLogs,
         ],
-      };
+      }
 
-      onUpdate(updatedAsset);
-      setLoading(false);
-    }, 1000);
-  };
+      onUpdate(updatedAsset)
+      setLoading(false)
+    }, 1000)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -202,5 +203,5 @@ export function UpdateOwnerDialog({
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

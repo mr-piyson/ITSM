@@ -1,12 +1,12 @@
-"use client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+"use client"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export function TabSwitcher({
   TabOne,
   TabTow,
 }: {
-  TabOne: React.ReactNode;
-  TabTow: React.ReactNode;
+  TabOne: React.ReactNode
+  TabTow: React.ReactNode
 }) {
   return (
     <Tabs
@@ -20,5 +20,5 @@ export function TabSwitcher({
       <TabsContent value="Sign-In">{TabOne}</TabsContent>
       {/* <TabsContent value="Sign-Up">{TabTow}</TabsContent> */}
     </Tabs>
-  );
+  )
 }

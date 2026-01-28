@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from "react";
-import { cn } from "@/lib/utils";
-import * as LucideIcons from "lucide-react";
-import type { Icon } from "lucide-react";
+import * as LucideIcons from "lucide-react"
+import type { Icon } from "lucide-react"
+import React, { useMemo, useState } from "react"
+
+import { cn } from "@/lib/utils"
 
 // Extract all icon names from lucide-react (excluding non-icon exports)
 const getAllIconNames = () => {
@@ -10,16 +11,16 @@ const getAllIconNames = () => {
       key !== "createLucideIcon" &&
       key !== "Icon" &&
       typeof LucideIcons[key as keyof typeof LucideIcons] === "function"
-  );
-};
+  )
+}
 
 interface ListLoadingSpinnerProps {
-  variant?: "default" | "skeleton" | "dots" | "pulse";
-  size?: "sm" | "md" | "lg";
-  itemCount?: number;
-  className?: string;
-  message?: string;
-  icon?: string;
+  variant?: "default" | "skeleton" | "dots" | "pulse"
+  size?: "sm" | "md" | "lg"
+  itemCount?: number
+  className?: string
+  message?: string
+  icon?: string
 }
 
 export function Loading({
@@ -34,37 +35,37 @@ export function Loading({
     sm: "h-4 w-4",
     md: "h-6 w-6",
     lg: "h-8 w-8",
-  };
+  }
 
   const containerSizeClasses = {
     sm: "gap-2 p-4",
     md: "gap-3 p-6",
     lg: "gap-4 p-8",
-  };
+  }
 
   const iconSizeClasses = {
     sm: "h-8 w-8",
     md: "h-12 w-12",
     lg: "h-16 w-16",
-  };
+  }
 
   const getIcon = () => {
-    if (!icon) return null;
+    if (!icon) return null
 
     const IconComponent = LucideIcons[
       icon as keyof typeof LucideIcons
     ] as React.ComponentType<{
-      className?: string;
-      strokeWidth?: number;
-    }>;
+      className?: string
+      strokeWidth?: number
+    }>
 
     return IconComponent ? (
       <IconComponent
         className={cn("text-muted-foreground mb-4", iconSizeClasses[size])}
         strokeWidth={1.5}
       />
-    ) : null;
-  };
+    ) : null
+  }
 
   if (variant === "skeleton") {
     return (
@@ -89,7 +90,7 @@ export function Loading({
         ))}
         <span className="sr-only">{message}</span>
       </div>
-    );
+    )
   }
 
   if (variant === "dots") {
@@ -124,7 +125,7 @@ export function Loading({
         </p>
         <span className="sr-only">{message}</span>
       </div>
-    );
+    )
   }
 
   if (variant === "pulse") {
@@ -144,8 +145,8 @@ export function Loading({
                   size === "sm"
                     ? "h-12 w-12"
                     : size === "md"
-                    ? "h-16 w-16"
-                    : "h-20 w-20"
+                      ? "h-16 w-16"
+                      : "h-20 w-20"
                 )}
               />
               <div className="space-y-3 flex-1">
@@ -158,7 +159,7 @@ export function Loading({
         ))}
         <span className="sr-only">{message}</span>
       </div>
-    );
+    )
   }
 
   // Default spinner variant
@@ -184,14 +185,14 @@ export function Loading({
       </p>
       <span className="sr-only">{message}</span>
     </div>
-  );
+  )
 }
 
 // Icon Picker Component with autocomplete and preview
 interface IconPickerProps {
-  selectedIcon?: string;
-  onIconSelect: (iconName: string | undefined) => void;
-  className?: string;
+  selectedIcon?: string
+  onIconSelect: (iconName: string | undefined) => void
+  className?: string
 }
 
 export function IconPicker({
@@ -199,29 +200,29 @@ export function IconPicker({
   onIconSelect,
   className,
 }: IconPickerProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("")
+  const [isOpen, setIsOpen] = useState(false)
 
-  const allIconNames = useMemo(() => getAllIconNames(), []);
+  const allIconNames = useMemo(() => getAllIconNames(), [])
 
   const filteredIcons = useMemo(() => {
-    if (!searchTerm) return allIconNames.slice(0, 50); // Show first 50 by default
+    if (!searchTerm) return allIconNames.slice(0, 50) // Show first 50 by default
     return allIconNames
       .filter((name) => name.toLowerCase().includes(searchTerm.toLowerCase()))
-      .slice(0, 100); // Limit to 100 results for performance
-  }, [searchTerm, allIconNames]);
+      .slice(0, 100) // Limit to 100 results for performance
+  }, [searchTerm, allIconNames])
 
   const renderIcon = (iconName: string) => {
     const IconComponent = LucideIcons[
       iconName as keyof typeof LucideIcons
     ] as React.ComponentType<{
-      className?: string;
-      size?: number;
-    }>;
+      className?: string
+      size?: number
+    }>
     return IconComponent ? (
       <IconComponent size={20} className="text-current" />
-    ) : null;
-  };
+    ) : null
+  }
 
   return (
     <div className={cn("relative w-full max-w-sm", className)}>
@@ -263,9 +264,9 @@ export function IconPicker({
               <button
                 key={iconName}
                 onClick={() => {
-                  onIconSelect(iconName);
-                  setIsOpen(false);
-                  setSearchTerm("");
+                  onIconSelect(iconName)
+                  setIsOpen(false)
+                  setSearchTerm("")
                 }}
                 className={cn(
                   "w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors",
@@ -287,20 +288,20 @@ export function IconPicker({
         </>
       )}
     </div>
-  );
+  )
 }
 
 // Demo Component to showcase the functionality
 export default function LoadingDemo() {
   const [selectedVariant, setSelectedVariant] = useState<
     "default" | "skeleton" | "dots" | "pulse"
-  >("default");
-  const [selectedSize, setSelectedSize] = useState<"sm" | "md" | "lg">("md");
+  >("default")
+  const [selectedSize, setSelectedSize] = useState<"sm" | "md" | "lg">("md")
   const [selectedIcon, setSelectedIcon] = useState<string | undefined>(
     "Loader2"
-  );
-  const [message, setMessage] = useState("Loading...");
-  const [itemCount, setItemCount] = useState(3);
+  )
+  const [message, setMessage] = useState("Loading...")
+  const [itemCount, setItemCount] = useState(3)
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -433,5 +434,5 @@ export default function LoadingDemo() {
         </div>
       </div>
     </div>
-  );
+  )
 }

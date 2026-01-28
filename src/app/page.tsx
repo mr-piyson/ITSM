@@ -1,33 +1,35 @@
-"use client";
-import { useState, useEffect, useCallback } from "react";
+"use client"
 import {
+  ArrowRight,
   ChevronLeft,
   ChevronRight,
-  Monitor,
-  Smartphone,
   Headphones,
+  Monitor,
   Shield,
-  Zap,
-  Users,
-  ArrowRight,
+  Smartphone,
   Star,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+  Users,
+  Zap,
+} from "lucide-react"
+import Link from "next/link"
+import { useCallback, useEffect, useState } from "react"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import Link from "next/link";
-import { NavigationToolbar } from "./nav-menu";
+} from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+
+import { NavigationToolbar } from "./nav-menu"
 
 const EmblaCarousel = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
 
   const slides = [
     {
@@ -58,24 +60,24 @@ const EmblaCarousel = () => {
         "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=500&fit=crop",
       features: ["Knowledge Base", "Request Forms", "Status Tracking"],
     },
-  ];
+  ]
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  }, [slides.length]);
+    setCurrentSlide((prev) => (prev + 1) % slides.length)
+  }, [slides.length])
 
   const prevSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  }, [slides.length]);
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
+  }, [slides.length])
 
   useEffect(() => {
-    if (!isAutoPlaying) return;
-    const interval = setInterval(nextSlide, 5000);
-    return () => clearInterval(interval);
-  }, [nextSlide, isAutoPlaying]);
+    if (!isAutoPlaying) return
+    const interval = setInterval(nextSlide, 5000)
+    return () => clearInterval(interval)
+  }, [nextSlide, isAutoPlaying])
 
-  const handleMouseEnter = () => setIsAutoPlaying(false);
-  const handleMouseLeave = () => setIsAutoPlaying(true);
+  const handleMouseEnter = () => setIsAutoPlaying(false)
+  const handleMouseLeave = () => setIsAutoPlaying(true)
 
   return (
     <Card className="relative w-full h-96 md:h-125 overflow-hidden border-0 p-0 shadow-2xl">
@@ -162,19 +164,19 @@ const EmblaCarousel = () => {
         </div>
       </div>
     </Card>
-  );
-};
+  )
+}
 
 const ITSMLandingPage = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+      setIsScrolled(window.scrollY > 10)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   const features = [
     {
@@ -213,7 +215,7 @@ const ITSMLandingPage = () => {
       description:
         "Enhanced collaboration tools for IT teams and stakeholders.",
     },
-  ];
+  ]
 
   const testimonials = [
     {
@@ -240,7 +242,7 @@ const ITSMLandingPage = () => {
         "User-friendly interface and powerful features. Our team adopted it quickly with minimal training required.",
       rating: 5,
     },
-  ];
+  ]
 
   return (
     <div className="min-h-screen bg-background">
@@ -532,7 +534,7 @@ const ITSMLandingPage = () => {
         </div>
       </footer>
     </div>
-  );
-};
+  )
+}
 
-export default ITSMLandingPage;
+export default ITSMLandingPage

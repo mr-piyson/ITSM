@@ -1,19 +1,21 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
+
+import { ThemeProvider } from "@/components/Theme-Provider"
+import { Toaster } from "@/components/ui/sonner"
+
 // @ts-ignore
-import "./globals.css";
-import { ThemeProvider } from "@/components/Theme-Provider";
-import { Toaster } from "@/components/ui/sonner";
+import "./globals.css"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-});
+})
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
+})
 
 export const metadata: Metadata = {
   title: "ITSM - IT Service Management",
@@ -23,7 +25,7 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
   },
-};
+}
 
 export default async function RootLayout(props: any) {
   return (
@@ -51,5 +53,5 @@ export default async function RootLayout(props: any) {
         />
       </body>
     </html>
-  );
+  )
 }

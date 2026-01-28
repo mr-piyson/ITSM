@@ -1,18 +1,23 @@
-"use client";
+"use client"
 
-import { Monitor } from "lucide-react";
-import Link from "next/link";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Menu, X, ChevronDown } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Monitor } from "lucide-react"
+import { ChevronDown, Menu, X } from "lucide-react"
+import Link from "next/link"
+import * as React from "react"
+import { useState } from "react"
+
+import { Button } from "@/components/ui/button"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import {
   Drawer,
   DrawerContent,
-  DrawerTrigger,
   DrawerTitle,
-} from "@/components/ui/drawer";
+  DrawerTrigger,
+} from "@/components/ui/drawer"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,25 +26,21 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
-import { RouteItem, routes } from "@/lib/routes";
+} from "@/components/ui/dropdown-menu"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { RouteItem, routes } from "@/lib/routes"
+import { cn } from "@/lib/utils"
 
 export function NavigationToolbar(props: any) {
-  const [isScrolled, setIsScrolled] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false)
 
   React.useLayoutEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+      setIsScrolled(window.scrollY > 10)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
   return (
     <>
       <nav
@@ -74,11 +75,11 @@ export function NavigationToolbar(props: any) {
       </nav>
       <div className="h-16" />
     </>
-  );
+  )
 }
 
 function DesktopNavItem({ item }: { item: RouteItem }) {
-  const Icon = item.icon;
+  const Icon = item.icon
 
   if (item.children) {
     return (
@@ -96,7 +97,7 @@ function DesktopNavItem({ item }: { item: RouteItem }) {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-    );
+    )
   }
 
   return (
@@ -106,11 +107,11 @@ function DesktopNavItem({ item }: { item: RouteItem }) {
         {item.title}
       </Link>
     </Button>
-  );
+  )
 }
 
 function DesktopDropdownItem({ item }: { item: RouteItem }) {
-  const Icon = item.icon;
+  const Icon = item.icon
 
   if (item.children) {
     return (
@@ -125,7 +126,7 @@ function DesktopDropdownItem({ item }: { item: RouteItem }) {
           ))}
         </DropdownMenuSubContent>
       </DropdownMenuSub>
-    );
+    )
   }
 
   return (
@@ -138,7 +139,7 @@ function DesktopDropdownItem({ item }: { item: RouteItem }) {
         {item.title}
       </Link>
     </DropdownMenuItem>
-  );
+  )
 }
 
 function MobileNavItem({
@@ -146,12 +147,12 @@ function MobileNavItem({
   onNavigate,
   depth = 0,
 }: {
-  item: RouteItem;
-  onNavigate: () => void;
-  depth?: number;
+  item: RouteItem
+  onNavigate: () => void
+  depth?: number
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const Icon = item.icon;
+  const [isOpen, setIsOpen] = useState(false)
+  const Icon = item.icon
 
   if (item.children) {
     return (
@@ -182,7 +183,7 @@ function MobileNavItem({
           ))}
         </CollapsibleContent>
       </Collapsible>
-    );
+    )
   }
 
   return (
@@ -195,16 +196,16 @@ function MobileNavItem({
       <svg className={item.icon} />
       {item.title}
     </Link>
-  );
+  )
 }
 
 export function NavMenu() {
-  const [open, setOpen] = useState(false);
-  const isMobile = useIsMobile();
+  const [open, setOpen] = useState(false)
+  const isMobile = useIsMobile()
 
   const handleNavigate = () => {
-    setOpen(false);
-  };
+    setOpen(false)
+  }
 
   if (isMobile) {
     return (
@@ -239,7 +240,7 @@ export function NavMenu() {
           </div>
         </DrawerContent>
       </Drawer>
-    );
+    )
   }
 
   return (
@@ -248,5 +249,5 @@ export function NavMenu() {
         <DesktopNavItem key={item.title} item={item} />
       ))}
     </nav>
-  );
+  )
 }

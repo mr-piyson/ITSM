@@ -1,34 +1,35 @@
-"use client";
-import React, { useState, useRef } from "react";
+"use client"
 import {
-  Mouse,
-  CircleDot,
-  RectangleVertical,
   ArrowDown,
-  Home,
   ArrowUp,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { NavigationToolbar } from "@/app/nav-menu";
+  CircleDot,
+  Home,
+  Mouse,
+  RectangleVertical,
+} from "lucide-react"
+import React, { useRef, useState } from "react"
+
+import { NavigationToolbar } from "@/app/nav-menu"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface Stats {
-  leftClicks: number;
-  rightClicks: number;
-  middleClicks: number;
-  scrollEvents: number;
+  leftClicks: number
+  rightClicks: number
+  middleClicks: number
+  scrollEvents: number
 }
 
 interface LogEntry {
-  timestamp: string;
-  message: string;
-  color: string;
+  timestamp: string
+  message: string
+  color: string
 }
 
 interface Ripple {
-  id: number;
-  x: number;
-  y: number;
-  color: string;
+  id: number
+  x: number
+  y: number
+  color: string
 }
 
 export default function MouseTestingApp() {
@@ -37,105 +38,101 @@ export default function MouseTestingApp() {
     rightClicks: 0,
     middleClicks: 0,
     scrollEvents: 0,
-  });
+  })
 
-  const [lastClickType, setLastClickType] = useState<string>("None");
-  const [lastClickPos, setLastClickPos] = useState<string>("-");
-  const [scrollDirection, setScrollDirection] = useState<string>("-");
-  const [lastScrollDelta, setLastScrollDelta] = useState<string>("-");
-  const [scrollPos, setScrollPos] = useState<string>("0px");
+  const [lastClickType, setLastClickType] = useState<string>("None")
+  const [lastClickPos, setLastClickPos] = useState<string>("-")
+  const [scrollDirection, setScrollDirection] = useState<string>("-")
+  const [lastScrollDelta, setLastScrollDelta] = useState<string>("-")
+  const [scrollPos, setScrollPos] = useState<string>("0px")
   const [eventLog, setEventLog] = useState<LogEntry[]>([
     {
       timestamp: new Date().toLocaleTimeString(),
       message: "Mouse testing app initialized. Start testing!",
       color: "text-green-600",
     },
-  ]);
-  const [ripples, setRipples] = useState<Ripple[]>([]);
+  ])
+  const [ripples, setRipples] = useState<Ripple[]>([])
 
-  const scrollZoneRef = useRef<HTMLDivElement>(null);
-  const rippleIdRef = useRef(0);
+  const scrollZoneRef = useRef<HTMLDivElement>(null)
+  const rippleIdRef = useRef(0)
 
   const addToLog = (message: string, color: string = "text-foreground") => {
-    const timestamp = new Date().toLocaleTimeString();
-    setEventLog((prev) =>
-      [{ timestamp, message, color }, ...prev].slice(0, 50)
-    );
-  };
+    const timestamp = new Date().toLocaleTimeString()
+    setEventLog((prev) => [{ timestamp, message, color }, ...prev].slice(0, 50))
+  }
 
   const createRipple = (x: number, y: number, color: string) => {
-    const id = rippleIdRef.current++;
-    setRipples((prev) => [...prev, { id, x, y, color }]);
+    const id = rippleIdRef.current++
+    setRipples((prev) => [...prev, { id, x, y, color }])
     setTimeout(() => {
-      setRipples((prev) => prev.filter((r) => r.id !== id));
-    }, 600);
-  };
+      setRipples((prev) => prev.filter((r) => r.id !== id))
+    }, 600)
+  }
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    e.preventDefault()
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
 
-    let clickType: string;
-    let color: string;
-    let colorClass: string;
+    let clickType: string
+    let color: string
+    let colorClass: string
 
     switch (e.button) {
       case 0:
-        setStats((prev) => ({ ...prev, leftClicks: prev.leftClicks + 1 }));
-        clickType = "Left Click";
-        color = "#3b82f6";
-        colorClass = "text-blue-600";
-        break;
+        setStats((prev) => ({ ...prev, leftClicks: prev.leftClicks + 1 }))
+        clickType = "Left Click"
+        color = "#3b82f6"
+        colorClass = "text-blue-600"
+        break
       case 1:
-        setStats((prev) => ({ ...prev, middleClicks: prev.middleClicks + 1 }));
-        clickType = "Middle Click";
-        color = "#10b981";
-        colorClass = "text-green-600";
-        break;
+        setStats((prev) => ({ ...prev, middleClicks: prev.middleClicks + 1 }))
+        clickType = "Middle Click"
+        color = "#10b981"
+        colorClass = "text-green-600"
+        break
       case 2:
-        setStats((prev) => ({ ...prev, rightClicks: prev.rightClicks + 1 }));
-        clickType = "Right Click";
-        color = "#a855f7";
-        colorClass = "text-purple-600";
-        break;
+        setStats((prev) => ({ ...prev, rightClicks: prev.rightClicks + 1 }))
+        clickType = "Right Click"
+        color = "#a855f7"
+        colorClass = "text-purple-600"
+        break
       default:
-        return;
+        return
     }
 
-    setLastClickType(clickType);
-    setLastClickPos(`(${Math.round(x)}, ${Math.round(y)})`);
+    setLastClickType(clickType)
+    setLastClickPos(`(${Math.round(x)}, ${Math.round(y)})`)
     addToLog(
       `${clickType} detected at position (${Math.round(x)}, ${Math.round(y)})`,
       colorClass
-    );
-    createRipple(x, y, color);
-  };
+    )
+    createRipple(x, y, color)
+  }
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    setStats((prev) => ({ ...prev, scrollEvents: prev.scrollEvents + 1 }));
+    setStats((prev) => ({ ...prev, scrollEvents: prev.scrollEvents + 1 }))
 
-    const direction = e.deltaY > 0 ? "Down ↓" : "Up ↑";
-    const delta = Math.abs(Math.round(e.deltaY));
+    const direction = e.deltaY > 0 ? "Down ↓" : "Up ↑"
+    const delta = Math.abs(Math.round(e.deltaY))
 
-    setScrollDirection(direction);
-    setLastScrollDelta(`${delta}px`);
+    setScrollDirection(direction)
+    setLastScrollDelta(`${delta}px`)
 
     if (scrollZoneRef.current) {
-      setScrollPos(`${Math.round(scrollZoneRef.current.scrollTop)}px`);
+      setScrollPos(`${Math.round(scrollZoneRef.current.scrollTop)}px`)
     }
 
-    addToLog(`Scroll ${direction} - Delta: ${delta}px`, "text-orange-600");
-  };
+    addToLog(`Scroll ${direction} - Delta: ${delta}px`, "text-orange-600")
+  }
 
   const handleScroll = () => {
     if (scrollZoneRef.current) {
-      setScrollPos(`${Math.round(scrollZoneRef.current.scrollTop)}px`);
+      setScrollPos(`${Math.round(scrollZoneRef.current.scrollTop)}px`)
     }
-  };
-
-
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -292,5 +289,5 @@ export default function MouseTestingApp() {
         </div>
       </main>
     </div>
-  );
+  )
 }

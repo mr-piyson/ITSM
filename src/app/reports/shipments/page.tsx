@@ -1,52 +1,54 @@
-"use client";
-import { useQuery } from "@tanstack/react-query";
-import type { ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
+"use client"
+import { useQuery } from "@tanstack/react-query"
+import type { ColDef, GridApi, GridReadyEvent } from "ag-grid-community"
 import {
   AllCommunityModule,
   CsvExportModule,
   ModuleRegistry,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
-import axios from "axios";
-import { useAtom } from "jotai";
-import { Search } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+} from "ag-grid-community"
+import { AgGridReact } from "ag-grid-react"
+import axios from "axios"
+import { useAtom } from "jotai"
+import { Search } from "lucide-react"
+import { useCallback, useMemo, useState } from "react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useTableTheme } from "@/hooks/use-tableTheme";
+} from "@/components/ui/select"
+import { useTableTheme } from "@/hooks/use-tableTheme"
+
 import {
   BoxCellRenderer,
   DateCellRenderer,
   PanelCellRender,
-} from "../CellsRender";
+} from "../CellsRender"
 import {
   type ApiReportData,
+  type ReportData,
   filteredData,
   initData,
   monthStore,
-  type ReportData,
   yearStore,
-} from "./atoms";
+} from "./atoms"
 
-ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
+ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule])
 
 // API function
 
 export default function ReportPage() {
-  const [gridApi, setGridApi] = useState<GridApi | null>(null);
-  const [selectedRows, setSelectedRows] = useState<ReportData[]>([]);
-  const [year, setYear] = useAtom(yearStore);
-  const [month, setMonth] = useAtom(monthStore);
-  const [, setInitPanels] = useAtom(initData);
-  const [panels, setPanels] = useAtom(filteredData);
-  const theme = useTableTheme();
+  const [gridApi, setGridApi] = useState<GridApi | null>(null)
+  const [selectedRows, setSelectedRows] = useState<ReportData[]>([])
+  const [year, setYear] = useAtom(yearStore)
+  const [month, setMonth] = useAtom(monthStore)
+  const [, setInitPanels] = useAtom(initData)
+  const [panels, setPanels] = useAtom(filteredData)
+  const theme = useTableTheme()
 
   // React Query for data fetching
   const {
@@ -58,21 +60,21 @@ export default function ReportPage() {
   } = useQuery({
     queryKey: ["shipment", year, month],
     queryFn: async () => {
-      const data = await fetchPanels();
-      setInitPanels(data);
-      setPanels(data);
-      return data;
+      const data = await fetchPanels()
+      setInitPanels(data)
+      setPanels(data)
+      return data
     },
     refetchOnWindowFocus: false,
     gcTime: Infinity,
     staleTime: Infinity,
     enabled: false,
-  });
+  })
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const response = await axios.get(
       `/api/reports/shipments?year=${year}&month=${month}`
-    );
+    )
     const data = response.data.map(
       (panel: ApiReportData): ReportData => ({
         package: panel.package.toUpperCase(),
@@ -86,9 +88,9 @@ export default function ReportPage() {
         epicor_part_no: panel.epicor_part_no,
         job_id: panel.job_id,
       })
-    );
-    return data;
-  }, [year, month]);
+    )
+    return data
+  }, [year, month])
 
   // Memoized column definitions
   const columnDefs: ColDef<ReportData>[] = useMemo(
@@ -161,7 +163,7 @@ export default function ReportPage() {
       },
     ],
     []
-  );
+  )
 
   // Memoized default column properties
   const defaultColDef = useMemo(
@@ -172,26 +174,26 @@ export default function ReportPage() {
       floatingFilter: true,
     }),
     []
-  );
+  )
 
   // Callbacks
   const onGridReady = useCallback((params: GridReadyEvent) => {
-    setGridApi(params.api);
-  }, []);
+    setGridApi(params.api)
+  }, [])
 
   const onRowSelectionChanged = useCallback(() => {
     if (gridApi) {
-      setSelectedRows(gridApi.getSelectedRows());
+      setSelectedRows(gridApi.getSelectedRows())
     }
-  }, [gridApi]);
+  }, [gridApi])
 
   const refreshData = useCallback(() => {
     if (gridApi) {
-      gridApi.setFilterModel(null);
-      gridApi.resetColumnState();
+      gridApi.setFilterModel(null)
+      gridApi.resetColumnState()
     }
-    refetch();
-  }, [gridApi, year, month]);
+    refetch()
+  }, [gridApi, year, month])
 
   const exportRows = useCallback(() => {
     if (gridApi) {
@@ -202,9 +204,9 @@ export default function ReportPage() {
         fileName: `filtered-report-${
           new Date().toISOString().split("T")[0]
         }.csv`,
-      });
+      })
     }
-  }, [gridApi]);
+  }, [gridApi])
 
   // Error state
   if (isError) {
@@ -220,7 +222,7 @@ export default function ReportPage() {
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   const monthNames = [
@@ -236,7 +238,7 @@ export default function ReportPage() {
     "October",
     "November",
     "December",
-  ];
+  ]
 
   return (
     <Card className="h-full p-0 gap-0">
@@ -284,7 +286,7 @@ export default function ReportPage() {
           </Select>
           <Button
             onClick={() => {
-              refetch();
+              refetch()
             }}
           >
             <Search />
@@ -320,5 +322,5 @@ export default function ReportPage() {
         </div>
       </CardFooter>
     </Card>
-  );
+  )
 }

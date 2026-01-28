@@ -1,8 +1,8 @@
-import { NavigationToolbar } from "../nav-menu";
+import { NavigationToolbar } from "../nav-menu"
 
 type RequestslayoutProps = {
-  children?: React.ReactNode;
-};
+  children?: React.ReactNode
+}
 
 export default function RequestsLayout(props: RequestslayoutProps) {
   return (
@@ -10,5 +10,5 @@ export default function RequestsLayout(props: RequestslayoutProps) {
       <NavigationToolbar />
       {props.children}
     </div>
-  );
+  )
 }

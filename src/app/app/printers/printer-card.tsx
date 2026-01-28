@@ -1,13 +1,14 @@
-"use client";
+"use client"
 
-import { ExternalLink, MapPin, Printer, User } from "lucide-react";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { ExternalLink, MapPin, Printer, User } from "lucide-react"
+import Image from "next/image"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface PrinterCardProps {
-  printer: any;
-  onViewDetails: (id: string) => void;
+  printer: any
+  onViewDetails: (id: string) => void
 }
 
 export function PrinterCard({ printer, onViewDetails }: PrinterCardProps) {
@@ -62,5 +63,5 @@ export function PrinterCard({ printer, onViewDetails }: PrinterCardProps) {
         </Button>
       </CardContent>
     </Card>
-  );
+  )
 }

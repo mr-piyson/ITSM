@@ -1,16 +1,17 @@
-"use client";
-import { NavPath } from "@/components/Nav-Path";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
-import { UserMenu } from "./App";
+"use client"
+import { NavPath } from "@/components/Nav-Path"
+import { Separator } from "@/components/ui/separator"
+import { SidebarTrigger } from "@/components/ui/sidebar"
+import { cn } from "@/lib/utils"
+
+import { UserMenu } from "./App"
 
 export default function Toolbar(props: any) {
   return (
     <header
       className={cn(
         "flex sticky z-10 top-0 bg-sidebar/95 h-12 shrink-0 items-center gap-2 border-b px-4 flex-nowrap ",
-        props.className,
+        props.className
       )}
     >
       {/* Left hand side */}
@@ -24,5 +25,5 @@ export default function Toolbar(props: any) {
         <UserMenu />
       </div>
     </header>
-  );
+  )
 }

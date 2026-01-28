@@ -1,70 +1,70 @@
-"use client";
+"use client"
 
-import type React from "react";
+import type React from "react"
+import { useState } from "react"
 
-import { useState } from "react";
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 
 interface Asset {
-  id: string;
-  code: string;
-  type: string;
-  deviceName: string;
-  serialNumber: string;
-  manufacturer: string;
-  model: string;
-  location: string;
-  department: string;
-  deviceStatus: "In Use" | "Available" | "Defective";
-  warrantyStatus: "Valid" | "Expired" | "NA";
-  verified: boolean;
-  verifiedDate?: string;
+  id: string
+  code: string
+  type: string
+  deviceName: string
+  serialNumber: string
+  manufacturer: string
+  model: string
+  location: string
+  department: string
+  deviceStatus: "In Use" | "Available" | "Defective"
+  warrantyStatus: "Valid" | "Expired" | "NA"
+  verified: boolean
+  verifiedDate?: string
   owner: {
-    name: string;
-    image?: string;
-    empId: string;
-  };
-  purchaseDate: string;
-  purchasePrice: string;
-  warrantyDate: string;
-  processor: string;
-  os: string;
-  memory: string;
-  hdd: string;
-  ip: string;
-  macAddress: string;
-  firmwareVer: string;
-  specification: string;
-  image?: string;
+    name: string
+    image?: string
+    empId: string
+  }
+  purchaseDate: string
+  purchasePrice: string
+  warrantyDate: string
+  processor: string
+  os: string
+  memory: string
+  hdd: string
+  ip: string
+  macAddress: string
+  firmwareVer: string
+  specification: string
+  image?: string
   ownerChangeLogs: Array<{
-    date: string;
-    oldOwner: string;
-    newOwner: string;
-  }>;
+    date: string
+    oldOwner: string
+    newOwner: string
+  }>
 }
 
 interface UpdateAssetDialogProps {
-  asset: Asset;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onUpdate: (asset: Asset) => void;
+  asset: Asset
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onUpdate: (asset: Asset) => void
 }
 
 export function UpdateAssetDialog({
@@ -73,19 +73,19 @@ export function UpdateAssetDialog({
   onOpenChange,
   onUpdate,
 }: UpdateAssetDialogProps) {
-  const [formData, setFormData] = useState(asset);
-  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState(asset)
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault()
+    setLoading(true)
 
     // Simulate API call
     setTimeout(() => {
-      onUpdate(formData);
-      setLoading(false);
-    }, 1000);
-  };
+      onUpdate(formData)
+      setLoading(false)
+    }, 1000)
+  }
 
   const locations = [
     "Head Office",
@@ -95,7 +95,7 @@ export function UpdateAssetDialog({
     "Factory 4",
     "Factory 5 - Nass",
     "IT Stores",
-  ];
+  ]
 
   const departments = [
     "After Sales",
@@ -131,7 +131,7 @@ export function UpdateAssetDialog({
     "Store",
     "ABB",
     "Metal",
-  ];
+  ]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -443,5 +443,5 @@ export function UpdateAssetDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

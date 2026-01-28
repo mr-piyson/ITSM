@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query"
 import {
   AlertCircle,
   ArrowLeft,
@@ -13,65 +13,66 @@ import {
   Phone,
   User,
   Users,
-} from "lucide-react";
-import Link from "next/link";
-import { use } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "lucide-react"
+import Link from "next/link"
+import { use } from "react"
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Employee {
-  id: number;
-  emp_id: string;
-  emp_code: string;
-  cpr: string;
-  name: string;
-  photo: string;
-  email: string;
-  mobile: string;
-  telephone: string;
-  emp_designation: string;
-  emp_department: string;
-  emp_location: string;
-  designation: string;
-  department: string;
-  date_of_joining: string;
-  date_of_birth: string;
-  left_date: string;
-  gender: string;
-  nationality: string;
-  address: string;
-  emergency_name: string;
-  emergency_number: string;
-  allergies: string;
-  diseases: string;
-  disabilities: string;
-  is_active: number;
-  emp_type: string;
-  supplier: string;
-  reporting_to: string;
+  id: number
+  emp_id: string
+  emp_code: string
+  cpr: string
+  name: string
+  photo: string
+  email: string
+  mobile: string
+  telephone: string
+  emp_designation: string
+  emp_department: string
+  emp_location: string
+  designation: string
+  department: string
+  date_of_joining: string
+  date_of_birth: string
+  left_date: string
+  gender: string
+  nationality: string
+  address: string
+  emergency_name: string
+  emergency_number: string
+  allergies: string
+  diseases: string
+  disabilities: string
+  is_active: number
+  emp_type: string
+  supplier: string
+  reporting_to: string
 }
 
 interface Attendance {
-  person_id: string;
-  person_name: string;
-  card_no: string;
-  datetime: string;
-  device_ip: string;
-  device_model: string;
-  device_serial: string;
+  person_id: string
+  person_name: string
+  card_no: string
+  datetime: string
+  device_ip: string
+  device_model: string
+  device_serial: string
 }
 
 async function fetchEmployee(id: string) {
   const response = await fetch(
     `http://${process.env.NEXT_PUBLIC_BASE_API}/api/employees.php?id=${id}`
-  );
+  )
   if (!response.ok) {
-    throw new Error("Failed to fetch employee");
+    throw new Error("Failed to fetch employee")
   }
-  return response.json();
+  return response.json()
 }
 
 function DetailItem({
@@ -79,11 +80,11 @@ function DetailItem({
   label,
   value,
 }: {
-  icon: any;
-  label: string;
-  value: string | null | undefined;
+  icon: any
+  label: string
+  value: string | null | undefined
 }) {
-  if (!value) return null;
+  if (!value) return null
 
   return (
     <div className="flex items-start gap-3">
@@ -93,15 +94,15 @@ function DetailItem({
         <p className="text-sm">{value}</p>
       </div>
     </div>
-  );
+  )
 }
 
 export default function EmployeeDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }) {
-  const { id } = use(params);
+  const { id } = use(params)
 
   const {
     data: employee,
@@ -110,7 +111,7 @@ export default function EmployeeDetailPage({
   } = useQuery<Employee>({
     queryKey: ["employee", id],
     queryFn: async () => (await fetchEmployee(id))[0],
-  });
+  })
 
   if (employeeError) {
     return (
@@ -119,7 +120,7 @@ export default function EmployeeDetailPage({
           Error loading employee: {(employeeError as Error).message}
         </div>
       </div>
-    );
+    )
   }
 
   if (employeeLoading) {
@@ -139,7 +140,7 @@ export default function EmployeeDetailPage({
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   if (!employee) {
@@ -147,7 +148,7 @@ export default function EmployeeDetailPage({
       <div className="container mx-auto p-6">
         <div className="text-center">Employee not found</div>
       </div>
-    );
+    )
   }
 
   return (
@@ -343,5 +344,5 @@ export default function EmployeeDetailPage({
         )}
       </div>
     </div>
-  );
+  )
 }

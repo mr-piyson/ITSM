@@ -1,6 +1,9 @@
-import { useState } from "react";
-import { useAtom } from "jotai";
-import { Button, buttonVariants } from "@/components/ui/button";
+import type { VariantProps } from "class-variance-authority"
+import { useAtom } from "jotai"
+import { Search, SearchIcon } from "lucide-react"
+import { useState } from "react"
+
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -9,19 +12,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Search, SearchIcon } from "lucide-react";
-import type { VariantProps } from "class-variance-authority";
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { initData, filteredData, ReportData } from "./atoms";
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+
+import { ReportData, filteredData, initData } from "./atoms"
 
 const searchOptions: { value: keyof ReportData; label: string }[] = [
   { value: "code", label: "Package Code" },
@@ -30,16 +32,16 @@ const searchOptions: { value: keyof ReportData; label: string }[] = [
   { value: "width_cm", label: "Width (cm)" },
   { value: "height_cm", label: "Height (cm)" },
   { value: "weight_kg", label: "Weight (kg)" },
-];
+]
 
 interface ImportDialogProps {
-  children?: React.ReactNode;
+  children?: React.ReactNode
 }
 
 export function SearchPanels(
   props: React.ComponentProps<"button"> &
     VariantProps<typeof buttonVariants> & {
-      asChild?: boolean;
+      asChild?: boolean
     }
 ) {
   return (
@@ -49,29 +51,29 @@ export function SearchPanels(
         Search
       </Button>
     </SearchDialog>
-  );
+  )
 }
 
 export function SearchDialog(props: ImportDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [searchBy, setSearchBy] = useState<keyof ReportData>();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [initPanels] = useAtom(initData);
-  const [_, setPanels] = useAtom(filteredData);
+  const [open, setOpen] = useState(false)
+  const [searchBy, setSearchBy] = useState<keyof ReportData>()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [initPanels] = useAtom(initData)
+  const [_, setPanels] = useAtom(filteredData)
 
   const handleSearch = () => {
     if (!searchBy || !searchQuery) {
-      console.warn("Please select a search field and enter a query.");
-      return;
+      console.warn("Please select a search field and enter a query.")
+      return
     }
     const filteredData = searchReportDataByKey(
       initPanels,
       searchBy,
       searchQuery
-    );
-    setPanels(filteredData);
-    setOpen(false);
-  };
+    )
+    setPanels(filteredData)
+    setOpen(false)
+  }
 
   function searchReportDataByKey(
     data: ReportData[],
@@ -83,16 +85,16 @@ export function SearchDialog(props: ImportDialogProps) {
         .split("\n")
         .map((item) => item.trim().toLocaleUpperCase())
         .filter((item) => item.length > 0)
-    );
+    )
     return data.filter((item) => {
-      const value = item[key];
+      const value = item[key]
       if (typeof value === "string") {
-        return searchSet.has(value);
+        return searchSet.has(value)
       } else if (typeof value === "number") {
-        return searchSet.has(String(value));
+        return searchSet.has(String(value))
       }
-      return false;
-    });
+      return false
+    })
   }
 
   return (
@@ -143,5 +145,5 @@ export function SearchDialog(props: ImportDialogProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

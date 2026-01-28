@@ -1,27 +1,26 @@
-"use client";
+"use client"
 
-import type React from "react";
+import { Eye, EyeOff } from "lucide-react"
+import type React from "react"
+import { useState } from "react"
 
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 
-interface PasswordInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
-  className?: string;
+interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  className?: string
 }
 
 export default function PasswordInput({
   className,
   ...props
 }: PasswordInputProps) {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+    setShowPassword(!showPassword)
+  }
 
   return (
     <div className="relative w-full h-full">
@@ -48,5 +47,5 @@ export default function PasswordInput({
         </span>
       </Button>
     </div>
-  );
+  )
 }

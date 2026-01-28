@@ -1,8 +1,8 @@
-import { themeQuartz } from "ag-grid-community";
-import { useTheme } from "next-themes";
+import { themeQuartz } from "ag-grid-community"
+import { useTheme } from "next-themes"
 
 export function useTableTheme() {
-  const theme = useTheme();
+  const theme = useTheme()
   const dark = themeQuartz.withParams({
     backgroundColor: "#111111",
     foregroundColor: "#fafafa",
@@ -16,7 +16,7 @@ export function useTableTheme() {
       color: "#2b2b2b",
       width: "1px",
     },
-  });
+  })
 
   const light = themeQuartz.withParams({
     backgroundColor: "#ffffff",
@@ -31,8 +31,8 @@ export function useTableTheme() {
       color: "#cccccc",
       width: "1px",
     },
-  });
+  })
 
-  const tableTheme = theme.resolvedTheme === "dark" ? dark : light;
-  return tableTheme;
+  const tableTheme = theme.resolvedTheme === "dark" ? dark : light
+  return tableTheme
 }

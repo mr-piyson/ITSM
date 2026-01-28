@@ -1,22 +1,32 @@
-"use client";
+"use client"
 
-import { useState } from "react";
+import {
+  AlertCircle,
+  CalendarDays,
+  Clock,
+  ExternalLink,
+  Loader2,
+  Search,
+} from "lucide-react"
+import { useState } from "react"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -24,57 +34,48 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Search,
-  Loader2,
-  Clock,
-  CalendarDays,
-  ExternalLink,
-  AlertCircle,
-} from "lucide-react";
+} from "@/components/ui/table"
 
 export default function AttendancePage() {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any[]>([]);
-  const [summary, setSummary] = useState<any>(null);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false)
+  const [data, setData] = useState<any[]>([])
+  const [summary, setSummary] = useState<any>(null)
+  const [error, setError] = useState("")
 
-  const [year, setYear] = useState("2026");
-  const [month, setMonth] = useState("01");
-  const [workerId, setWorkerId] = useState("");
+  const [year, setYear] = useState("2026")
+  const [month, setMonth] = useState("01")
+  const [workerId, setWorkerId] = useState("")
 
-  const [firstSeen, setFirstSeen] = useState("");
-  const [lastSeen, setLastSeen] = useState("");
+  const [firstSeen, setFirstSeen] = useState("")
+  const [lastSeen, setLastSeen] = useState("")
 
   const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setData([]);
-    setSummary(null);
+    e.preventDefault()
+    setLoading(true)
+    setError("")
+    setData([])
+    setSummary(null)
 
     try {
       const res = await fetch(
-        `/api/attendance?year=${year}&month=${month}&workerId=${workerId}`,
-      );
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed to fetch");
-      setData(json.data);
-      setSummary(json.summary);
+        `/api/attendance?year=${year}&month=${month}&workerId=${workerId}`
+      )
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || "Failed to fetch")
+      setData(json.data)
+      setSummary(json.summary)
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Inside your AttendancePage component
   const isWeekend = (dateString: string) => {
-    const day = new Date(dateString).getDay();
-    return day === 5 || day === 6; // 5 = Friday, 6 = Saturday
-  };
+    const day = new Date(dateString).getDay()
+    return day === 5 || day === 6 // 5 = Friday, 6 = Saturday
+  }
 
   // get day of week from date string
   const getDayOfWeek = (dateString: string) => {
@@ -86,10 +87,10 @@ export default function AttendancePage() {
       "Thursday",
       "Friday",
       "Saturday",
-    ];
-    const dayIndex = new Date(dateString).getDay();
-    return days[dayIndex];
-  };
+    ]
+    const dayIndex = new Date(dateString).getDay()
+    return days[dayIndex]
+  }
 
   return (
     <div className="container mx-auto p-6 max-w-5xl space-y-8">
@@ -308,5 +309,5 @@ export default function AttendancePage() {
         </div>
       )}
     </div>
-  );
+  )
 }

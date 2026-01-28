@@ -1,5 +1,6 @@
-import db from "@/lib/database";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server"
+
+import db from "@/lib/database"
 
 /**
  * GET /api/panel_tracker
@@ -8,13 +9,13 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   try {
     // get search params
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
     if (!id) {
-      return NextResponse.json({ error: "Missing panel ID" }, { status: 400 });
+      return NextResponse.json({ error: "Missing panel ID" }, { status: 400 })
     }
 
-    const partId = decodeURIComponent(id);
+    const partId = decodeURIComponent(id)
 
     // Fetch panel info
     const panelInfo = await db.mes.query(
@@ -22,14 +23,14 @@ export async function GET(request: NextRequest) {
        FROM label_app.kla_factory_epicor i
        LEFT JOIN mes.plans pl ON pl.panel_serial = i.qr_code
        WHERE i.qr_code = ?`,
-      [partId],
-    );
+      [partId]
+    )
 
     if (panelInfo.length === 0) {
-      return NextResponse.json({ error: "Panel not found" }, { status: 404 });
+      return NextResponse.json({ error: "Panel not found" }, { status: 404 })
     }
 
-    const panelRaw = panelInfo[0][0];
+    const panelRaw = panelInfo[0][0]
 
     // Map database fields to component expected fields
     const panel = {
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
       status: panelRaw.status || "Active",
       created_at: panelRaw.created_at,
       updated_at: panelRaw.updated_at,
-    };
+    }
 
     // Fetch job info
     const jobInfo = await db.mes.query(
@@ -55,29 +56,29 @@ export async function GET(request: NextRequest) {
        INNER JOIN label_app.ud31_lite l ON l.key1=p.job_id AND l.key5 = p.panel_serial
        WHERE p.panel_serial = ?
        ORDER BY p.id DESC LIMIT 1`,
-      [partId],
-    );
+      [partId]
+    )
 
     // Fetch tracking logs
     const trackingLogs = await db.mes.query(
       `SELECT id, print_for, info, date as created_at FROM mes.log_printed 
        WHERE part_id = ? 
       `,
-      [partId],
-    );
+      [partId]
+    )
 
     // Fetch edit history
     const editHistoryData = await db.mes.query(
       `SELECT info FROM mes.log_printed 
        WHERE part_id = ? 
       LIMIT 1`,
-      [partId],
-    );
+      [partId]
+    )
 
     // Parse edit history JSON
-    let editHistory = {};
+    let editHistory = {}
     if (editHistoryData.length > 0 && editHistoryData[0].info) {
-      editHistory = JSON.parse(editHistoryData[0].info);
+      editHistory = JSON.parse(editHistoryData[0].info)
     }
 
     return NextResponse.json({
@@ -88,12 +89,12 @@ export async function GET(request: NextRequest) {
         trackingLogs: trackingLogs || [],
         editHistory,
       },
-    });
+    })
   } catch (error) {
-    console.error("Error fetching panel:", error);
+    console.error("Error fetching panel:", error)
     return NextResponse.json(
       { error: "Failed to fetch panel" },
-      { status: 500 },
-    );
+      { status: 500 }
+    )
   }
 }

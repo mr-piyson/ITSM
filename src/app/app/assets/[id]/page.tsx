@@ -1,13 +1,15 @@
-import db from "@/lib/database";
-import AssetDetailsPage from "./AssetDetails";
-import { RowDataPacket } from "mysql2";
+import { RowDataPacket } from "mysql2"
+
+import db from "@/lib/database"
+
+import AssetDetailsPage from "./AssetDetails"
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }
 
 export default async function Page(props: PageProps) {
-  const id = Number((await props.params).id);
+  const id = Number((await props.params).id)
 
   // Run queries in parallel: each returns [rows, fields]
   const [assetQuery, logsQuery] = await Promise.all([
@@ -31,16 +33,16 @@ export default async function Page(props: PageProps) {
       WHERE a.assetID = ${id}
       ORDER BY a.date ASC
     `),
-  ]);
+  ])
 
   // Extract rows from mysql2 results
-  const [assetRows] = assetQuery;
-  const [logRows] = logsQuery;
+  const [assetRows] = assetQuery
+  const [logRows] = logsQuery
 
-  const asset = assetRows[0] || null;
+  const asset = assetRows[0] || null
 
   if (!asset) {
-    return <div>Asset not found</div>;
+    return <div>Asset not found</div>
   }
 
   // Transform logs safely
@@ -49,16 +51,16 @@ export default async function Page(props: PageProps) {
     new: row.new || "",
     date: row.date.toISOString(),
     image: row.image || "",
-  }));
+  }))
 
-  const latestLog = logs[logs.length - 1];
+  const latestLog = logs[logs.length - 1]
 
   const assetDetails: any = {
     ...asset,
     owner: latestLog?.new || asset.owner,
     empImg: latestLog?.image || asset.empImg,
     ownerChangeLogs: logs,
-  };
+  }
 
-  return <AssetDetailsPage asset={assetDetails} />;
+  return <AssetDetailsPage asset={assetDetails} />
 }

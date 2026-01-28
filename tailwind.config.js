@@ -82,4 +82,4 @@ module.exports = {
     "bg-rose-600",
     "bg-default-600",
   ],
-};
+}

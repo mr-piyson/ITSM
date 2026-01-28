@@ -1,53 +1,55 @@
-"use client";
-import { useQuery } from "@tanstack/react-query";
-import type { ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
+"use client"
+import { useQuery } from "@tanstack/react-query"
+import type { ColDef, GridApi, GridReadyEvent } from "ag-grid-community"
 import {
   AllCommunityModule,
   CsvExportModule,
   ModuleRegistry,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
-import axios from "axios";
-import { useAtom } from "jotai";
-import { Search, SearchIcon } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+} from "ag-grid-community"
+import { AgGridReact } from "ag-grid-react"
+import axios from "axios"
+import { useAtom } from "jotai"
+import { Search, SearchIcon } from "lucide-react"
+import { useCallback, useMemo, useState } from "react"
+
+import { ApiJobsData } from "@/app/api/reports/jobs/route"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useTableTheme } from "@/hooks/use-tableTheme";
+} from "@/components/ui/select"
+import { useTableTheme } from "@/hooks/use-tableTheme"
+
 import {
   BoxCellRenderer,
   DateCellRenderer,
   JobCellRenderer,
   PanelCellRender,
   StatusCellRenderer,
-} from "../CellsRender";
-import { filteredData, fromStore, initData, toStore } from "./atoms";
-import { ApiJobsData } from "@/app/api/reports/jobs/route";
+} from "../CellsRender"
+import { filteredData, fromStore, initData, toStore } from "./atoms"
 
-ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
+ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule])
 
 // Helper function to format date for API (YYYY-MM-DD)
 function formatDateForAPI(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
 }
 
 export default function ReportPage() {
-  const [gridApi, setGridApi] = useState<GridApi | null>(null);
-  const [selectedRows, setSelectedRows] = useState<ApiJobsData[]>([]);
-  const [filter, setFilter] = useState("");
-  const [, setInitPanels] = useAtom(initData);
-  const [panels, setPanels] = useAtom(filteredData);
-  const theme = useTableTheme();
+  const [gridApi, setGridApi] = useState<GridApi | null>(null)
+  const [selectedRows, setSelectedRows] = useState<ApiJobsData[]>([])
+  const [filter, setFilter] = useState("")
+  const [, setInitPanels] = useAtom(initData)
+  const [panels, setPanels] = useAtom(filteredData)
+  const theme = useTableTheme()
   // const [from, setFrom] = useAtom(fromStore);
   // const [to, setTo] = useAtom(toStore);
 
@@ -61,23 +63,23 @@ export default function ReportPage() {
   } = useQuery({
     queryKey: ["shipment", filter],
     queryFn: async () => {
-      const data = await fetchPanels();
-      setInitPanels(data);
-      setPanels(data);
-      return data;
+      const data = await fetchPanels()
+      setInitPanels(data)
+      setPanels(data)
+      return data
     },
     refetchOnWindowFocus: false,
     gcTime: Infinity,
     staleTime: Infinity,
     enabled: false,
-  });
+  })
 
   const fetchPanels = useCallback(async (): Promise<ApiJobsData[]> => {
     // const fromParam = from ? formatDateForAPI(from) : "";
     // const toParam = to ? formatDateForAPI(to) : "";
-    const response = await axios.get(`/api/reports/jobs?filter=${filter}`);
-    return response.data;
-  }, [filter]);
+    const response = await axios.get(`/api/reports/jobs?filter=${filter}`)
+    return response.data
+  }, [filter])
 
   // Memoized column definitions
   const columnDefs: ColDef<ApiJobsData>[] = useMemo(
@@ -136,7 +138,7 @@ export default function ReportPage() {
       },
     ],
     []
-  );
+  )
 
   // Memoized default column properties
   const defaultColDef = useMemo(
@@ -147,18 +149,18 @@ export default function ReportPage() {
       floatingFilter: true,
     }),
     []
-  );
+  )
 
   // Callbacks
   const onGridReady = useCallback((params: GridReadyEvent) => {
-    setGridApi(params.api);
-  }, []);
+    setGridApi(params.api)
+  }, [])
 
   const onRowSelectionChanged = useCallback(() => {
     if (gridApi) {
-      setSelectedRows(gridApi.getSelectedRows());
+      setSelectedRows(gridApi.getSelectedRows())
     }
-  }, [gridApi]);
+  }, [gridApi])
 
   const exportRows = useCallback(() => {
     if (gridApi) {
@@ -169,9 +171,9 @@ export default function ReportPage() {
         fileName: `filtered-report-${
           new Date().toISOString().split("T")[0]
         }.csv`,
-      });
+      })
     }
-  }, [gridApi]);
+  }, [gridApi])
 
   // Error state
   if (isError) {
@@ -187,7 +189,7 @@ export default function ReportPage() {
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -256,5 +258,5 @@ export default function ReportPage() {
         </div>
       </CardFooter>
     </Card>
-  );
+  )
 }

@@ -1,46 +1,39 @@
-"use client";
+"use client"
 
-import {
-  ArrowLeft,
-  Edit,
-  Printer,
-  QrCode,
-  Save,
-  Trash2,
-  X,
-} from "lucide-react";
-import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import QRCode from "react-qr-code";
-import { mutate } from "swr";
-import { Badge } from "@/components/Badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { ArrowLeft, Edit, Printer, QrCode, Save, Trash2, X } from "lucide-react"
+import Image from "next/image"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
+import QRCode from "react-qr-code"
+import { mutate } from "swr"
+
+import { Badge } from "@/components/Badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function AssetDetailsPage({ asset }: { asset: any }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<Partial<any>>(asset);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false)
+  const [editData, setEditData] = useState<Partial<any>>(asset)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const router = useRouter();
-  const params = useSearchParams();
+  const router = useRouter()
+  const params = useSearchParams()
 
   const handleSubmit = async () => {
-    if (!asset) return;
+    if (!asset) return
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
       const response = await fetch(`/api/Assets/${asset.id}`, {
         method: "PUT",
@@ -48,60 +41,60 @@ export default function AssetDetailsPage({ asset }: { asset: any }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(editData),
-      });
+      })
 
       if (response.ok) {
         // Refresh the data
-        mutate(`/api/Assets/${params.get("id")}`);
-        setIsEditing(false);
+        mutate(`/api/Assets/${params.get("id")}`)
+        setIsEditing(false)
       } else {
-        console.error("Failed to update asset");
+        console.error("Failed to update asset")
       }
     } catch (error) {
-      console.error("Error updating asset:", error);
+      console.error("Error updating asset:", error)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleCancel = () => {
-    setEditData(asset || {});
-    setIsEditing(false);
-  };
+    setEditData(asset || {})
+    setIsEditing(false)
+  }
 
   const handleInputChange = (field: string, value: any) => {
     setEditData((prev) => ({
       ...prev,
       [field]: value,
-    }));
-  };
+    }))
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "In Use":
-        return <Badge variant="default">{status}</Badge>;
+        return <Badge variant="default">{status}</Badge>
       case "Available":
-        return <Badge variant="success">{status}</Badge>;
+        return <Badge variant="success">{status}</Badge>
       case "Defective":
-        return <Badge variant="warning">{status}</Badge>;
+        return <Badge variant="warning">{status}</Badge>
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{status}</Badge>
     }
-  };
+  }
 
   const getWarrantyBadge = (status: string | null | undefined) => {
-    const s = status ?? "Unknown";
+    const s = status ?? "Unknown"
     switch (s) {
       case "Valid":
-        return <Badge variant="success">{s}</Badge>;
+        return <Badge variant="success">{s}</Badge>
       case "Expired":
-        return <Badge variant="destructive">{s}</Badge>;
+        return <Badge variant="destructive">{s}</Badge>
       case "NA":
-        return <Badge variant="warning">{s}</Badge>;
+        return <Badge variant="warning">{s}</Badge>
       default:
-        return <Badge variant="outline">{s}</Badge>;
+        return <Badge variant="outline">{s}</Badge>
     }
-  };
+  }
 
   if (!asset) {
     return (
@@ -115,7 +108,7 @@ export default function AssetDetailsPage({ asset }: { asset: any }) {
           </p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -714,5 +707,5 @@ export default function AssetDetailsPage({ asset }: { asset: any }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,18 +1,20 @@
-"use client";
+"use client"
 
-import { Grid3X3, List, Plus, PrinterIcon } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDebounce } from "@/hooks/use-debounce";
-import { PrinterCard } from "./printer-card";
-import { SearchFilters } from "./search-filters";
+import { Grid3X3, List, Plus, PrinterIcon } from "lucide-react"
+import { useMemo, useState } from "react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useDebounce } from "@/hooks/use-debounce"
+
+import { PrinterCard } from "./printer-card"
+import { SearchFilters } from "./search-filters"
 
 export default function PrinterManagement({ printers }: { printers: any[] }) {
   // const [searchQuery, setSearchQuery] = useState("");
-  const [searchQuery, setSearchQuery, debouncedSearch] = useDebounce("", 300);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [searchQuery, setSearchQuery, debouncedSearch] = useDebounce("", 300)
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid")
 
   // Debounce search query to avoid excessive filtering
 
@@ -25,26 +27,26 @@ export default function PrinterManagement({ printers }: { printers: any[] }) {
         printer.location
           .toLowerCase()
           .includes(debouncedSearch.toLowerCase()) ||
-        printer.usedBy.toLowerCase().includes(debouncedSearch.toLowerCase());
+        printer.usedBy.toLowerCase().includes(debouncedSearch.toLowerCase())
 
-      return matchesSearch;
-    });
-  }, [debouncedSearch, statusFilter]);
+      return matchesSearch
+    })
+  }, [debouncedSearch, statusFilter])
 
   const handleViewDetails = (id: string) => {
     // Navigate to printer details page
-    console.log("View details for printer:", id);
-  };
+    console.log("View details for printer:", id)
+  }
 
   const handleClearFilters = () => {
-    setSearchQuery("");
-    setStatusFilter("all");
-  };
+    setSearchQuery("")
+    setStatusFilter("all")
+  }
 
   const handleAddPrinter = () => {
     // Navigate to add printer page
-    console.log("Add new printer");
-  };
+    console.log("Add new printer")
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,5 +126,5 @@ export default function PrinterManagement({ printers }: { printers: any[] }) {
         )}
       </div>
     </div>
-  );
+  )
 }

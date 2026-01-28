@@ -1,27 +1,29 @@
-"use client";
+"use client"
 
-import { useDebounce } from "@/hooks/use-debounce";
-import { Search } from "lucide-react";
-import { useEffect } from "react";
-import { Input } from "./ui/input";
+import { Search } from "lucide-react"
+import { useEffect } from "react"
+
+import { useDebounce } from "@/hooks/use-debounce"
+
+import { Input } from "./ui/input"
 
 type DebounceSearchProps = {
-  delay?: number;
-  onDebouncedChange: (value: string) => void;
-  placeholder?: string;
-};
+  delay?: number
+  onDebouncedChange: (value: string) => void
+  placeholder?: string
+}
 
 export function DebounceSearch({
   delay = 500,
   onDebouncedChange,
   placeholder = "Search...",
 }: DebounceSearchProps) {
-  const [value, setValue, debouncedValue] = useDebounce("", delay);
+  const [value, setValue, debouncedValue] = useDebounce("", delay)
 
   // Notify parent whenever the debounced value changes
   useEffect(() => {
-    onDebouncedChange(debouncedValue);
-  }, [debouncedValue, onDebouncedChange]);
+    onDebouncedChange(debouncedValue)
+  }, [debouncedValue, onDebouncedChange])
 
   return (
     <>
@@ -35,5 +37,5 @@ export function DebounceSearch({
         />
       </div>
     </>
-  );
+  )
 }

@@ -1,25 +1,26 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import type { ReportData } from "./panels/atoms";
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+
+import type { ReportData } from "./panels/atoms"
 
 export const StatusCellRenderer = (props: {
-  value: boolean;
-  whenFalse?: React.ReactNode;
-  whenTrue?: React.ReactNode;
+  value: boolean
+  whenFalse?: React.ReactNode
+  whenTrue?: React.ReactNode
 }) => {
-  const bool = props.value;
+  const bool = props.value
 
-  const content = bool ? (props.whenTrue ?? "Yes") : (props.whenFalse ?? "No");
+  const content = bool ? (props.whenTrue ?? "Yes") : (props.whenFalse ?? "No")
 
   return (
     <Badge variant={bool ? "default" : "destructive"} className="text-xs">
       {content}
     </Badge>
-  );
-};
+  )
+}
 
 export const PanelCellRender = ({ value }: { value: string }) => {
-  const trackerUrl = `http://intranet.bfginternational.com:88/utilities/panel_tracker?part_id=${value}`;
+  const trackerUrl = `http://intranet.bfginternational.com:88/utilities/panel_tracker?part_id=${value}`
 
   return (
     <div className="flex justify-between items-center">
@@ -34,8 +35,8 @@ export const PanelCellRender = ({ value }: { value: string }) => {
         <i className="icon-[mingcute--inspect-line] size-5" />
       </Button>
     </div>
-  );
-};
+  )
+}
 
 export const ContainerCellRenderer = ({ data }: { data: ReportData }) => (
   <div className="flex justify-between items-center">
@@ -59,7 +60,7 @@ export const ContainerCellRenderer = ({ data }: { data: ReportData }) => (
       </Button>
     )}
   </div>
-);
+)
 
 export const BoxCellRenderer = ({ data }: { data: ReportData }) => (
   <div className="flex justify-between items-center">
@@ -83,7 +84,7 @@ export const BoxCellRenderer = ({ data }: { data: ReportData }) => (
       </Button>
     )}
   </div>
-);
+)
 
 // const DateCellRenderer = ({ value }: { value: string }) => {
 //   if (!value) return null;
@@ -95,8 +96,8 @@ export const BoxCellRenderer = ({ data }: { data: ReportData }) => (
 // };
 
 export const JobCellRenderer = ({ value }: { value: string }) => {
-  if (!value) return null;
-  const jobUrl = `http://intranet.bfginternational.com:88/labels/assemblies/assembly_jobs?id=${value}`;
+  if (!value) return null
+  const jobUrl = `http://intranet.bfginternational.com:88/labels/assemblies/assembly_jobs?id=${value}`
 
   return (
     <div className="flex justify-between items-center">
@@ -111,8 +112,8 @@ export const JobCellRenderer = ({ value }: { value: string }) => {
         <i className="icon-[ph--briefcase] size-5" />
       </Button>
     </div>
-  );
-};
+  )
+}
 
 export const RouteCellRenderer = ({ value }: { value: string[] }) => {
   return (
@@ -139,18 +140,18 @@ export const RouteCellRenderer = ({ value }: { value: string[] }) => {
         <span className="text-sm text-muted-foreground">No Route</span>
       )}
     </div>
-  );
-};
+  )
+}
 
 export const DateCellRenderer = ({ value }: { value: string }) => {
-  if (!value) return null;
-  const date = new Date(value);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
+  if (!value) return null
+  const date = new Date(value)
+  const day = String(date.getDate()).padStart(2, "0")
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const year = date.getFullYear()
+  const hours = String(date.getHours()).padStart(2, "0")
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+  const seconds = String(date.getSeconds()).padStart(2, "0")
 
-  return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`;
-};
+  return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`
+}

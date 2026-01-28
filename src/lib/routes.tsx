@@ -1,9 +1,9 @@
 export type RouteItem = {
-  title: string;
-  href?: string;
-  icon: string;
-  children?: RouteItem[];
-};
+  title: string
+  href?: string
+  icon: string
+  children?: RouteItem[]
+}
 
 export const routes = {
   appSidebar: [
@@ -180,4 +180,4 @@ export const routes = {
       icon: "icon-[lucide--chart-bar-big]",
     },
   ],
-} as Record<string, RouteItem[]>;
+} as Record<string, RouteItem[]>

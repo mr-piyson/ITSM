@@ -1,58 +1,59 @@
-"use client";
-import { useQuery } from "@tanstack/react-query";
-import type { GridApi } from "ag-grid-community";
-import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
-import axios from "axios";
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { useTableTheme } from "@/hooks/use-tableTheme";
-import { Badge } from "@/components/ui/badge";
-import { Asset } from "@/app/api/assets/route";
+"use client"
+import { useQuery } from "@tanstack/react-query"
+import type { GridApi } from "ag-grid-community"
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community"
+import { AgGridReact } from "ag-grid-react"
+import axios from "axios"
 import {
   Building2,
+  Download,
   Edit,
   Eye,
+  Filter,
   MapPin,
   Monitor,
   Package,
+  Search,
   Trash2,
   User,
-  Search,
   X,
-  Filter,
-  Download,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
+} from "lucide-react"
+import { useCallback, useMemo, useState } from "react"
+
+import { Asset } from "@/app/api/assets/route"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+} from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import { useTableTheme } from "@/hooks/use-tableTheme"
 
-ModuleRegistry.registerModules([AllCommunityModule]);
+ModuleRegistry.registerModules([AllCommunityModule])
 
 export default function ReportPage() {
-  const [gridApi, setGridApi] = useState<GridApi | null>(null);
-  const theme = useTableTheme();
+  const [gridApi, setGridApi] = useState<GridApi | null>(null)
+  const theme = useTableTheme()
 
   // Filter and search states
-  const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [locationFilter, setLocationFilter] = useState<string>("all");
-  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
-  const [manufacturerFilter, setManufacturerFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("")
+  const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [locationFilter, setLocationFilter] = useState<string>("all")
+  const [departmentFilter, setDepartmentFilter] = useState<string>("all")
+  const [manufacturerFilter, setManufacturerFilter] = useState<string>("all")
 
   // React Query for data fetching
   const {
@@ -64,39 +65,39 @@ export default function ReportPage() {
   } = useQuery({
     queryKey: ["assets"],
     queryFn: async () => {
-      const data = await axios.get("/api/assets");
-      return data.data;
+      const data = await axios.get("/api/assets")
+      return data.data
     },
-  });
+  })
 
   // Extract unique values for filters
   const uniqueTypes = useMemo(() => {
-    const types = new Set(
-      assets.map((asset: Asset) => asset.type).filter(Boolean),
-    );
-    return Array.from(types).sort();
-  }, [assets]);
+    const types = new Set<string>(
+      assets.map((asset: Asset) => asset.type).filter(Boolean)
+    )
+    return Array.from(types).sort()
+  }, [assets])
 
   const uniqueLocations = useMemo(() => {
-    const locations = new Set(
-      assets.map((asset: Asset) => asset.location).filter(Boolean),
-    );
-    return Array.from(locations).sort();
-  }, [assets]);
+    const locations = new Set<string>(
+      assets.map((asset: Asset) => asset.location).filter(Boolean)
+    )
+    return Array.from(locations).sort()
+  }, [assets])
 
   const uniqueDepartments = useMemo(() => {
-    const departments = new Set(
-      assets.map((asset: Asset) => asset.department).filter(Boolean),
-    );
-    return Array.from(departments).sort();
-  }, [assets]);
+    const departments = new Set<string>(
+      assets.map((asset: Asset) => asset.department).filter(Boolean)
+    )
+    return Array.from(departments).sort()
+  }, [assets])
 
   const uniqueManufacturers = useMemo(() => {
-    const manufacturers = new Set(
-      assets.map((asset: Asset) => asset.manufacturer).filter(Boolean),
-    );
-    return Array.from(manufacturers).sort();
-  }, [assets]);
+    const manufacturers = new Set<string>(
+      assets.map((asset: Asset) => asset.manufacturer).filter(Boolean)
+    )
+    return Array.from(manufacturers).sort()
+  }, [assets])
 
   // Filtered data based on search and filters
   const filteredAssets = useMemo(() => {
@@ -110,23 +111,23 @@ export default function ReportPage() {
         asset.manufacturer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         asset.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         asset.owner?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        asset.ip?.toLowerCase().includes(searchTerm.toLowerCase());
+        asset.ip?.toLowerCase().includes(searchTerm.toLowerCase())
 
       // Type filter
-      const matchesType = typeFilter === "all" || asset.type === typeFilter;
+      const matchesType = typeFilter === "all" || asset.type === typeFilter
 
       // Location filter
       const matchesLocation =
-        locationFilter === "all" || asset.location === locationFilter;
+        locationFilter === "all" || asset.location === locationFilter
 
       // Department filter
       const matchesDepartment =
-        departmentFilter === "all" || asset.department === departmentFilter;
+        departmentFilter === "all" || asset.department === departmentFilter
 
       // Manufacturer filter
       const matchesManufacturer =
         manufacturerFilter === "all" ||
-        asset.manufacturer === manufacturerFilter;
+        asset.manufacturer === manufacturerFilter
 
       return (
         matchesSearch &&
@@ -134,8 +135,8 @@ export default function ReportPage() {
         matchesLocation &&
         matchesDepartment &&
         matchesManufacturer
-      );
-    });
+      )
+    })
   }, [
     assets,
     searchTerm,
@@ -143,17 +144,17 @@ export default function ReportPage() {
     locationFilter,
     departmentFilter,
     manufacturerFilter,
-  ]);
+  ])
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (typeFilter !== "all") count++;
-    if (locationFilter !== "all") count++;
-    if (departmentFilter !== "all") count++;
-    if (manufacturerFilter !== "all") count++;
-    return count;
-  }, [typeFilter, locationFilter, departmentFilter, manufacturerFilter]);
+    let count = 0
+    if (typeFilter !== "all") count++
+    if (locationFilter !== "all") count++
+    if (departmentFilter !== "all") count++
+    if (manufacturerFilter !== "all") count++
+    return count
+  }, [typeFilter, locationFilter, departmentFilter, manufacturerFilter])
 
   const columnDefs = useMemo(
     () => [
@@ -162,16 +163,16 @@ export default function ReportPage() {
         hide: true,
       },
     ],
-    [],
-  );
+    []
+  )
 
   const defaultColDef = useMemo(
     () => ({
       flex: 1,
       minWidth: 100,
     }),
-    [],
-  );
+    []
+  )
 
   const gridOptions = useMemo(
     () => ({
@@ -181,20 +182,20 @@ export default function ReportPage() {
       suppressHorizontalScroll: true,
       headerHeight: 0,
     }),
-    [],
-  );
+    []
+  )
 
   const clearAllFilters = useCallback(() => {
-    setSearchTerm("");
-    setTypeFilter("all");
-    setLocationFilter("all");
-    setDepartmentFilter("all");
-    setManufacturerFilter("all");
-  }, []);
+    setSearchTerm("")
+    setTypeFilter("all")
+    setLocationFilter("all")
+    setDepartmentFilter("all")
+    setManufacturerFilter("all")
+  }, [])
 
   const clearSearch = useCallback(() => {
-    setSearchTerm("");
-  }, []);
+    setSearchTerm("")
+  }, [])
 
   // Error state
   if (isError) {
@@ -210,7 +211,7 @@ export default function ReportPage() {
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -450,26 +451,26 @@ export default function ReportPage() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 const AssetCardRenderer = ({ data }: { data: Asset }) => {
-  if (!data) return null;
+  if (!data) return null
 
   const handleView = () => {
-    console.log("View asset:", data.id);
+    console.log("View asset:", data.id)
     // Add your view logic here
-  };
+  }
 
   const handleEdit = () => {
-    console.log("Edit asset:", data.id);
+    console.log("Edit asset:", data.id)
     // Add your edit logic here
-  };
+  }
 
   const handleDelete = () => {
-    console.log("Delete asset:", data.id);
+    console.log("Delete asset:", data.id)
     // Add your delete logic here
-  };
+  }
 
   return (
     <Card className="w-full border-0 shadow-none">
@@ -615,5 +616,5 @@ const AssetCardRenderer = ({ data }: { data: Asset }) => {
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}

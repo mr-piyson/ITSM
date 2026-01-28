@@ -1,9 +1,10 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown } from "lucide-react"
+import * as React from "react"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Command,
   CommandEmpty,
@@ -11,24 +12,24 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@/components/ui/command"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import { currencies, getCurrency } from "@/lib/currencies";
+} from "@/components/ui/popover"
+import { currencies, getCurrency } from "@/lib/currencies"
+import { cn } from "@/lib/utils"
 
 interface CurrencySelectorProps {
-  value: string;
-  onChange: (value: string) => void;
+  value: string
+  onChange: (value: string) => void
 }
 
 export function CurrencySelector({ value, onChange }: CurrencySelectorProps) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false)
 
-  const selectedCurrency = getCurrency(value);
+  const selectedCurrency = getCurrency(value)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -59,8 +60,8 @@ export function CurrencySelector({ value, onChange }: CurrencySelectorProps) {
                   key={currency.code}
                   value={currency.code}
                   onSelect={() => {
-                    onChange(currency.code);
-                    setOpen(false);
+                    onChange(currency.code)
+                    setOpen(false)
                   }}
                 >
                   <div className="flex items-center gap-2 w-full">
@@ -91,7 +92,7 @@ export function CurrencySelector({ value, onChange }: CurrencySelectorProps) {
         </Command>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 // Simple component to display flag icons
@@ -108,5 +109,5 @@ function FlagIcon({ code }: { code: string }) {
         />
       )}
     </div>
-  );
+  )
 }

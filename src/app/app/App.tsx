@@ -1,12 +1,16 @@
-"use client";
+"use client"
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { usePathname, useRouter } from "next/navigation";
-import AppLogo from "@/assets/icons/Logo";
-import { ThemeSwitcher } from "@/components/Theme-Provider";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CommandShortcut } from "@/components/ui/command";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
+import { signOut } from "@/app/auth/auth.actions"
+import AppLogo from "@/assets/icons/Logo"
+import { ThemeSwitcher } from "@/components/Theme-Provider"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { CommandShortcut } from "@/components/ui/command"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +19,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   SidebarGroup,
   SidebarMenu,
@@ -23,11 +27,21 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/sidebar"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarRail,
+} from "@/components/ui/sidebar"
+import { routes } from "@/lib/routes"
+import { cn } from "@/lib/utils"
+
+import Toolbar from "./Toolbar"
 
 // const open = atom(true);
 interface AppProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export default function App(props: AppProps) {
@@ -44,15 +58,8 @@ export default function App(props: AppProps) {
         </div>
       </SidebarProvider>
     </QueryClientProvider>
-  );
+  )
 }
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarRail,
-} from "@/components/ui/sidebar";
 
 // This is sample data.
 
@@ -67,11 +74,11 @@ export function AppSidebar({ ...props }: any) {
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }
 
 export function TeamSwitcher() {
-  const { isMobile } = useSidebar();
+  const { isMobile } = useSidebar()
 
   return (
     <SidebarMenu>
@@ -91,20 +98,12 @@ export function TeamSwitcher() {
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
-  );
+  )
 }
-
-import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { signOut } from "@/app/auth/auth.actions";
-import { Button } from "@/components/ui/button";
-import { routes } from "@/lib/routes";
-import { cn } from "@/lib/utils";
-import Toolbar from "./Toolbar";
 
 // This component renders the user profile in the sidebar, allowing users to switch themes and log out.
 export function UserMenu(props: any) {
-  const { isMobile } = useSidebar();
+  const { isMobile } = useSidebar()
 
   return (
     <DropdownMenu>
@@ -162,7 +161,7 @@ export function UserMenu(props: any) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
-            await signOut();
+            await signOut()
           }}
         >
           <LogOut />
@@ -170,27 +169,27 @@ export function UserMenu(props: any) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }
 
 // Sidebar navigation for the main activities of the application.
 export function AppSidebarContent(props: any) {
-  const { isMobile, open, setOpenMobile } = useSidebar();
-  const router = useRouter();
-  const path = usePathname();
-  const [loading, setLoading] = useState("");
+  const { isMobile, open, setOpenMobile } = useSidebar()
+  const router = useRouter()
+  const path = usePathname()
+  const [loading, setLoading] = useState("")
 
   useEffect(() => {
     if (loading === path) {
-      setLoading("");
-      setOpenMobile(false);
+      setLoading("")
+      setOpenMobile(false)
     }
-  }, [path, setOpenMobile, loading]);
+  }, [path, setOpenMobile, loading])
 
   const isActive = (Activity: string | undefined) => {
-    const url = path.split("/").slice(0, 3).join("/");
-    return url === Activity;
-  };
+    const url = path.split("/").slice(0, 3).join("/")
+    return url === Activity
+  }
   return (
     <SidebarGroup>
       <SidebarMenu>
@@ -202,11 +201,11 @@ export function AppSidebarContent(props: any) {
               tooltip={title}
               size={"lg"}
               onClick={() => {
-                const match = path.match(/^\/App\/[^/]+/);
+                const match = path.match(/^\/App\/[^/]+/)
                 match && match[0] === href
                   ? setLoading("")
-                  : setLoading(href as string);
-                href && router.push(href);
+                  : setLoading(href as string)
+                href && router.push(href)
               }}
             >
               {/* <Link href={url} className="flex justify-center items-center"> */}
@@ -238,5 +237,5 @@ export function AppSidebarContent(props: any) {
         ))}
       </SidebarMenu>
     </SidebarGroup>
-  );
+  )
 }

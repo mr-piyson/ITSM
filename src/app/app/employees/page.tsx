@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useQuery } from "@tanstack/react-query";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { useQuery } from "@tanstack/react-query"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import {
   Briefcase,
   Building2,
@@ -9,14 +9,15 @@ import {
   Search,
   SlidersHorizontal,
   Users,
-} from "lucide-react";
-import Link from "next/link";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+} from "lucide-react"
+import Link from "next/link"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { toast } from "sonner"
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -24,27 +25,27 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Employee {
-  id: number;
-  emp_code: string;
-  name: string;
-  photo: string;
-  email: string;
-  emp_designation: string;
-  emp_department: string;
-  access: number;
+  id: number
+  emp_code: string
+  name: string
+  photo: string
+  email: string
+  emp_designation: string
+  emp_department: string
+  access: number
 }
 
 async function fetchEmployees(): Promise<Employee[]> {
-  const response = await fetch(`/api/employees`);
+  const response = await fetch(`/api/employees`)
   if (!response.ok) {
-    throw new Error("Failed to fetch employees");
+    throw new Error("Failed to fetch employees")
   }
-  return response.json();
+  return response.json()
 }
 
 function EmployeeCardSkeleton() {
@@ -64,49 +65,49 @@ function EmployeeCardSkeleton() {
         </div>
       </div>
     </Card>
-  );
+  )
 }
 
 class ImageCacheManager {
-  private cache: Map<string, string> = new Map();
-  private loading: Map<string, Promise<string>> = new Map();
+  private cache: Map<string, string> = new Map()
+  private loading: Map<string, Promise<string>> = new Map()
 
   async getImage(url: string): Promise<string> {
     // Return cached image if available
     if (this.cache.has(url)) {
-      return this.cache.get(url)!;
+      return this.cache.get(url)!
     }
 
     // Return existing promise if already loading
     if (this.loading.has(url)) {
-      return this.loading.get(url)!;
+      return this.loading.get(url)!
     }
 
     // Start loading the image
-    const loadPromise = this.loadImage(url);
-    this.loading.set(url, loadPromise);
+    const loadPromise = this.loadImage(url)
+    this.loading.set(url, loadPromise)
 
     try {
-      const blobUrl = await loadPromise;
-      this.cache.set(url, blobUrl);
-      this.loading.delete(url);
-      return blobUrl;
+      const blobUrl = await loadPromise
+      this.cache.set(url, blobUrl)
+      this.loading.delete(url)
+      return blobUrl
     } catch (error) {
-      this.loading.delete(url);
-      throw error;
+      this.loading.delete(url)
+      throw error
     }
   }
 
   private async loadImage(url: string): Promise<string> {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to load image");
-      const blob = await response.blob();
-      return URL.createObjectURL(blob);
+      const response = await fetch(url)
+      if (!response.ok) throw new Error("Failed to load image")
+      const blob = await response.blob()
+      return URL.createObjectURL(blob)
     } catch (error) {
-      console.error(`Failed to cache image: ${url}`, error);
+      console.error(`Failed to cache image: ${url}`, error)
       // Return original URL as fallback
-      return url;
+      return url
     }
   }
 
@@ -114,16 +115,16 @@ class ImageCacheManager {
     // Revoke all blob URLs to free memory
     this.cache.forEach((blobUrl) => {
       if (blobUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(blobUrl);
+        URL.revokeObjectURL(blobUrl)
       }
-    });
-    this.cache.clear();
-    this.loading.clear();
+    })
+    this.cache.clear()
+    this.loading.clear()
   }
 }
 
 // Create singleton instance
-const imageCache = new ImageCacheManager();
+const imageCache = new ImageCacheManager()
 
 function LazyAvatar({
   src,
@@ -131,43 +132,43 @@ function LazyAvatar({
   fallback,
   access,
 }: {
-  src: string;
-  alt: string;
-  fallback: string;
-  access: number;
+  src: string
+  alt: string
+  fallback: string
+  access: number
 }) {
-  const [shouldLoad, setShouldLoad] = useState(false);
-  const [cachedSrc, setCachedSrc] = useState<string | null>(null);
-  const imgRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false)
+  const [cachedSrc, setCachedSrc] = useState<string | null>(null)
+  const imgRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const element = imgRef.current;
-    if (!element) return;
+    const element = imgRef.current
+    if (!element) return
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setShouldLoad(true);
-            observer.disconnect();
+            setShouldLoad(true)
+            observer.disconnect()
           }
-        });
+        })
       },
       {
         rootMargin: "100px",
       }
-    );
+    )
 
-    observer.observe(element);
+    observer.observe(element)
 
-    return () => observer.disconnect();
-  }, []);
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     if (shouldLoad && src && !cachedSrc) {
-      imageCache.getImage(src).then(setCachedSrc).catch(console.error);
+      imageCache.getImage(src).then(setCachedSrc).catch(console.error)
     }
-  }, [shouldLoad, src, cachedSrc]);
+  }, [shouldLoad, src, cachedSrc])
 
   return (
     <div ref={imgRef} className="relative shrink-0">
@@ -197,17 +198,17 @@ function LazyAvatar({
         )}
       </div>
     </div>
-  );
+  )
 }
 
 const EmployeeCard = memo(({ employee }: { employee: Employee }) => {
   const handleCopyEmail = (e: React.MouseEvent, email: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
     navigator.clipboard.writeText(email).then(() => {
-      toast.success("Email copied to clipboard");
-    });
-  };
+      toast.success("Email copied to clipboard")
+    })
+  }
 
   return (
     <Link href={`/app/employees/${employee.id}`}>
@@ -272,32 +273,32 @@ const EmployeeCard = memo(({ employee }: { employee: Employee }) => {
         </div>
       </Card>
     </Link>
-  );
-});
+  )
+})
 
-EmployeeCard.displayName = "EmployeeCard";
+EmployeeCard.displayName = "EmployeeCard"
 
 function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
+      setDebouncedValue(value)
+    }, delay)
 
     return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
+      clearTimeout(handler)
+    }
+  }, [value, delay])
 
-  return debouncedValue;
+  return debouncedValue
 }
 
 export default function EmployeesPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [departmentFilter, setDepartmentFilter] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string[]>(["active"]);
+  const [searchQuery, setSearchQuery] = useState("")
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
+  const [departmentFilter, setDepartmentFilter] = useState<string[]>([])
+  const [statusFilter, setStatusFilter] = useState<string[]>(["active"])
 
   const {
     data: employees = [],
@@ -306,13 +307,13 @@ export default function EmployeesPage() {
   } = useQuery({
     queryKey: ["employees"],
     queryFn: fetchEmployees,
-  });
+  })
 
   useEffect(() => {
     return () => {
-      imageCache.clear();
-    };
-  }, []);
+      imageCache.clear()
+    }
+  }, [])
 
   const employeesWithSearchText = useMemo(() => {
     return employees.map((employee: Employee) => ({
@@ -327,31 +328,31 @@ export default function EmployeesPage() {
         .filter(Boolean)
         .join(" ")
         .toLowerCase(),
-    }));
-  }, [employees]);
+    }))
+  }, [employees])
 
   const departments = useMemo(() => {
     const uniqueDepts = new Set(
       employees
         .map((e) => e.emp_department)
         .filter((dept) => dept && dept.trim() !== "")
-    );
-    return Array.from(uniqueDepts).sort();
-  }, [employees]);
+    )
+    return Array.from(uniqueDepts).sort()
+  }, [employees])
 
   const filteredEmployees = useMemo(() => {
-    const query = debouncedSearchQuery.toLowerCase().trim();
+    const query = debouncedSearchQuery.toLowerCase().trim()
 
     return employeesWithSearchText.filter((employee) => {
       if (statusFilter.length > 0) {
-        const hasActiveFilter = statusFilter.includes("active");
-        const hasInactiveFilter = statusFilter.includes("inactive");
-        const isActive = employee.access === 1;
+        const hasActiveFilter = statusFilter.includes("active")
+        const hasInactiveFilter = statusFilter.includes("inactive")
+        const isActive = employee.access === 1
 
         if (
           !((hasActiveFilter && isActive) || (hasInactiveFilter && !isActive))
         ) {
-          return false;
+          return false
         }
       }
 
@@ -359,50 +360,50 @@ export default function EmployeesPage() {
         departmentFilter.length > 0 &&
         !departmentFilter.includes(employee.emp_department)
       ) {
-        return false;
+        return false
       }
 
       if (query) {
-        return employee.searchText.includes(query);
+        return employee.searchText.includes(query)
       }
 
-      return true;
-    });
+      return true
+    })
   }, [
     employeesWithSearchText,
     debouncedSearchQuery,
     departmentFilter,
     statusFilter,
-  ]);
+  ])
 
-  const parentRef = useRef<HTMLDivElement>(null);
+  const parentRef = useRef<HTMLDivElement>(null)
 
   const getColumnCount = useCallback(() => {
-    if (typeof window === "undefined") return 3;
-    const width = window.innerWidth;
-    if (width < 768) return 1;
-    if (width < 1024) return 2;
-    return 3;
-  }, []);
+    if (typeof window === "undefined") return 3
+    const width = window.innerWidth
+    if (width < 768) return 1
+    if (width < 1024) return 2
+    return 3
+  }, [])
 
-  const [columns, setColumns] = useState(getColumnCount);
+  const [columns, setColumns] = useState(getColumnCount)
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return
 
-    const handleResize = () => setColumns(getColumnCount());
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [getColumnCount]);
+    const handleResize = () => setColumns(getColumnCount())
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [getColumnCount])
 
-  const rows = Math.ceil(filteredEmployees.length / columns);
+  const rows = Math.ceil(filteredEmployees.length / columns)
 
   const rowVirtualizer = useVirtualizer({
     count: rows,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 240,
     overscan: 5,
-  });
+  })
 
   if (error) {
     return (
@@ -416,7 +417,7 @@ export default function EmployeesPage() {
           </p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -466,7 +467,7 @@ export default function EmployeesPage() {
                       checked
                         ? [...prev, "active"]
                         : prev.filter((s) => s !== "active")
-                    );
+                    )
                   }}
                 >
                   Active
@@ -478,7 +479,7 @@ export default function EmployeesPage() {
                       checked
                         ? [...prev, "inactive"]
                         : prev.filter((s) => s !== "inactive")
-                    );
+                    )
                   }}
                 >
                   Inactive
@@ -497,7 +498,7 @@ export default function EmployeesPage() {
                             checked
                               ? [...prev, dept]
                               : prev.filter((d) => d !== dept)
-                          );
+                          )
                         }}
                       >
                         {dept}
@@ -544,11 +545,11 @@ export default function EmployeesPage() {
             }}
           >
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const startIndex = virtualRow.index * columns;
+              const startIndex = virtualRow.index * columns
               const employeesInRow = filteredEmployees.slice(
                 startIndex,
                 startIndex + columns
-              );
+              )
 
               return (
                 <div
@@ -567,11 +568,11 @@ export default function EmployeesPage() {
                     ))}
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         )}
       </div>
     </div>
-  );
+  )
 }

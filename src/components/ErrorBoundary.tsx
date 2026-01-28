@@ -1,18 +1,19 @@
-"use client";
+"use client"
 
-import { ReactNode } from "react";
-import { AlertTriangle, RotateCcw } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { AlertTriangle, RotateCcw } from "lucide-react"
+import { ReactNode } from "react"
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 
 interface ErrorBoundaryProps {
-  children: ReactNode;
-  fallback?: ReactNode;
+  children: ReactNode
+  fallback?: ReactNode
 }
 
 interface ErrorBoundaryState {
-  hasError: boolean;
-  error: Error | null;
+  hasError: boolean
+  error: Error | null
 }
 
 export class ErrorBoundary extends React.Component<
@@ -20,16 +21,16 @@ export class ErrorBoundary extends React.Component<
   ErrorBoundaryState
 > {
   constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null };
+    super(props)
+    this.state = { hasError: false, error: null }
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
+    return { hasError: true, error }
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error("Error caught by boundary:", error, errorInfo);
+    console.error("Error caught by boundary:", error, errorInfo)
   }
 
   render() {
@@ -56,11 +57,11 @@ export class ErrorBoundary extends React.Component<
             {this.props.fallback}
           </div>
         </div>
-      );
+      )
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }
 
-export default ErrorBoundary;
+export default ErrorBoundary

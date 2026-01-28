@@ -1,8 +1,10 @@
-"use client";
-import { useState } from "react";
-import { Search, SearchIcon } from "lucide-react";
+"use client"
+import type { VariantProps } from "class-variance-authority"
+import { useAtom } from "jotai"
+import { Search, SearchIcon } from "lucide-react"
+import { useState } from "react"
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -11,25 +13,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import type { VariantProps } from "class-variance-authority";
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 
-import { useAtom } from "jotai";
-import { initPanelsStore, panelsStore, ReportData } from "./atoms";
+import { ReportData, initPanelsStore, panelsStore } from "./atoms"
 
 export function SearchPanels(
   props: React.ComponentProps<"button"> &
     VariantProps<typeof buttonVariants> & {
-      asChild?: boolean;
+      asChild?: boolean
     }
 ) {
   return (
@@ -39,7 +39,7 @@ export function SearchPanels(
         Search
       </Button>
     </SearchDialog>
-  );
+  )
 }
 
 const searchOptions: { value: keyof ReportData; label: string }[] = [
@@ -48,33 +48,33 @@ const searchOptions: { value: keyof ReportData; label: string }[] = [
   { value: "asm_part_no", label: "ASM Part No" },
   { value: "project", label: "Project" },
   { value: "package", label: "Package Code" },
-];
+]
 
 interface ImportDialogProps {
-  children?: React.ReactNode;
+  children?: React.ReactNode
 }
 
 export default function SearchDialog(props: ImportDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [searchBy, setSearchBy] = useState<keyof ReportData>();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [initPanels] = useAtom(initPanelsStore);
-  const [_, setPanels] = useAtom(panelsStore);
+  const [open, setOpen] = useState(false)
+  const [searchBy, setSearchBy] = useState<keyof ReportData>()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [initPanels] = useAtom(initPanelsStore)
+  const [_, setPanels] = useAtom(panelsStore)
 
   const handleSearch = () => {
     // Perform search logic here
     if (!searchBy || !searchQuery) {
-      console.warn("Please select a search field and enter a query.");
-      return;
+      console.warn("Please select a search field and enter a query.")
+      return
     }
     const filteredData = searchReportDataByKey(
       initPanels,
       searchBy,
       searchQuery
-    );
-    setPanels(filteredData);
-    setOpen(false);
-  };
+    )
+    setPanels(filteredData)
+    setOpen(false)
+  }
 
   function searchReportDataByKey(
     data: ReportData[],
@@ -87,17 +87,17 @@ export default function SearchDialog(props: ImportDialogProps) {
         .split("\n")
         .map((item) => item.trim().toLocaleUpperCase())
         .filter((item) => item.length > 0)
-    );
+    )
     // return filtered data where data[key] is in the searchSet
     return data.filter((item) => {
-      const value = item[key];
+      const value = item[key]
       if (typeof value === "string") {
-        return searchSet.has(value);
+        return searchSet.has(value)
       } else if (typeof value === "number") {
-        return searchSet.has(String(value));
+        return searchSet.has(String(value))
       }
-      return false;
-    });
+      return false
+    })
   }
 
   return (
@@ -148,5 +148,5 @@ export default function SearchDialog(props: ImportDialogProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

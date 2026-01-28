@@ -1,24 +1,25 @@
-"use client";
+"use client"
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Filter, Search, X } from "lucide-react"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Search, X, Filter } from "lucide-react";
+} from "@/components/ui/select"
 
 interface SearchFiltersProps {
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  statusFilter: string;
-  onStatusFilterChange: (status: string) => void;
-  resultCount: number;
-  onClearFilters: () => void;
+  searchQuery: string
+  onSearchChange: (query: string) => void
+  statusFilter: string
+  onStatusFilterChange: (status: string) => void
+  resultCount: number
+  onClearFilters: () => void
 }
 
 export function SearchFilters({
@@ -29,7 +30,7 @@ export function SearchFilters({
   resultCount,
   onClearFilters,
 }: SearchFiltersProps) {
-  const hasActiveFilters = searchQuery || statusFilter !== "all";
+  const hasActiveFilters = searchQuery || statusFilter !== "all"
 
   return (
     <div className="space-y-4">
@@ -87,5 +88,5 @@ export function SearchFilters({
         </div>
       </div>
     </div>
-  );
+  )
 }

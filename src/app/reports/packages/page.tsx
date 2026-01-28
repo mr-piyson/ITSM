@@ -1,40 +1,42 @@
-"use client";
-import { useQuery } from "@tanstack/react-query";
-import type { ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
+"use client"
+import { useQuery } from "@tanstack/react-query"
+import type { ColDef, GridApi, GridReadyEvent } from "ag-grid-community"
 import {
   AllCommunityModule,
   CsvExportModule,
   ModuleRegistry,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
-import axios from "axios";
-import { useAtom } from "jotai";
-import { SearchIcon } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+} from "ag-grid-community"
+import { AgGridReact } from "ag-grid-react"
+import axios from "axios"
+import { useAtom } from "jotai"
+import { SearchIcon } from "lucide-react"
+import { useCallback, useMemo, useState } from "react"
+
+import { ApiReportData } from "@/app/api/reports/packages/route"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useTableTheme } from "@/hooks/use-tableTheme";
-import { filteredData, filterStore, initData, type ReportData } from "./atoms";
-import { SearchDialog } from "./SearchPanels";
-import { ApiReportData } from "@/app/api/reports/packages/route";
+} from "@/components/ui/select"
+import { useTableTheme } from "@/hooks/use-tableTheme"
+
+import { SearchDialog } from "./SearchPanels"
+import { type ReportData, filterStore, filteredData, initData } from "./atoms"
 
 const searchOptions: { value: keyof ReportData; label: string }[] = [
   { value: "code", label: "Panel Code" },
   { value: "project_name", label: "Project Name" },
-];
+]
 
 interface ImportDialogProps {
-  children?: React.ReactNode;
+  children?: React.ReactNode
 }
 
-ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
+ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule])
 
 const BoxCellRenderer = ({ data }: { data: ReportData }) => (
   <div className="flex justify-between items-center">
@@ -56,30 +58,30 @@ const BoxCellRenderer = ({ data }: { data: ReportData }) => (
       </Button>
     )}
   </div>
-);
+)
 
 const DateCellRenderer = ({ value }: { value: string }) => {
-  if (!value) return null;
-  const date = new Date(value);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
+  if (!value) return null
+  const date = new Date(value)
+  const day = String(date.getDate()).padStart(2, "0")
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const year = date.getFullYear()
+  const hours = String(date.getHours()).padStart(2, "0")
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+  const seconds = String(date.getSeconds()).padStart(2, "0")
 
-  return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`;
-};
+  return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`
+}
 
 // API function
 
 export default function ReportPage() {
-  const [gridApi, setGridApi] = useState<GridApi | null>(null);
-  const [selectedRows, setSelectedRows] = useState<ReportData[]>([]);
-  const [filter, setFilter] = useAtom(filterStore);
-  const [, setInitPanels] = useAtom(initData);
-  const [panels, setPanels] = useAtom(filteredData);
-  const theme = useTableTheme();
+  const [gridApi, setGridApi] = useState<GridApi | null>(null)
+  const [selectedRows, setSelectedRows] = useState<ReportData[]>([])
+  const [filter, setFilter] = useAtom(filterStore)
+  const [, setInitPanels] = useAtom(initData)
+  const [panels, setPanels] = useAtom(filteredData)
+  const theme = useTableTheme()
 
   // React Query for data fetching
   const {
@@ -91,18 +93,18 @@ export default function ReportPage() {
   } = useQuery({
     queryKey: ["panels", filter],
     queryFn: async () => {
-      const data = await fetchPanels();
-      setInitPanels(data);
-      setPanels(data);
-      return data;
+      const data = await fetchPanels()
+      setInitPanels(data)
+      setPanels(data)
+      return data
     },
     refetchOnWindowFocus: false,
     gcTime: Infinity,
     staleTime: Infinity,
-  });
+  })
 
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
-    const response = await axios.get(`/api/reports/packages?filter=${filter}`);
+    const response = await axios.get(`/api/reports/packages?filter=${filter}`)
 
     return response.data.map(
       (panel: ApiReportData): ReportData => ({
@@ -117,8 +119,8 @@ export default function ReportPage() {
         container: panel.container,
         shipped_at: panel.shipped_at,
       })
-    );
-  }, [filter]);
+    )
+  }, [filter])
 
   // Memoized column definitions
   const columnDefs: ColDef<ReportData>[] = useMemo(
@@ -203,7 +205,7 @@ export default function ReportPage() {
       },
     ],
     []
-  );
+  )
 
   // Memoized default column properties
   const defaultColDef = useMemo(
@@ -214,26 +216,26 @@ export default function ReportPage() {
       floatingFilter: true,
     }),
     []
-  );
+  )
 
   // Callbacks
   const onGridReady = useCallback((params: GridReadyEvent) => {
-    setGridApi(params.api);
-  }, []);
+    setGridApi(params.api)
+  }, [])
 
   const onRowSelectionChanged = useCallback(() => {
     if (gridApi) {
-      setSelectedRows(gridApi.getSelectedRows());
+      setSelectedRows(gridApi.getSelectedRows())
     }
-  }, [gridApi]);
+  }, [gridApi])
 
   const refreshData = useCallback(() => {
     if (gridApi) {
-      gridApi.setFilterModel(null);
-      gridApi.resetColumnState();
+      gridApi.setFilterModel(null)
+      gridApi.resetColumnState()
     }
-    refetch();
-  }, [gridApi, filter]);
+    refetch()
+  }, [gridApi, filter])
 
   const exportRows = useCallback(() => {
     if (gridApi) {
@@ -244,9 +246,9 @@ export default function ReportPage() {
         fileName: `filtered-report-${
           new Date().toISOString().split("T")[0]
         }.csv`,
-      });
+      })
     }
-  }, [gridApi]);
+  }, [gridApi])
 
   // Error state
   if (isError) {
@@ -262,7 +264,7 @@ export default function ReportPage() {
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -341,5 +343,5 @@ export default function ReportPage() {
         </div>
       </CardFooter>
     </Card>
-  );
+  )
 }

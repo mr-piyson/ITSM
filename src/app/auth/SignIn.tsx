@@ -1,5 +1,13 @@
-"use client";
-import { Button } from "@/components/ui/button";
+"use client"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
+import z from "zod"
+
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -7,11 +15,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-
-import z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+} from "@/components/ui/card"
 import {
   Form,
   FormControl,
@@ -19,44 +23,41 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
-import { signIn } from "./auth.actions";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+
+import { signIn } from "./auth.actions"
 
 export const SignInSchema = z.object({
   email: z.string(),
   password: z.string().min(6),
-});
+})
 
 export default function SignInTab() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
   const form = useForm<z.infer<typeof SignInSchema>>({
     resolver: zodResolver(SignInSchema),
     defaultValues: {
       email: "",
       password: "",
     },
-  });
+  })
 
   async function onSubmit(formData: z.infer<typeof SignInSchema>) {
-    setLoading(true);
+    setLoading(true)
     try {
-      const res = await signIn(formData);
+      const res = await signIn(formData)
       if (res.status === 200) {
-        toast.success("Signed in successfully!");
-        router.push("/app");
+        toast.success("Signed in successfully!")
+        router.push("/app")
       }
       if (res.error) {
-        toast.error(res.error);
-        setLoading(false);
+        toast.error(res.error)
+        setLoading(false)
       }
     } catch (e) {
-      toast.error("Error", { description: String(e) });
+      toast.error("Error", { description: String(e) })
     }
   }
 
@@ -125,5 +126,5 @@ export default function SignInTab() {
         </form>
       </Form>
     </Card>
-  );
+  )
 }
