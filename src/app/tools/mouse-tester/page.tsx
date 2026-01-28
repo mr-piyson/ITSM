@@ -143,7 +143,7 @@ export default function MouseTestingApp() {
       <NavigationToolbar />
       <main className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card className="hover:-translate-y-0.5 transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -194,7 +194,7 @@ export default function MouseTestingApp() {
         </div>
 
         {/* Testing Areas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
           {/* Click Testing Zone */}
           <Card>
             <CardHeader>

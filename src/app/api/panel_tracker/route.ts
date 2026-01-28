@@ -31,8 +31,6 @@ export async function GET(request: NextRequest) {
 
     const panelRaw = panelInfo[0][0];
 
-    console.log(panelInfo);
-
     // Map database fields to component expected fields
     const panel = {
       id: panelRaw.qr_code,
