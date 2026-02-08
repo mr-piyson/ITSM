@@ -13,7 +13,6 @@ export async function GET(
     // run two queries to get employees and their photos
     // combine results to form final employee list with photo paths
 
-
     NextResponse.json([])
   } catch (error) {
     console.error("Error fetching employees:", error)

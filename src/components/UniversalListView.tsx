@@ -1,6 +1,6 @@
 "use client"
 
-import type { GridApi } from "ag-grid-community"
+import type { ColDef, GridApi } from "ag-grid-community"
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community"
 import { AgGridReact } from "ag-grid-react"
 import { Filter, Search, X } from "lucide-react"
@@ -220,7 +220,7 @@ export function UniversalListView<T extends Record<string, any>>({
   )
 
   // Column definitions (hidden, just for AG Grid structure)
-  const columnDefs = useMemo(
+  const columnDefs = useMemo<any>(
     () => [
       {
         field: "id",
@@ -442,7 +442,7 @@ export function UniversalListView<T extends Record<string, any>>({
           </Empty>
         ) : (
           <div className="ag-theme-alpine h-full w-full">
-            <AgGridReact
+            <AgGridReact<T>
               ref={gridRef}
               rowData={filteredData}
               columnDefs={columnDefs}
