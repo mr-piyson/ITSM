@@ -3,13 +3,14 @@
 import {
   AlertCircle,
   CalendarDays,
-  Clock,
+  DoorOpen,
   ExternalLink,
   Loader2,
   Search,
 } from "lucide-react"
 import { useState } from "react"
 
+import LogGeneratorDialog from "@/app/api/attendance/generateLog-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -46,8 +47,13 @@ export default function AttendancePage() {
   const [month, setMonth] = useState("01")
   const [workerId, setWorkerId] = useState("")
 
-  const [firstSeen, setFirstSeen] = useState("")
-  const [lastSeen, setLastSeen] = useState("")
+  // --- Dialog / Insert Record States ---
+  const [insertOpen, setInsertOpen] = useState(false)
+  const [insertPersonId, setInsertPersonId] = useState("")
+  const [insertResult, setInsertResult] = useState<{
+    success: boolean
+    msg: string
+  } | null>(null)
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -71,13 +77,11 @@ export default function AttendancePage() {
     }
   }
 
-  // Inside your AttendancePage component
   const isWeekend = (dateString: string) => {
     const day = new Date(dateString).getDay()
     return day === 5 || day === 6 // 5 = Friday, 6 = Saturday
   }
 
-  // get day of week from date string
   const getDayOfWeek = (dateString: string) => {
     const days = [
       "Sunday",
@@ -92,17 +96,32 @@ export default function AttendancePage() {
     return days[dayIndex]
   }
 
+  // Pre-fill dialog's Person ID with the search Worker ID if available
+  const openInsertDialog = () => {
+    if (workerId && !insertPersonId) setInsertPersonId(workerId)
+    setInsertResult(null)
+    setInsertOpen(true)
+  }
+
   return (
     <div className="container mx-auto p-6 max-w-5xl space-y-8">
-      {/* Header */}
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="h-12 w-1 bg-teal-600 rounded-full"></div>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight ">
-            BFG International
-          </h1>
-          <p className="text-slate-500">Worker Attendance Portal</p>
+      {/* Header with Dialog Trigger */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div className="flex items-center space-x-4">
+          <div className="h-12 w-1 bg-bfg rounded-full"></div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              BFG International
+            </h1>
+            <p className="text-slate-500">Worker Attendance Portal</p>
+          </div>
         </div>
+
+        {/* --- DIALOG MODAL HERE --- */}
+        <LogGeneratorDialog open={insertOpen} onOpenChange={setInsertOpen} />
+        <Button onClick={openInsertDialog} variant="outline" className="gap-2">
+          <DoorOpen /> Generate Log
+        </Button>
       </div>
 
       {/* Search Form */}
@@ -187,7 +206,7 @@ export default function AttendancePage() {
           {/* Summary Stats */}
           <div className="grid gap-4 md:grid-cols-1">
             <Card>
-              <CardHeader className="">
+              <CardHeader>
                 <CardTitle className="text-sm font-medium text-slate-500">
                   Employee Name
                 </CardTitle>
@@ -227,17 +246,14 @@ export default function AttendancePage() {
                             : ""
                       }
                     >
-                      {/* Day of week Column */}
                       <TableCell className="font-bold capitalize">
                         {getDayOfWeek(day.date)}
                       </TableCell>
-                      {/* Date Column */}
                       <TableCell className="font-medium flex items-center text-muted-foreground">
                         <CalendarDays className="mr-2 h-4 w-4 text-muted-foreground" />
                         {day.date}
                       </TableCell>
 
-                      {/* First In Column */}
                       <TableCell>
                         {day.startTime !== "-" ? (
                           <a
@@ -253,7 +269,6 @@ export default function AttendancePage() {
                         )}
                       </TableCell>
 
-                      {/* Last Out Column */}
                       <TableCell>
                         {day.endTime !== "-" ? (
                           <a
