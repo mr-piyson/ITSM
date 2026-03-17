@@ -179,5 +179,9 @@ export const routes = {
       href: "/reports",
       icon: "icon-[lucide--chart-bar-big]",
     },
+    {
+      title: "Engineering ",
+      icon: "icon-[fluent-mdl2--design]",
+    },
   ],
 } as Record<string, RouteItem[]>
