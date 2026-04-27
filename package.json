@@ -5,7 +5,9 @@
   "scripts": {
     "start": "next start",
     "lint": "next lint",
-    "dev": "next dev -p 4000 ",
+    "dev:ssh": "ssh -L 3306:localhost:3306 rustam@172.18.1.137",
+    "dev:next": "next dev -p 4000",
+    "dev": "concurrently -n \"SSH,NEXT\" -c \"cyan,magenta\" \"bun dev:ssh\" \"bun dev:next\"",
     "build": "next build ",
     "build:Android": "npx cap add android && npx cap sync android && npx cap open android",
     "db:pull": "npx prisma db pull --schema ./prisma/schema.prisma;",
@@ -98,6 +100,7 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "baseline-browser-mapping": "^2.9.19",
+    "concurrently": "^9.2.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.5.4",

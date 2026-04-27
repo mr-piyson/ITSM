@@ -163,7 +163,7 @@ export default function AttendancePage() {
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                     <SelectItem key={m} value={m.toString().padStart(2, "0")}>
                       {new Date(0, m - 1).toLocaleString("default", {
-                        month: "long",
+                        month: "long", 
                       })}
                     </SelectItem>
                   ))}
