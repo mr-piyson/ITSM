@@ -162,6 +162,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    const [year, month] = date.split("-")
+    const tableName = `hikvision.vlog_${year}${month}`
+
     // --- 1. Generate IN Time ---
     const inTime = new Date(`${date}T00:00:00+03:00`)
 
@@ -213,31 +216,30 @@ export async function POST(req: NextRequest) {
     const outLog = format(outTime)
 
     // --- 3. SQL Construction Function ---
-    const buildQuery = (deviceIp: string, log: ReturnType<typeof format>) => `
-      INSERT INTO hikvision.vlog_202603 
+    const buildQuery = (deviceIp: string, log: any, targetTable: string) => `
+      INSERT INTO ${targetTable} 
       (device_ip, device_model, device_serial, serial_no, person_id, person_name, card_no, \`datetime\`, time_raw)
       SELECT 
           dev.device_ip, 
           dev.device_model, 
           dev.device_serial,
-          (SELECT COALESCE(MAX(serial_no), 0) + 1 FROM hikvision.vlog_202603 WHERE device_ip = dev.device_ip) AS next_serial,
+          (SELECT COALESCE(MAX(serial_no), 0) + 1 FROM ${targetTable} WHERE device_ip = dev.device_ip) AS next_serial,
           pers.person_id, 
           pers.person_name, 
           pers.card_no, 
           '${log.datetime}', 
           '${log.time_raw}'
       FROM 
-          (SELECT device_ip, device_model, device_serial FROM hikvision.vlog_202603 WHERE device_ip = '${deviceIp}' LIMIT 1) dev,
-          (SELECT person_id, person_name, card_no FROM hikvision.vlog_202603 WHERE person_id = '${personId}' LIMIT 1) pers;
+          (SELECT device_ip, device_model, device_serial FROM ${targetTable} WHERE device_ip = '${deviceIp}' LIMIT 1) dev,
+          (SELECT person_id, person_name, card_no FROM ${targetTable} WHERE person_id = '${personId}' LIMIT 1) pers;
     `
 
-    const inQuery = buildQuery("172.18.1.82:80", inLog)
-    const outQuery = buildQuery("172.18.1.83:80", outLog)
+    const inQuery = buildQuery("172.18.1.82:80", inLog, tableName)
+    const outQuery = buildQuery("172.18.1.83:80", outLog, tableName)
 
-    // console.log("inTime: ", inQuery)
-    // console.log("outTime: ", outQuery)
-    await db.mes.execute(inQuery)
-    await db.mes.execute(outQuery)
+    // Use .query to avoid the ER_NEED_REPREPARE error discussed earlier
+    await db.mes.query(inQuery)
+    await db.mes.query(outQuery)
 
     return NextResponse.json({
       success: true,
