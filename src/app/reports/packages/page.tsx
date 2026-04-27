@@ -82,6 +82,14 @@ export default function ReportPage() {
   const [, setInitPanels] = useAtom(initData)
   const [panels, setPanels] = useAtom(filteredData)
   const theme = useTableTheme()
+  const [displayedCount, setDisplayedCount] = useState(0)
+
+  const onFilterChanged = useCallback(() => {
+    if (gridApi) {
+      // getDisplayedRowCount() returns only rows currently visible (filtered)
+      setDisplayedCount(gridApi.getDisplayedRowCount())
+    }
+  }, [gridApi])
 
   // React Query for data fetching
   const {
@@ -106,24 +114,11 @@ export default function ReportPage() {
   const fetchPanels = useCallback(async (): Promise<ReportData[]> => {
     const response = await axios.get(`/api/reports/packages?filter=${filter}`)
 
-    return response.data.map(
-      (panel: ApiReportData): ReportData => ({
-        id: panel.id,
-        code: panel.code.toLocaleUpperCase(),
-        project_name: panel.project_name,
-        length_cm: panel.length_cm,
-        width_cm: panel.width_cm,
-        height_cm: panel.height_cm,
-        weight_kg: panel.weight_kg,
-        created_at: new Date(panel.created_at),
-        container: panel.container,
-        shipped_at: panel.shipped_at,
-      })
-    )
+    return response.data
   }, [filter])
 
   // Memoized column definitions
-  const columnDefs: ColDef<ReportData>[] = useMemo(
+  const columnDefs: ColDef<ApiReportData>[] = useMemo(
     () => [
       {
         headerName: "Box Code",
@@ -148,6 +143,22 @@ export default function ReportPage() {
         sortable: true,
         filter: "agDateColumnFilter",
         cellRenderer: DateCellRenderer,
+        valueGetter: (params: any) => {
+          return params.data.created_at
+            ? new Date(params.data.created_at)
+            : null
+        },
+        filterParams: {
+          comparator: (
+            filterLocalDateAtMidnight: Number,
+            cellValue: Number
+          ) => {
+            if (cellValue == null) return -1
+            if (cellValue < filterLocalDateAtMidnight) return -1
+            if (cellValue > filterLocalDateAtMidnight) return 1
+            return 0
+          },
+        },
       },
       {
         headerName: "Length (cm)",
@@ -156,7 +167,6 @@ export default function ReportPage() {
         editable: true,
         sortable: true,
         flex: 1,
-
         filter: "agNumberColumnFilter",
       },
       {
@@ -166,7 +176,6 @@ export default function ReportPage() {
         editable: true,
         sortable: true,
         flex: 1,
-
         filter: "agNumberColumnFilter",
       },
       {
@@ -176,7 +185,6 @@ export default function ReportPage() {
         editable: true,
         sortable: true,
         flex: 1,
-
         filter: "agNumberColumnFilter",
       },
       {
@@ -196,12 +204,42 @@ export default function ReportPage() {
         flex: 1,
       },
       {
+        headerName: "Shipped By",
+        field: "shipped_by",
+        sortable: true,
+        flex: 1,
+        filter: "agTextColumnFilter",
+        filterParams: {
+          // This makes the standard filter ignore casing
+          buttons: ["reset", "apply"],
+          trimInput: true,
+          debounceMs: 200,
+        },
+      },
+      {
         headerName: "Shipped At",
         field: "shipped_at",
         editable: true,
         sortable: true,
         flex: 1,
+        filter: "agDateColumnFilter",
         cellRenderer: DateCellRenderer,
+        valueGetter: (params: any) => {
+          return params.data.shipped_at
+            ? new Date(params.data.shipped_at)
+            : null
+        },
+        filterParams: {
+          comparator: (
+            filterLocalDateAtMidnight: Number,
+            cellValue: Number
+          ) => {
+            if (cellValue == null) return -1
+            if (cellValue < filterLocalDateAtMidnight) return -1
+            if (cellValue > filterLocalDateAtMidnight) return 1
+            return 0
+          },
+        },
       },
     ],
     []
@@ -328,16 +366,18 @@ export default function ReportPage() {
             theme={theme}
             loading={isLoading}
             onSelectionChanged={onRowSelectionChanged}
+            onFilterChanged={onFilterChanged} // Triggered when filters change
+            onModelUpdated={onFilterChanged} // Triggered when data is first loaded or changed
           />
         </div>
       </CardContent>
 
       <CardFooter>
         <div className="text-sm text-muted-foreground flex items-center gap-2">
-          <span>Total Panels: {tableData.length}</span>
-          {selectedRows.length > 0 && (
-            <span className="pl-4 ml-2 border-l-2 border-foreground">
-              Selected Panels: {selectedRows.length}
+          <span>Total Boxes: {tableData.length}</span>
+          {displayedCount !== tableData.length && (
+            <span className="font-bold italic">
+              / Count After Filter : {displayedCount}
             </span>
           )}
         </div>

@@ -13,6 +13,7 @@ export interface ApiReportData {
   weight_kg: number
   created_at: string
   container: string
+  shipped_by: string
   shipped_at: string
 }
 
@@ -30,6 +31,7 @@ export async function GET(request: NextRequest) {
         p.height_cm,
         p.weight_kg,
         p.created_at,
+        p.shipped_by,
       c.code as container,
       c.created_at as shipped_at  from mes.packages p 
       LEFT JOIN 
