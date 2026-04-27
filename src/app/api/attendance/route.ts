@@ -234,10 +234,10 @@ export async function POST(req: NextRequest) {
     const inQuery = buildQuery("172.18.1.82:80", inLog)
     const outQuery = buildQuery("172.18.1.83:80", outLog)
 
-    console.log("inTime: ", inQuery)
-    console.log("outTime: ", outQuery)
-    // await db.execute(inQuery);
-    // await db.execute(outQuery);
+    // console.log("inTime: ", inQuery)
+    // console.log("outTime: ", outQuery)
+    await db.mes.execute(inQuery)
+    await db.mes.execute(outQuery)
 
     return NextResponse.json({
       success: true,
