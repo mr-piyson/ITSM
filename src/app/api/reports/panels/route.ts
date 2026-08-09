@@ -1,15 +1,15 @@
 // app/api/panels/route.ts
-import { type NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server";
 
-import { mes } from "@/lib/database"
+import { mes } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const filter = searchParams.get("filter")
+	const searchParams = request.nextUrl.searchParams;
+	const filter = searchParams.get("filter");
 
-  try {
-    // Base SQL query
-    let sql = `SELECT i.qr_code as panel_id,
+	try {
+		// Base SQL query
+		let sql = `SELECT i.qr_code as panel_id,
       i.panel_ref AS description,
       u.shortchar01 as epicor_asm_part_no,
       u.key1 as job_id,
@@ -45,50 +45,50 @@ export async function GET(request: NextRequest) {
       mes.container_items ci ON ci.item_id = pk.code
     LEFT JOIN 
       mes.containers c ON c.id = ci.container_id
-    WHERE i.qr_code IS NOT NULL`
+    WHERE i.qr_code IS NOT NULL`;
 
-    // Apply date filter
-    switch (filter) {
-      case "today":
-        sql += " AND DATE(i.created_at) = CURDATE()"
-        break
-      case "last30days":
-        sql += " AND DATE(i.created_at) = CURDATE() - INTERVAL 1 DAY"
-        break
-      case "last7days":
-        sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 7 DAY"
-        break
-      case "last90days":
-        sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 90 DAY"
-        break
-      case "1year":
-        sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 1 YEAR"
-        break
-      case "2years":
-        sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 2 YEAR"
-        break
-      case "3years":
-        sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 3 YEAR"
-        break
-      case "5years":
-        sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 5 YEAR"
-        break
-      case "all":
-        break
-      default:
-        // Invalid filter - return empty array
-        return NextResponse.json([])
-    }
+		// Apply date filter
+		switch (filter) {
+			case "today":
+				sql += " AND DATE(i.created_at) = CURDATE()";
+				break;
+			case "last30days":
+				sql += " AND DATE(i.created_at) = CURDATE() - INTERVAL 1 DAY";
+				break;
+			case "last7days":
+				sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 7 DAY";
+				break;
+			case "last90days":
+				sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 90 DAY";
+				break;
+			case "1year":
+				sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 1 YEAR";
+				break;
+			case "2years":
+				sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 2 YEAR";
+				break;
+			case "3years":
+				sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 3 YEAR";
+				break;
+			case "5years":
+				sql += " AND DATE(i.created_at) >= CURDATE() - INTERVAL 5 YEAR";
+				break;
+			case "all":
+				break;
+			default:
+				// Invalid filter - return empty array
+				return NextResponse.json([]);
+		}
 
-    // Execute query
-    const [rows] = await mes.execute(sql)
+		// Execute query
+		const [rows] = await mes.execute(sql);
 
-    return NextResponse.json(rows)
-  } catch (error) {
-    console.error("Database error:", error)
-    return NextResponse.json(
-      { error: "Database connection failed" },
-      { status: 500 }
-    )
-  }
+		return NextResponse.json(rows);
+	} catch (error) {
+		console.error("Database error:", error);
+		return NextResponse.json(
+			{ error: "Database connection failed" },
+			{ status: 500 },
+		);
+	}
 }

@@ -1,39 +1,39 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server";
 
-import { mes } from "@/lib/database"
+import { mes } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const year = searchParams.get("year")
-  const month = searchParams.get("month")
+	const searchParams = request.nextUrl.searchParams;
+	const year = searchParams.get("year");
+	const month = searchParams.get("month");
 
-  // Validate year and month
-  if (!year || !month) {
-    return NextResponse.json([])
-  }
+	// Validate year and month
+	if (!year || !month) {
+		return NextResponse.json([]);
+	}
 
-  const yearNum = parseInt(year, 10)
-  const monthNum = parseInt(month, 10)
+	const yearNum = parseInt(year, 10);
+	const monthNum = parseInt(month, 10);
 
-  // Validate date
-  if (
-    Number.isNaN(yearNum) ||
-    Number.isNaN(monthNum) ||
-    monthNum < 1 ||
-    monthNum > 12 ||
-    yearNum < 1970 ||
-    yearNum > 2100
-  ) {
-    return NextResponse.json({ error: "Invalid date range" }, { status: 400 })
-  }
+	// Validate date
+	if (
+		Number.isNaN(yearNum) ||
+		Number.isNaN(monthNum) ||
+		monthNum < 1 ||
+		monthNum > 12 ||
+		yearNum < 1970 ||
+		yearNum > 2100
+	) {
+		return NextResponse.json({ error: "Invalid date range" }, { status: 400 });
+	}
 
-  // Format month with leading zero
-  const monthFormatted = monthNum.toString().padStart(2, "0")
-  const yearMonth = `${yearNum}-${monthFormatted}`
+	// Format month with leading zero
+	const monthFormatted = monthNum.toString().padStart(2, "0");
+	const yearMonth = `${yearNum}-${monthFormatted}`;
 
-  try {
-    // Create database connection
-    const sql = `SELECT DISTINCT
+	try {
+		// Create database connection
+		const sql = `SELECT DISTINCT
         pk.code as package,
         i.project_category as project,
         i.qr_code as part_id,
@@ -60,16 +60,16 @@ export async function GET(request: NextRequest) {
         DATE_FORMAT(ci.created_at, '%Y-%m') = ?
         AND c.id IS NOT NULL 
       ORDER BY i.project_category DESC
-    `
+    `;
 
-    const [rows] = await mes.execute(sql, [yearMonth])
+		const [rows] = await mes.execute(sql, [yearMonth]);
 
-    return NextResponse.json(rows, { status: 200 })
-  } catch (error) {
-    console.error("Database error:", error)
-    return NextResponse.json(
-      { error: "Database connection failed" },
-      { status: 500 }
-    )
-  }
+		return NextResponse.json(rows, { status: 200 });
+	} catch (error) {
+		console.error("Database error:", error);
+		return NextResponse.json(
+			{ error: "Database connection failed" },
+			{ status: 500 },
+		);
+	}
 }
