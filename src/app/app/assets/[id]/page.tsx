@@ -1,85 +1,28 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+
+import { trpc } from "@/trpc/react";
 
 import AssetDetailsPage from "./AssetDetails";
-
-interface Asset {
-	id: number;
-	code: string;
-	type: string;
-	deviceStatus: string;
-	location: string;
-	department: string;
-	owner: string;
-	empImg: string;
-	purchaseDate: string;
-	purchasePrice: string;
-	deviceName: string;
-	serialNumber: string;
-	manufacturer: string;
-	model: string;
-	macAddress: string;
-	ip: string;
-	firmwareVer: string;
-	warrantyDate: string;
-	warrantyStatus: string;
-	processor: string;
-	os: string;
-	memory: string;
-	hdd: string;
-	specification: string;
-	image: string;
-	verified: boolean;
-	ownerChangeLogs: Array<{
-		old: string;
-		new: string;
-		date: string;
-		image: string;
-	}>;
-}
 
 export default function AssetDetailPage() {
 	const router = useRouter();
 	const pathname = usePathname();
-	const [asset, setAsset] = useState<Asset | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
 
-	useEffect(() => {
-		const id = pathname.split("/").pop();
-		if (!id) {
-			setError("Invalid asset ID");
-			setLoading(false);
-			return;
-		}
+	const idParam = pathname.split("/").pop();
+	const id = idParam ? Number(idParam) : NaN;
 
-		const fetchAsset = async () => {
-			try {
-				const response = await fetch(`/api/assets/${id}`);
-				if (!response.ok) {
-					if (response.status === 404) {
-						setError("Asset not found");
-					} else {
-						setError("Failed to load asset");
-					}
-					return;
-				}
-				const data = await response.json();
-				setAsset(data);
-			} catch (err) {
-				setError("Failed to load asset");
-				console.error("Error fetching asset:", err);
-			} finally {
-				setLoading(false);
-			}
-		};
+	const {
+		data: asset,
+		isLoading,
+		isError,
+	} = trpc.assets.byId.useQuery(
+		{ id },
+		{ enabled: Number.isInteger(id) && id > 0 },
+	);
 
-		fetchAsset();
-	}, [pathname]);
-
-	if (loading) {
+	if (isLoading) {
 		return (
 			<div className="container mx-auto p-6">
 				<div className="flex items-center justify-center py-12">
@@ -89,13 +32,16 @@ export default function AssetDetailPage() {
 		);
 	}
 
-	if (error) {
+	if (isError || !asset) {
+		const notFound = !asset && !isError;
 		return (
 			<div className="container mx-auto p-6">
 				<div className="text-center py-12">
-					<h2 className="text-2xl font-semibold text-foreground">{error}</h2>
+					<h2 className="text-2xl font-semibold text-foreground">
+						{isError ? "Failed to load asset" : "Asset not found"}
+					</h2>
 					<p className="text-gray-600 mt-2">
-						{error === "Asset not found"
+						{notFound
 							? "The requested asset could not be found."
 							: "Please try again later."}
 					</p>
@@ -110,5 +56,5 @@ export default function AssetDetailPage() {
 		);
 	}
 
-	return <AssetDetailsPage asset={asset!} />;
+	return <AssetDetailsPage asset={asset} />;
 }

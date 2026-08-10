@@ -268,13 +268,6 @@ const ITSMLandingPage = () => {
 							automation, seamless workflows, and exceptional user experience.
 							Designed for modern enterprises.
 						</p>
-						<div className="flex flex-col sm:flex-row gap-4 justify-center">
-							<Link href={"/auth"}>
-								<Button size="lg" className="text-lg">
-									Sign in
-								</Button>
-							</Link>
-						</div>
 					</div>
 
 					{/* Carousel */}

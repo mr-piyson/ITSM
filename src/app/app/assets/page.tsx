@@ -1,9 +1,8 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+
 import type { GridApi } from "ag-grid-community";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import axios from "axios";
 import {
 	Building2,
 	Download,
@@ -20,7 +19,7 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
-import { Asset } from "@/app/api/assets/route";
+import type { Asset } from "@/server/routers/assets";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useTableTheme } from "@/hooks/use-tableTheme";
+import { trpc } from "@/trpc/react";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -62,13 +62,7 @@ export default function ReportPage() {
 		isError,
 		error,
 		refetch,
-	} = useQuery({
-		queryKey: ["assets"],
-		queryFn: async () => {
-			const data = await axios.get("/api/assets");
-			return data.data;
-		},
-	});
+	} = trpc.assets.list.useQuery();
 
 	// Extract unique values for filters
 	const uniqueTypes = useMemo(() => {

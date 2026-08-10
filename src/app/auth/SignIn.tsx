@@ -18,8 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-import { signIn } from "./auth.actions";
+import { trpc } from "@/trpc/react";
 
 export const SignInSchema = z.object({
 	email: z.string().min(1, "Email or username is required"),
@@ -32,6 +31,17 @@ export default function SignInTab() {
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
 
+	const signInMutation = trpc.auth.signIn.useMutation({
+		onSuccess: () => {
+			toast.success("Signed in successfully!");
+			router.push("/app");
+		},
+		onError: (error) => {
+			toast.error(error.message);
+			setLoading(false);
+		},
+	});
+
 	const form = useForm<SignInValues>({
 		defaultValues: {
 			email: "",
@@ -40,17 +50,9 @@ export default function SignInTab() {
 		onSubmit: async ({ value }) => {
 			setLoading(true);
 			try {
-				const res = await signIn(value);
-				if (res.status === 200) {
-					toast.success("Signed in successfully!");
-					router.push("/app");
-				} else if (res.error) {
-					toast.error(res.error);
-					setLoading(false);
-				}
-			} catch (e) {
-				toast.error("Error", { description: String(e) });
-				setLoading(false);
+				await signInMutation.mutateAsync(value);
+			} catch {
+				// Handled in the mutation's onError callback
 			}
 		},
 	});

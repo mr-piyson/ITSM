@@ -123,7 +123,7 @@ export const routes: Record<string, RouteItem[]> = {
 		},
 		{
 			title: "MES Reports",
-			href: "172.18.1.140:3000/reports",
+			href: "http://172.18.1.140:3000/reports",
 			icon: BarChart3,
 		},
 		{

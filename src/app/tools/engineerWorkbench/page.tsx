@@ -2,7 +2,7 @@
 
 import { format, subWeeks } from "date-fns";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { trpc } from "@/trpc/react";
 
 interface TaskRow {
 	GroupID: string;
@@ -39,39 +40,19 @@ function EngineerWorkbenchContent() {
 	const fromDate = searchParams.get("fromDate") || defaultFromDate;
 	const groupName = searchParams.get("groupName") || "";
 
-	const [groupedData, setGroupedData] = useState<GroupedEco[]>([]);
-	const [loading, setLoading] = useState(false);
 	const [hasSearched, setHasSearched] = useState(
-		searchParams.get("fromDate") !== null || searchParams.get("groupName") !== null,
+		searchParams.get("fromDate") !== null ||
+			searchParams.get("groupName") !== null,
 	);
 
 	const [fromDateInput, setFromDateInput] = useState(fromDate);
 	const [groupNameInput, setGroupNameInput] = useState(groupName);
 
-	useEffect(() => {
-		if (!hasSearched) return;
-
-		const fetchData = async () => {
-			setLoading(true);
-			try {
-				const params = new URLSearchParams();
-				if (fromDate) params.set("fromDate", fromDate);
-				if (groupName) params.set("groupName", groupName);
-
-				const res = await fetch(`/api/engineer-workbench?${params.toString()}`);
-				if (res.ok) {
-					const data = await res.json();
-					setGroupedData(data.groupedData || []);
-				}
-			} catch (error) {
-				console.error("Failed to fetch engineer workbench data:", error);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchData();
-	}, [hasSearched, fromDate, groupName]);
+	const { data, isFetching } = trpc.workbench.getGroupedData.useQuery(
+		{ fromDate, groupName },
+		{ enabled: hasSearched },
+	);
+	const groupedData = data?.groupedData ?? [];
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -133,7 +114,10 @@ function EngineerWorkbenchContent() {
 					Search for All Engineer Workbench Groups by Date/Group ID
 				</h3>
 
-				<form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-6 pb-6">
+				<form
+					onSubmit={handleSubmit}
+					className="flex flex-wrap items-end gap-6 pb-6"
+				>
 					<div className="grid w-full max-w-sm items-center gap-2">
 						<Label htmlFor="fromDate">Date From</Label>
 						<Input
@@ -155,14 +139,14 @@ function EngineerWorkbenchContent() {
 						/>
 					</div>
 
-					<Button type="submit" size="lg" disabled={loading}>
-						{loading ? "Searching..." : "SEARCH"}
+					<Button type="submit" size="lg" disabled={isFetching}>
+						{isFetching ? "Searching..." : "SEARCH"}
 					</Button>
 				</form>
 
 				{hasSearched && (
 					<div className="rounded-md border bg-white dark:bg-slate-950 shadow-sm">
-						{loading ? (
+						{isFetching ? (
 							<div className="flex items-center justify-center py-12">
 								<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
 							</div>

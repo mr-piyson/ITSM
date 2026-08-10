@@ -10,10 +10,9 @@ import {
 	X,
 } from "lucide-react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
-import { mutate } from "swr";
 
 import { Badge } from "@/components/Badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,15 +28,21 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { trpc } from "@/trpc/react";
 
 export default function AssetDetailsPage({ asset }: { asset: any }) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editData, setEditData] = useState<Partial<any>>(asset);
-	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [origin, setOrigin] = useState("");
 
 	const router = useRouter();
-	const params = useSearchParams();
+	const utils = trpc.useUtils();
+	const updateAsset = trpc.assets.update.useMutation({
+		onSuccess: () => {
+			utils.assets.byId.invalidate({ id: asset.id });
+			setIsEditing(false);
+		},
+	});
 
 	useEffect(() => {
 		setOrigin(window.location.origin);
@@ -46,27 +51,10 @@ export default function AssetDetailsPage({ asset }: { asset: any }) {
 	const handleSubmit = async () => {
 		if (!asset) return;
 
-		setIsSubmitting(true);
 		try {
-			const response = await fetch(`/api/Assets/${asset.id}`, {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(editData),
-			});
-
-			if (response.ok) {
-				// Refresh the data
-				mutate(`/api/Assets/${params.get("id")}`);
-				setIsEditing(false);
-			} else {
-				console.error("Failed to update asset");
-			}
+			await updateAsset.mutateAsync({ id: asset.id, data: editData });
 		} catch (error) {
 			console.error("Error updating asset:", error);
-		} finally {
-			setIsSubmitting(false);
 		}
 	};
 
@@ -168,17 +156,17 @@ export default function AssetDetailsPage({ asset }: { asset: any }) {
 								variant="default"
 								size="sm"
 								onClick={handleSubmit}
-								disabled={isSubmitting}
+								disabled={updateAsset.isPending}
 								className="flex items-center gap-2"
 							>
 								<Save className="h-4 w-4" />
-								{isSubmitting ? "Saving..." : "Save Changes"}
+								{updateAsset.isPending ? "Saving..." : "Save Changes"}
 							</Button>
 							<Button
 								variant="outline"
 								size="sm"
 								onClick={handleCancel}
-								disabled={isSubmitting}
+								disabled={updateAsset.isPending}
 								className="flex items-center gap-2 bg-transparent"
 							>
 								<X className="h-4 w-4" />
@@ -636,12 +624,16 @@ export default function AssetDetailsPage({ asset }: { asset: any }) {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="text-center space-y-4">
-						<QRCode
-							className="flex justify-center mx-auto "
-							bgColor="var(--card)"
-							fgColor="#000"
-							value={origin ? `${origin}/App/Assets/${asset.id}` : `/App/Assets/${asset.id}`}
-						/>
+							<QRCode
+								className="flex justify-center mx-auto "
+								bgColor="var(--card)"
+								fgColor="#000"
+								value={
+									origin
+										? `${origin}/App/Assets/${asset.id}`
+										: `/App/Assets/${asset.id}`
+								}
+							/>
 							<Button
 								variant="outline"
 								size="sm"

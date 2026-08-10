@@ -1,32 +1,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+
+import { trpc } from "@/trpc/react";
 
 import App from "./App";
 
 export default function Activity_Layout(props: any) {
 	const router = useRouter();
-	const [loading, setLoading] = useState(true);
+	const { data: user, isPending } = trpc.auth.me.useQuery();
 
 	useEffect(() => {
-		const checkAuth = async () => {
-			try {
-				const res = await fetch("/api/auth/me");
-				if (!res.ok) {
-					router.replace("/auth");
-					return;
-				}
-			} catch {
-				router.replace("/auth");
-				return;
-			}
-			setLoading(false);
-		};
-		checkAuth();
-	}, [router]);
+		if (!isPending && !user) {
+			router.replace("/auth");
+		}
+	}, [isPending, user, router]);
 
-	if (loading) {
+	if (isPending) {
 		return (
 			<div className="flex h-screen items-center justify-center">
 				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />

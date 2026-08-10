@@ -31,7 +31,10 @@ export default function RootLayout(props: any) {
 		>
 			<head>
 				<title>ITSM - IT Service Management</title>
-				<meta name="description" content="Best CRM system for your business to manage transactions" />
+				<meta
+					name="description"
+					content="Best CRM system for your business to manage transactions"
+				/>
 				<link rel="icon" href="/favicon.ico" />
 			</head>
 			<body

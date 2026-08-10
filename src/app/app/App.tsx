@@ -4,7 +4,6 @@ import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { signOut } from "@/app/auth/auth.actions";
 import AppLogo from "@/assets/icons/Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -32,6 +31,7 @@ import {
 } from "@/components/ui/sidebar";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/trpc/react";
 
 import Toolbar from "./Toolbar";
 
@@ -99,6 +99,12 @@ export function TeamSwitcher() {
 export function UserMenu(props: any) {
 	const { isMobile } = useSidebar();
 
+	const signOutMutation = trpc.auth.signOut.useMutation({
+		onSuccess: () => {
+			window.location.href = "/auth";
+		},
+	});
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger
@@ -155,11 +161,7 @@ export function UserMenu(props: any) {
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem
-					onClick={async () => {
-						await signOut();
-					}}
-				>
+				<DropdownMenuItem onClick={() => signOutMutation.mutate()}>
 					<LogOut />
 					Log out
 				</DropdownMenuItem>
