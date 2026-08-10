@@ -28,13 +28,12 @@ export function AuthPage() {
 	}
 
 	return (
-		<div className=" relative items-center justify-center ">
-			<div className=" max-md:hidden flex justify-between relative h-full flex-col bg-muted-foreground p-10 text-card-foreground lg:flex dark:border-r sm:hidden">
-				<div className=" absolute inset-0 bg-muted " />
-				<div className=" relative  flex items-center text-3xl font-medium gap-2">
-					<AppLogo className="w-12 h-12" />
-					<span>ITSM</span>
-				</div>
+		<div className="flex justify-between gap-5 relative h-full flex-col bg-background p-10 text-card-foreground lg:flex dark:border-r">
+			<div className=" relative  flex items-center text-3xl font-medium gap-2">
+				<AppLogo className="w-12 h-12" />
+				<span>ITSM</span>
+			</div>
+			<div className=" max-md:hidden ">
 				<div className="relative "></div>
 			</div>
 			<div className="w-full h-full flex flex-col justify-center items-center ">

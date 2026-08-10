@@ -38,7 +38,7 @@ export function AppSidebarContent() {
 					<SidebarMenuItem key={title}>
 						<SidebarMenuButton
 							isActive={isActive(href)}
-							className="flex data-[active=true]:bg-primary data-[active=false]:text-primary-foreground"
+							className="flex"
 							tooltip={title}
 							size={"lg"}
 							onClick={() => {
@@ -53,7 +53,7 @@ export function AppSidebarContent() {
 							<Icon
 								className={cn(
 									"ms-1 size-6 shrink-0",
-									isActive(href) ? "text-white" : "text-foreground/92",
+									isActive(href) ? "text-primary" : "text-foreground/92",
 									loading === href && !open && !isMobile ? "hidden" : "",
 								)}
 							/>
@@ -61,7 +61,7 @@ export function AppSidebarContent() {
 								<span
 									className={cn(
 										" text-base",
-										isActive(href) ? "text-white" : "text-foreground/92",
+										isActive(href) ? "text-primary" : "text-foreground/92",
 										loading === href && !open && !isMobile ? "hidden" : "",
 									)}
 								>

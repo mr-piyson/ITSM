@@ -23,7 +23,7 @@ export const NavPath: React.FC = () => {
 							onClick={() => {
 								router.push(`/app/${activity}`);
 							}}
-							className="text-lg"
+							className="text-lg capitalize"
 						>
 							{activity}
 						</BreadcrumbLink>
