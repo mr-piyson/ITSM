@@ -14,7 +14,7 @@ import {
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
-export function AppSidebarContent(props: any) {
+export function AppSidebarContent() {
 	const { isMobile, open, setOpenMobile } = useSidebar();
 	const router = useRouter();
 	const path = usePathname();
