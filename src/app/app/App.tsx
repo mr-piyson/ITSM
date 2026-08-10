@@ -191,7 +191,7 @@ export function AppSidebarContent(props: any) {
 	return (
 		<SidebarGroup>
 			<SidebarMenu>
-				{routes.appSidebar.map(({ title, href, icon }) => (
+				{routes.appSidebar.map(({ title, href, icon: Icon }) => (
 					<SidebarMenuItem key={title}>
 						<SidebarMenuButton
 							isActive={isActive(href)}
@@ -207,10 +207,9 @@ export function AppSidebarContent(props: any) {
 							}}
 						>
 							{/* <Link href={url} className="flex justify-center items-center"> */}
-							<i
+							<Icon
 								className={cn(
 									"ms-1 size-6 shrink-0",
-									icon,
 									isActive(href) ? "text-white" : "text-foreground/92",
 									loading === href && !open && !isMobile ? "hidden" : "",
 								)}
