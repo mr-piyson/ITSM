@@ -40,16 +40,16 @@ export async function getUser(): Promise<UserRow | null> {
 /**
  * Server-side sign in handler
  */
-export async function handleSignIn(email: string, password: string) {
-	if (!email || !password) {
+export async function handleSignIn(identifier: string, password: string) {
+	if (!identifier || !password) {
 		return {
-			error: "Email and password are required",
+			error: "Email/username and password are required",
 		};
 	}
 
 	try {
 		const [resAccount] = await db.iss.execute<UserRow[]>(
-			`select * from ISS.users where email = '${email}' limit 1;`,
+			`select * from ISS.users where email = '${identifier}' or username = '${identifier}' limit 1;`,
 		);
 		const account = resAccount[0] as UserRow | undefined;
 
