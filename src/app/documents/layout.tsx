@@ -1,15 +1,13 @@
-"use client";
+import { MarketingNavbar } from "@/layout/shell/marketing-navbar";
 
-import { NavigationToolbar } from "../nav-menu";
-
-type RequestslayoutProps = {
+type RequestsLayoutProps = {
 	children?: React.ReactNode;
 };
 
-export default function RequestsLayout(props: RequestslayoutProps) {
+export default function RequestsLayout(props: RequestsLayoutProps) {
 	return (
 		<div>
-			<NavigationToolbar />
+			<MarketingNavbar />
 			{props.children}
 		</div>
 	);

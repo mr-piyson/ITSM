@@ -89,7 +89,7 @@ export const routes: Record<string, RouteItem[]> = {
 			children: [
 				{
 					title: "IT Request From",
-					href: "/documents/IT-Request",
+					href: "/documents/it-request",
 					icon: FileText,
 				},
 				{

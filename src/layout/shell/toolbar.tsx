@@ -3,8 +3,8 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
-import { UserMenu } from "./App";
-import { NavPath } from "@/components/nav-path";
+import { NavPath } from "./navigate-path";
+import { UserMenu } from "./user-menu";
 
 export default function Toolbar(props: any) {
 	return (

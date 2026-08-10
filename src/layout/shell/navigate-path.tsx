@@ -1,14 +1,14 @@
 import { usePathname, useRouter } from "next/navigation";
 import type React from "react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
 	BreadcrumbLink,
 	BreadcrumbList,
-} from "./ui/breadcrumb";
-import { Button } from "./ui/button";
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 
 export const NavPath: React.FC = () => {
 	const pathname = usePathname();
@@ -21,7 +21,7 @@ export const NavPath: React.FC = () => {
 					<BreadcrumbItem>
 						<BreadcrumbLink
 							onClick={() => {
-								router.push(`/App/${activity}`);
+								router.push(`/app/${activity}`);
 							}}
 							className="text-lg"
 						>

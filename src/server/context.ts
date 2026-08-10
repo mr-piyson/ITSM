@@ -1,6 +1,6 @@
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 
-import { getUser } from "@/app/auth/auth.server";
+import { getUser } from "@/lib/auth.server";
 import db from "@/lib/database";
 
 export async function createContext(opts: FetchCreateContextFnOptions) {

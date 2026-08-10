@@ -27,7 +27,7 @@ export const SignInSchema = z.object({
 
 type SignInValues = z.infer<typeof SignInSchema>;
 
-export default function SignInTab() {
+export function SignInForm() {
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
 

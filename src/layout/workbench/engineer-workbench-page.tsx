@@ -59,7 +59,7 @@ function EngineerWorkbenchContent() {
 		const params = new URLSearchParams();
 		if (fromDateInput) params.set("fromDate", fromDateInput);
 		if (groupNameInput) params.set("groupName", groupNameInput);
-		router.push(`/tools/engineerWorkbench?${params.toString()}`);
+		router.push(`/tools/engineer-workbench?${params.toString()}`);
 		setHasSearched(true);
 	};
 
@@ -197,7 +197,7 @@ function EngineerWorkbenchContent() {
 	);
 }
 
-export default function EngineerWorkbench() {
+export function EngineerWorkbenchPage() {
 	return (
 		<Suspense
 			fallback={

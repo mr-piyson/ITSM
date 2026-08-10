@@ -30,7 +30,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { type RouteItem, routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
-export function NavigationToolbar(props: any) {
+export function MarketingNavbar(props: any) {
 	const [isScrolled, setIsScrolled] = React.useState(false);
 
 	React.useLayoutEffect(() => {

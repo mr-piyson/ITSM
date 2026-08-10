@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { handleSignIn, handleSignOut } from "@/app/auth/auth.server";
+import { handleSignIn, handleSignOut } from "@/lib/auth.server";
 import { publicProcedure, router } from "@/server/trpc";
 
 export const authRouter = router({

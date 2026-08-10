@@ -1,14 +1,10 @@
-"use client";
-
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toast";
-import { TRPCProvider } from "@/trpc/provider";
-
-// @ts-expect-error
-import "./globals.css";
 import { cn } from "@/lib/utils";
+
+import { RootProviders } from "@/layout/shell/root-providers";
+
+import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -40,15 +36,7 @@ export default function RootLayout(props: any) {
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
-				<ThemeProvider
-					attribute={"class"}
-					defaultTheme={"system"}
-					enableSystem={true}
-					storageKey={"theme"}
-				>
-					<TRPCProvider>{props.children}</TRPCProvider>
-				</ThemeProvider>
-				<Toaster />
+				<RootProviders>{props.children}</RootProviders>
 			</body>
 		</html>
 	);

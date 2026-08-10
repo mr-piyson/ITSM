@@ -25,7 +25,7 @@ interface RequestData {
 	justification: string;
 }
 
-export default function RequestPreview() {
+export function RequestPreview() {
 	const router = useRouter();
 	const [requestData, setRequestData] = useState<RequestData | null>(null);
 
