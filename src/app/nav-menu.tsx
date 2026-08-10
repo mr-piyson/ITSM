@@ -81,15 +81,18 @@ function DesktopNavItem({ item }: { item: RouteItem }) {
 	const Icon = item.icon;
 
 	if (item.children) {
+		const Icon = item.icon;
 		return (
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button variant="ghost" className="flex items-center gap-2">
-						<svg className={item.icon} />
-						{item.title}
-						<ChevronDown className="h-4 w-4" />
-					</Button>
-				</DropdownMenuTrigger>
+				<DropdownMenuTrigger
+					render={
+						<Button variant="ghost" className="flex items-center gap-2">
+							<Icon />
+							{item.title}
+							<ChevronDown className="h-4 w-4" />
+						</Button>
+					}
+				></DropdownMenuTrigger>
 				<DropdownMenuContent align="start" className="w-48">
 					{item.children.map((child) => (
 						<DesktopDropdownItem key={child.title} item={child} />
@@ -100,12 +103,15 @@ function DesktopNavItem({ item }: { item: RouteItem }) {
 	}
 
 	return (
-		<Button variant="ghost" asChild>
-			<Link href={item.href || "#"} className="flex items-center gap-2">
-				<svg className={item.icon} />
-				{item.title}
-			</Link>
-		</Button>
+		<Button
+			variant="ghost"
+			render={
+				<Link href={item.href || "#"} className="flex items-center gap-2">
+					<Icon />
+					{item.title}
+				</Link>
+			}
+		></Button>
 	);
 }
 
@@ -116,7 +122,7 @@ function DesktopDropdownItem({ item }: { item: RouteItem }) {
 		return (
 			<DropdownMenuSub>
 				<DropdownMenuSubTrigger className="flex items-center gap-2">
-					<svg className={item.icon} />
+					<Icon />
 					{item.title}
 				</DropdownMenuSubTrigger>
 				<DropdownMenuSubContent className="w-48">
@@ -129,15 +135,17 @@ function DesktopDropdownItem({ item }: { item: RouteItem }) {
 	}
 
 	return (
-		<DropdownMenuItem asChild>
-			<Link
-				href={item.href || "#"}
-				className="flex items-center gap-2 cursor-pointer"
-			>
-				<svg className={item.icon} />
-				{item.title}
-			</Link>
-		</DropdownMenuItem>
+		<DropdownMenuItem
+			render={
+				<Link
+					href={item.href || "#"}
+					className="flex items-center gap-2 cursor-pointer"
+				>
+					<Icon />
+					{item.title}
+				</Link>
+			}
+		></DropdownMenuItem>
 	);
 }
 
@@ -161,7 +169,7 @@ function MobileNavItem({
 					style={{ paddingLeft: `${1 + depth * 0.75}rem` }}
 				>
 					<div className="flex items-center gap-3">
-						<svg className={item.icon} />
+						<Icon />
 						<span>{item.title}</span>
 					</div>
 					<ChevronDown
@@ -192,7 +200,7 @@ function MobileNavItem({
 			className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent rounded-md transition-colors"
 			style={{ paddingLeft: `${1 + depth * 0.75}rem` }}
 		>
-			<svg className={item.icon} />
+			<Icon />
 			{item.title}
 		</Link>
 	);
@@ -209,12 +217,14 @@ export function NavMenu() {
 	if (isMobile) {
 		return (
 			<Drawer open={open} onOpenChange={setOpen}>
-				<DrawerTrigger asChild>
-					<Button variant="ghost" size="icon" className="md:hidden">
-						<Menu className="h-6 w-6" />
-						<span className="sr-only">Toggle navigation menu</span>
-					</Button>
-				</DrawerTrigger>
+				<DrawerTrigger
+					render={
+						<Button variant="ghost" size="icon" className="md:hidden">
+							<Menu className="h-6 w-6" />
+							<span className="sr-only">Toggle navigation menu</span>
+						</Button>
+					}
+				></DrawerTrigger>
 				<DrawerContent className="h-[85vh]">
 					<div className="flex flex-col h-full">
 						<div className="flex items-center justify-between p-4 border-b">

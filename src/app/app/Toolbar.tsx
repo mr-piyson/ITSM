@@ -1,10 +1,10 @@
 "use client";
-import { NavPath } from "@/components/Nav-Path";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
 import { UserMenu } from "./App";
+import { NavPath } from "@/components/nav-path";
 
 export default function Toolbar(props: any) {
 	return (

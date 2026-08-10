@@ -1,7 +1,7 @@
 "use server";
 
 import * as bcrypt from "bcrypt";
-import { RowDataPacket } from "mysql2";
+import type { RowDataPacket } from "mysql2";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { z } from "zod";
