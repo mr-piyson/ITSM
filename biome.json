@@ -24,6 +24,9 @@
 		"rules": {
 			"a11y": "off",
 			"preset": "recommended",
+			"nursery": {
+				"useSortedClasses": "off"
+			},
 			"correctness": {
 				"useExhaustiveDependencies": "off",
 				"useUniqueElementIds": "off"
