@@ -1,3 +1,5 @@
+"use client";
+
 import { NavigationToolbar } from "../nav-menu";
 
 type RequestslayoutProps = {

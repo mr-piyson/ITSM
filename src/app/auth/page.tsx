@@ -1,15 +1,40 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import AppLogo from "@/assets/icons/Logo";
-
-import SignInTab from "./SignIn";
-import { TabSwitcher } from "./TabSwitcher";
-import { getUser } from "./auth.actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default async function Auth(props: any) {
-	const session = await getUser();
-	if (session) redirect("/app");
+import SignInTab from "./SignIn";
+
+export default function Auth() {
+	const router = useRouter();
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		const checkAuth = async () => {
+			try {
+				const res = await fetch("/api/auth/me");
+				if (res.ok) {
+					router.replace("/app");
+					return;
+				}
+			} catch {
+				// Not authenticated, show login
+			}
+			setLoading(false);
+		};
+		checkAuth();
+	}, [router]);
+
+	if (loading) {
+		return (
+			<div className="flex h-screen items-center justify-center">
+				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+			</div>
+		);
+	}
 
 	return (
 		<div className=" relative items-center justify-center ">
@@ -19,7 +44,6 @@ export default async function Auth(props: any) {
 					<AppLogo className="w-12 h-12" />
 					<span>ITSM</span>
 				</div>
-				{/* <ImageSlider /> */}
 				<div className="relative "></div>
 			</div>
 			<div className="w-full h-full flex flex-col justify-center items-center ">

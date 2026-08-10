@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { getUser } from "../auth/auth.actions";
+import { getUser } from "../auth/auth.server";
 
 export function Authorization(
 	handler: (req: NextRequest) => Promise<NextResponse>,

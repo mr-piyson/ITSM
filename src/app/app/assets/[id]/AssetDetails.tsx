@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { mutate } from "swr";
 
@@ -34,9 +34,14 @@ export default function AssetDetailsPage({ asset }: { asset: any }) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editData, setEditData] = useState<Partial<any>>(asset);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [origin, setOrigin] = useState("");
 
 	const router = useRouter();
 	const params = useSearchParams();
+
+	useEffect(() => {
+		setOrigin(window.location.origin);
+	}, []);
 
 	const handleSubmit = async () => {
 		if (!asset) return;
@@ -631,12 +636,12 @@ export default function AssetDetailsPage({ asset }: { asset: any }) {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="text-center space-y-4">
-							<QRCode
-								className="flex justify-center mx-auto "
-								bgColor="var(--card)"
-								fgColor="#000"
-								value={`${window.location.origin}/App/Assets/${asset.id}`}
-							/>
+						<QRCode
+							className="flex justify-center mx-auto "
+							bgColor="var(--card)"
+							fgColor="#000"
+							value={origin ? `${origin}/App/Assets/${asset.id}` : `/App/Assets/${asset.id}`}
+						/>
 							<Button
 								variant="outline"
 								size="sm"

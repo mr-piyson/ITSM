@@ -1,66 +1,114 @@
-import { RowDataPacket } from "mysql2";
+"use client";
 
-import db from "@/lib/database";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import AssetDetailsPage from "./AssetDetails";
 
-interface PageProps {
-	params: Promise<{ id: string }>;
+interface Asset {
+	id: number;
+	code: string;
+	type: string;
+	deviceStatus: string;
+	location: string;
+	department: string;
+	owner: string;
+	empImg: string;
+	purchaseDate: string;
+	purchasePrice: string;
+	deviceName: string;
+	serialNumber: string;
+	manufacturer: string;
+	model: string;
+	macAddress: string;
+	ip: string;
+	firmwareVer: string;
+	warrantyDate: string;
+	warrantyStatus: string;
+	processor: string;
+	os: string;
+	memory: string;
+	hdd: string;
+	specification: string;
+	image: string;
+	verified: boolean;
+	ownerChangeLogs: Array<{
+		old: string;
+		new: string;
+		date: string;
+		image: string;
+	}>;
 }
 
-export default async function Page(props: PageProps) {
-	const id = Number((await props.params).id);
+export default function AssetDetailPage() {
+	const router = useRouter();
+	const pathname = usePathname();
+	const [asset, setAsset] = useState<Asset | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
-	// Run queries in parallel: each returns [rows, fields]
-	const [assetQuery, logsQuery] = await Promise.all([
-		db.iss.execute<RowDataPacket[] & any>(`
-      SELECT a.*, e.name as owner, e.image as empImg
-      FROM assets a
-      LEFT JOIN employees e ON e.empID = a.empID
-      WHERE a.id = ${id}
-      LIMIT 1
-    `),
+	useEffect(() => {
+		const id = pathname.split("/").pop();
+		if (!id) {
+			setError("Invalid asset ID");
+			setLoading(false);
+			return;
+		}
 
-		db.iss.execute<RowDataPacket[] & any>(`
-      SELECT 
-        e1.name as old, 
-        e2.name as new, 
-        a.date, 
-        e2.image
-      FROM assestOwnerUpdateLogs a
-      LEFT JOIN employees e1 ON e1.empID = a.oldOwnerEmpID
-      LEFT JOIN employees e2 ON e2.empID = a.newOwnerID
-      WHERE a.assetID = ${id}
-      ORDER BY a.date ASC
-    `),
-	]);
+		const fetchAsset = async () => {
+			try {
+				const response = await fetch(`/api/assets/${id}`);
+				if (!response.ok) {
+					if (response.status === 404) {
+						setError("Asset not found");
+					} else {
+						setError("Failed to load asset");
+					}
+					return;
+				}
+				const data = await response.json();
+				setAsset(data);
+			} catch (err) {
+				setError("Failed to load asset");
+				console.error("Error fetching asset:", err);
+			} finally {
+				setLoading(false);
+			}
+		};
 
-	// Extract rows from mysql2 results
-	const [assetRows] = assetQuery;
-	const [logRows] = logsQuery;
+		fetchAsset();
+	}, [pathname]);
 
-	const asset = assetRows[0] || null;
-
-	if (!asset) {
-		return <div>Asset not found</div>;
+	if (loading) {
+		return (
+			<div className="container mx-auto p-6">
+				<div className="flex items-center justify-center py-12">
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+				</div>
+			</div>
+		);
 	}
 
-	// Transform logs safely
-	const logs = logRows.map((row: any) => ({
-		old: row.old || "",
-		new: row.new || "",
-		date: row.date.toISOString(),
-		image: row.image || "",
-	}));
+	if (error) {
+		return (
+			<div className="container mx-auto p-6">
+				<div className="text-center py-12">
+					<h2 className="text-2xl font-semibold text-foreground">{error}</h2>
+					<p className="text-gray-600 mt-2">
+						{error === "Asset not found"
+							? "The requested asset could not be found."
+							: "Please try again later."}
+					</p>
+					<button
+						onClick={() => router.back()}
+						className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+					>
+						Go Back
+					</button>
+				</div>
+			</div>
+		);
+	}
 
-	const latestLog = logs[logs.length - 1];
-
-	const assetDetails: any = {
-		...asset,
-		owner: latestLog?.new || asset.owner,
-		empImg: latestLog?.image || asset.empImg,
-		ownerChangeLogs: logs,
-	};
-
-	return <AssetDetailsPage asset={assetDetails} />;
+	return <AssetDetailsPage asset={asset!} />;
 }

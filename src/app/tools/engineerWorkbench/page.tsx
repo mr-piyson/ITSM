@@ -1,5 +1,8 @@
-// app/page.tsx
+"use client";
+
 import { format, subWeeks } from "date-fns";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,9 +16,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { erp } from "@/lib/database";
 
-// Type definitions for our data
 interface TaskRow {
 	GroupID: string;
 	Description: string;
@@ -30,82 +31,57 @@ interface GroupedEco {
 	tasks: Record<string, TaskRow>;
 }
 
-export default async function EngineerWorkbench({
-	searchParams,
-}: {
-	searchParams: Promise<{ fromDate?: string; groupName?: string }>;
-}) {
-	// In Next.js 15/16, searchParams is a Promise
-	const params = await searchParams;
+function EngineerWorkbenchContent() {
+	const router = useRouter();
+	const searchParams = useSearchParams();
 
 	const defaultFromDate = format(subWeeks(new Date(), 1), "yyyy-MM-dd");
-	const fromDate = params.fromDate || defaultFromDate;
-	const groupName = params.groupName || "";
+	const fromDate = searchParams.get("fromDate") || defaultFromDate;
+	const groupName = searchParams.get("groupName") || "";
 
-	let results: TaskRow[] = [];
-	let hasSearched = Object.keys(params).length > 0;
+	const [groupedData, setGroupedData] = useState<GroupedEco[]>([]);
+	const [loading, setLoading] = useState(false);
+	const [hasSearched, setHasSearched] = useState(
+		searchParams.get("fromDate") !== null || searchParams.get("groupName") !== null,
+	);
 
-	// Fetch data if form was submitted
-	if (hasSearched) {
-		try {
-			const request = (await erp).request();
+	const [fromDateInput, setFromDateInput] = useState(fromDate);
+	const [groupNameInput, setGroupNameInput] = useState(groupName);
 
-			const baseQuery = `
-        SELECT e.GroupID, e.Description, e.GroupClosed, e.CreatedDate, e.CreatedBy,
-               t.TaskID, t.TaskSeqNum, t.TaskDescription, sr.Name, t.Complete,
-               t.CompleteDate, t.StartDate as 'taskStartDate'
-        FROM erp.ECOGroup e
-        LEFT JOIN erp.Task t ON e.GroupID = t.Key1
-        LEFT JOIN erp.SalesRep sr ON sr.SalesRepCode = t.SalesRepCode
-      `;
+	useEffect(() => {
+		if (!hasSearched) return;
 
-			if (groupName) {
-				request.input("groupName", `%${groupName}%`);
-				const query = `
-          ${baseQuery}
-          WHERE e.GroupID LIKE @groupName
-          AND e.TaskSetID = 'ENG01'
-          ORDER BY e.CreatedDate DESC, e.GroupID
-        `;
-				const res = await request.query(query);
-				results = res.recordset;
-			} else if (fromDate) {
-				request.input("fromDate", fromDate);
-				const query = `
-          ${baseQuery}
-          WHERE e.CreatedDate > @fromDate
-          AND e.TaskSetID = 'ENG01'
-          ORDER BY e.CreatedDate DESC, e.GroupID
-        `;
-				const res = await request.query(query);
-				results = res.recordset;
+		const fetchData = async () => {
+			setLoading(true);
+			try {
+				const params = new URLSearchParams();
+				if (fromDate) params.set("fromDate", fromDate);
+				if (groupName) params.set("groupName", groupName);
+
+				const res = await fetch(`/api/engineer-workbench?${params.toString()}`);
+				if (res.ok) {
+					const data = await res.json();
+					setGroupedData(data.groupedData || []);
+				}
+			} catch (error) {
+				console.error("Failed to fetch engineer workbench data:", error);
+			} finally {
+				setLoading(false);
 			}
-		} catch (error) {
-			console.error("Database Query Failed:", error);
-			// In a real app, you might want to show an error state here
-		}
-	}
+		};
 
-	// Group the data by GroupID (Translates the inner loop logic from PHP)
-	const groupedData: GroupedEco[] = [];
-	const groupMap = new Map<string, GroupedEco>();
+		fetchData();
+	}, [hasSearched, fromDate, groupName]);
 
-	results.forEach((row) => {
-		// Ported from PHP: if($ecoGroups[$n] != "GE Hub Hatch")
-		if (row.GroupID === "GE Hub Hatch") return;
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		const params = new URLSearchParams();
+		if (fromDateInput) params.set("fromDate", fromDateInput);
+		if (groupNameInput) params.set("groupName", groupNameInput);
+		router.push(`/tools/engineerWorkbench?${params.toString()}`);
+		setHasSearched(true);
+	};
 
-		if (!groupMap.has(row.GroupID)) {
-			const newGroup = { GroupID: row.GroupID, tasks: {} };
-			groupMap.set(row.GroupID, newGroup);
-			groupedData.push(newGroup);
-		}
-
-		if (["TS39", "TS40", "TS41", "TS42"].includes(row.TaskID)) {
-			groupMap.get(row.GroupID)!.tasks[row.TaskID] = row;
-		}
-	});
-
-	// Helper function to render table cells cleanly
 	const renderTaskCell = (task?: TaskRow) => {
 		if (!task)
 			return (
@@ -157,15 +133,14 @@ export default async function EngineerWorkbench({
 					Search for All Engineer Workbench Groups by Date/Group ID
 				</h3>
 
-				{/* Note: Using method="GET" integrates perfectly with Next.js SSR searchParams */}
-				<form method="GET" className="flex flex-wrap items-end gap-6 pb-6">
+				<form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-6 pb-6">
 					<div className="grid w-full max-w-sm items-center gap-2">
 						<Label htmlFor="fromDate">Date From</Label>
 						<Input
 							type="date"
 							id="fromDate"
-							name="fromDate"
-							defaultValue={fromDate}
+							value={fromDateInput}
+							onChange={(e) => setFromDateInput(e.target.value)}
 						/>
 					</div>
 
@@ -174,20 +149,24 @@ export default async function EngineerWorkbench({
 						<Input
 							type="text"
 							id="groupName"
-							name="groupName"
 							placeholder="Enter Group ID..."
-							defaultValue={groupName}
+							value={groupNameInput}
+							onChange={(e) => setGroupNameInput(e.target.value)}
 						/>
 					</div>
 
-					<Button type="submit" size="lg">
-						SEARCH
+					<Button type="submit" size="lg" disabled={loading}>
+						{loading ? "Searching..." : "SEARCH"}
 					</Button>
 				</form>
 
 				{hasSearched && (
 					<div className="rounded-md border bg-white dark:bg-slate-950 shadow-sm">
-						{groupedData.length > 0 ? (
+						{loading ? (
+							<div className="flex items-center justify-center py-12">
+								<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+							</div>
+						) : groupedData.length > 0 ? (
 							<Table>
 								<TableHeader>
 									<TableRow className="bg-slate-100 dark:bg-slate-900 hover:bg-slate-100">
@@ -231,5 +210,19 @@ export default async function EngineerWorkbench({
 				)}
 			</div>
 		</div>
+	);
+}
+
+export default function EngineerWorkbench() {
+	return (
+		<Suspense
+			fallback={
+				<div className="flex items-center justify-center py-12">
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+				</div>
+			}
+		>
+			<EngineerWorkbenchContent />
+		</Suspense>
 	);
 }

@@ -1,3 +1,5 @@
+"use client";
+
 type PageProps = {
 	children?: React.ReactNode;
 };

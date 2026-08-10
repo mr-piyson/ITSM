@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
@@ -20,23 +21,18 @@ const geistMono = Geist_Mono({
 	subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-	title: "ITSM - IT Service Management",
-	description: "Best CRM system for your business to manage transactions",
-	icons: {
-		icon: "/favicon.ico",
-		shortcut: "/favicon.ico",
-		apple: "/favicon.ico",
-	},
-};
-
-export default async function RootLayout(props: any) {
+export default function RootLayout(props: any) {
 	return (
 		<html
 			lang="en"
 			suppressHydrationWarning
 			className={cn("font-sans", inter.variable)}
 		>
+			<head>
+				<title>ITSM - IT Service Management</title>
+				<meta name="description" content="Best CRM system for your business to manage transactions" />
+				<link rel="icon" href="/favicon.ico" />
+			</head>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
