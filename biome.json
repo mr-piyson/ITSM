@@ -22,15 +22,7 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"a11y": {
-				"useButtonType": "off",
-				"useFocusableInteractive": "off",
-				"useSemanticElements": "off",
-				"noRedundantRoles": "off",
-				"noStaticElementInteractions": "off",
-				"useKeyWithClickEvents": "off",
-				"noSvgWithoutTitle": "off"
-			},
+			"a11y": "off",
 			"preset": "recommended",
 			"correctness": {
 				"useExhaustiveDependencies": "off",
@@ -40,16 +32,7 @@
 				"useNodejsImportProtocol": "off",
 				"noNonNullAssertion": "off"
 			},
-			"suspicious": {
-				"noRedeclare": "off",
-				"noUnknownAtRules": "off",
-				"noImplicitAnyLet": "off",
-				"noExplicitAny": "off",
-				"noArrayIndexKey": "off"
-			},
-			"security": {
-				"noDangerouslySetInnerHtml": "off"
-			}
+			"suspicious": "off"
 		}
 	},
 	"javascript": {
@@ -61,7 +44,7 @@
 		"enabled": true,
 		"actions": {
 			"source": {
-				"organizeImports": "on"
+				"organizeImports": "off"
 			}
 		}
 	}

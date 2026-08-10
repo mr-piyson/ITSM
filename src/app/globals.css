@@ -168,7 +168,7 @@
 
 	--radius-3xl: calc(var(--radius) * 2.2);
 
-	--radius-4xl: calc(var(--radius) * 2.6)
+	--radius-4xl: calc(var(--radius) * 2.6);
 }
 
 @layer base {
@@ -181,8 +181,8 @@
 	.invoice * {
 		@apply !border-[#cccccc] !text-[#17141d];
 	}
-  html {
-    @apply font-sans;
+	html {
+		@apply font-sans;
 	}
 }
 
