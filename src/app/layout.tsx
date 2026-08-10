@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 
-import { ThemeProvider } from "@/components/Theme-Provider";
-import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/ui/";
+import { Toaster } from "@/components/ui/toast";
 
-// @ts-ignore
+// @ts-expect-error
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -29,7 +32,11 @@ export const metadata: Metadata = {
 
 export default async function RootLayout(props: any) {
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html
+			lang="en"
+			suppressHydrationWarning
+			className={cn("font-sans", inter.variable)}
+		>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>

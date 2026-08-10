@@ -1,7 +1,6 @@
 "use client";
 
-import { Monitor } from "lucide-react";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, Monitor, X } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { useState } from "react";
@@ -28,7 +27,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { RouteItem, routes } from "@/lib/routes";
+import { type RouteItem, routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 export function NavigationToolbar(props: any) {
