@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toast";
+import { TRPCProvider } from "@/trpc/provider";
 
 // @ts-expect-error
 import "./globals.css";
@@ -42,7 +43,7 @@ export default function RootLayout(props: any) {
 					enableSystem={true}
 					storageKey={"theme"}
 				>
-					{props.children}
+					<TRPCProvider>{props.children}</TRPCProvider>
 				</ThemeProvider>
 				<Toaster />
 			</body>
