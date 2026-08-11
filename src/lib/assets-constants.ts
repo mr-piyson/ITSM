@@ -111,7 +111,7 @@ export function assetImageUrl(image?: string | null): string | null {
 	if (/^https?:\/\//.test(image)) {
 		return image;
 	}
-	return `/itemsImages/${image}`;
+	return `/ISS/itemsImages/${image}`;
 }
 
 export const ASSET_CODE_LENGTH = 10;

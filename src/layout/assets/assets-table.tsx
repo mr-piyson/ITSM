@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef } from "react";
+import type { CSSProperties } from "react";
 
 import {
 	type ColumnDef,
@@ -199,6 +200,8 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 									width: "100%",
 									transform: `translateY(${virtualRow.start}px)`,
 									height: `${virtualRow.size}px`,
+									justifyContent: "space-around",
+									display: "flex",
 								}}
 							>
 								{row.getVisibleCells().map((cell) => (
