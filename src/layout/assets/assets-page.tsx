@@ -1,10 +1,18 @@
 "use client";
 
 import { LayoutGrid, Loader2, Plus, Search, Table2 } from "lucide-react";
+import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { ASSET_TYPES } from "@/lib/assets-constants";
 import { cn } from "@/lib/utils";
 import type { AssetItem } from "@/server/routers/assets";
@@ -15,19 +23,93 @@ import { AssetFormDialog } from "./asset-form";
 import { AssetsGrid } from "./assets-grid";
 import { AssetsTable } from "./assets-table";
 
-type View = "table" | "grid";
+const VIEW_VALUES = ["table", "grid"] as const;
+
+const SEARCH_FIELD_VALUES = [
+	"all",
+	"code",
+	"serialNumber",
+	"deviceName",
+	"manufacturer",
+	"model",
+	"owner",
+	"location",
+	"department",
+	"type",
+] as const;
+
+type SearchField = (typeof SEARCH_FIELD_VALUES)[number];
+
+const TYPE_VALUES = ["All", ...ASSET_TYPES] as const;
+
+const SEARCH_FIELDS: {
+	value: SearchField;
+	label: string;
+	placeholder: string;
+}[] = [
+	{ value: "all", label: "All fields", placeholder: "Search all fields…" },
+	{ value: "code", label: "Code", placeholder: "Search by code…" },
+	{
+		value: "serialNumber",
+		label: "Serial Number",
+		placeholder: "Search by serial number…",
+	},
+	{
+		value: "deviceName",
+		label: "Device Name",
+		placeholder: "Search by device name…",
+	},
+	{
+		value: "manufacturer",
+		label: "Manufacturer",
+		placeholder: "Search by manufacturer…",
+	},
+	{ value: "model", label: "Model", placeholder: "Search by model…" },
+	{ value: "owner", label: "Owner", placeholder: "Search by owner…" },
+	{ value: "location", label: "Location", placeholder: "Search by location…" },
+	{
+		value: "department",
+		label: "Department",
+		placeholder: "Search by department…",
+	},
+	{ value: "type", label: "Type", placeholder: "Search by type…" },
+];
 
 export function AssetsPage() {
 	const utils = trpc.useUtils();
 	const { data: assets = [], isPending } = trpc.assets.list.useQuery();
 
-	const [query, setQuery] = useState("");
-	const [typeFilter, setTypeFilter] = useState("All");
-	const [view, setView] = useState<View>("table");
+	const [query, setQuery] = useQueryState("q", {
+		defaultValue: "",
+		history: "replace",
+	});
+	const [searchField, setSearchField] = useQueryState(
+		"field",
+		parseAsStringEnum([...SEARCH_FIELD_VALUES])
+			.withDefault("all")
+			.withOptions({ history: "replace" }),
+	);
+	const [typeFilter, setTypeFilter] = useQueryState(
+		"type",
+		parseAsStringEnum([...TYPE_VALUES])
+			.withDefault("All")
+			.withOptions({ history: "replace" }),
+	);
+	const [view, setView] = useQueryState(
+		"view",
+		parseAsStringEnum([...VIEW_VALUES])
+			.withDefault("table")
+			.withOptions({ history: "replace" }),
+	);
+	const [assetCode, setAssetCode] = useQueryState("asset", parseAsString);
 
 	const [formOpen, setFormOpen] = useState(false);
 	const [editingAsset, setEditingAsset] = useState<AssetItem | null>(null);
-	const [detailsAsset, setDetailsAsset] = useState<AssetItem | null>(null);
+
+	const detailsAsset = useMemo(
+		() => assets.find((a) => a.code === assetCode) ?? null,
+		[assets, assetCode],
+	);
 
 	const filtered = useMemo(() => {
 		const q = query.trim().toLowerCase();
@@ -38,22 +120,25 @@ export function AssetsPage() {
 			if (!q) {
 				return true;
 			}
-			return [
-				asset.deviceName,
-				asset.manufacturer,
-				asset.code,
-				asset.serialNumber,
-				asset.owner,
-				asset.model,
-				asset.location,
-				asset.department,
-			]
-				.filter(Boolean)
-				.join(" ")
-				.toLowerCase()
-				.includes(q);
+			const value =
+				searchField === "all"
+					? [
+							asset.deviceName,
+							asset.manufacturer,
+							asset.code,
+							asset.serialNumber,
+							asset.owner,
+							asset.model,
+							asset.location,
+							asset.department,
+							asset.type,
+						]
+							.filter(Boolean)
+							.join(" ")
+					: (asset[searchField] ?? "");
+			return value.toLowerCase().includes(q);
 		});
-	}, [assets, query, typeFilter]);
+	}, [assets, query, typeFilter, searchField]);
 
 	const openAdd = () => {
 		setEditingAsset(null);
@@ -72,8 +157,10 @@ export function AssetsPage() {
 		utils.assets.byId.invalidate();
 	};
 
+	const closeDetails = () => setAssetCode(null, { history: "replace" });
+
 	const handleDeleted = () => {
-		setDetailsAsset(null);
+		closeDetails();
 		utils.assets.list.invalidate();
 		utils.assets.byId.invalidate();
 	};
@@ -125,22 +212,45 @@ export function AssetsPage() {
 				</div>
 
 				<div className="flex flex-col gap-3">
-					<div className="relative w-full max-w-md">
-						<Search
-							data-icon="inline-start"
-							className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-						/>
-						<Input
-							type="search"
-							value={query}
-							onChange={(e) => setQuery(e.target.value)}
-							placeholder="Search by code, name, serial, owner, model, location…"
-							className="pl-8"
-						/>
+					<div className="flex w-full max-w-lg items-stretch overflow-hidden rounded-none border bg-background transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/50">
+						<Select
+							value={searchField}
+							onValueChange={(value) =>
+								setSearchField((value ?? "all") as SearchField)
+							}
+						>
+							<SelectTrigger className="h-full w-fit rounded-none border-0 bg-transparent px-2.5 focus-visible:ring-0">
+								<SelectValue placeholder="All fields" />
+							</SelectTrigger>
+							<SelectContent align="start" alignItemWithTrigger={false}>
+								{SEARCH_FIELDS.map((field) => (
+									<SelectItem key={field.value} value={field.value}>
+										{field.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						<div className="my-1.5 w-px shrink-0 bg-border" />
+						<div className="relative flex-1">
+							<Search
+								data-icon="inline-start"
+								className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+							/>
+							<Input
+								type="search"
+								value={query}
+								onChange={(e) => setQuery(e.target.value)}
+								placeholder={
+									SEARCH_FIELDS.find((f) => f.value === searchField)
+										?.placeholder ?? "Search…"
+								}
+								className="h-full border-0 pl-8 shadow-none focus-visible:ring-0"
+							/>
+						</div>
 					</div>
 
 					<div className="flex flex-wrap gap-1.5">
-						{["All", ...ASSET_TYPES].map((type) => (
+						{([...TYPE_VALUES] as const).map((type) => (
 							<button
 								key={type}
 								onClick={() => setTypeFilter(type)}
@@ -173,13 +283,13 @@ export function AssetsPage() {
 			) : view === "table" ? (
 				<AssetsTable
 					assets={filtered}
-					onDetails={setDetailsAsset}
+					onDetails={(asset) => setAssetCode(asset.code)}
 					onEdit={openEdit}
 				/>
 			) : (
 				<AssetsGrid
 					assets={filtered}
-					onDetails={setDetailsAsset}
+					onDetails={(asset) => setAssetCode(asset.code)}
 					onEdit={openEdit}
 				/>
 			)}
@@ -193,10 +303,12 @@ export function AssetsPage() {
 
 			<AssetDetailsDialog
 				asset={detailsAsset}
-				onOpenChange={setDetailsAsset}
+				onOpenChange={(asset) =>
+					setAssetCode(asset?.code ?? null, { history: "replace" })
+				}
 				onEdit={() => {
 					if (detailsAsset) {
-						setDetailsAsset(null);
+						closeDetails();
 						setEditingAsset(detailsAsset);
 						setFormOpen(true);
 					}

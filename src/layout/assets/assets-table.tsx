@@ -14,7 +14,6 @@ import { BadgeCheck, ExternalLink, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
-	Table,
 	TableBody,
 	TableCell,
 	TableHead,
@@ -31,12 +30,20 @@ type AssetsTableProps = {
 	onEdit: (asset: AssetItem) => void;
 };
 
+function cellStyle(getSize: () => number, grow: boolean): CSSProperties {
+	if (grow) {
+		return { flex: 1, minWidth: 0 };
+	}
+	return { width: getSize(), flexShrink: 0 };
+}
+
 export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 	const columns = useMemo<ColumnDef<AssetItem>[]>(
 		() => [
 			{
 				accessorKey: "image",
 				header: "Image",
+				size: 72,
 				cell: ({ row }) => {
 					const url = assetImageUrl(row.original.image);
 					return url ? (
@@ -53,6 +60,7 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 			{
 				accessorKey: "code",
 				header: "Code",
+				size: 110,
 				cell: ({ getValue }) => (
 					<span className="font-medium">{String(getValue())}</span>
 				),
@@ -60,8 +68,9 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 			{
 				accessorKey: "serialNumber",
 				header: "Serial Number",
+				size: 150,
 				cell: ({ getValue }) => (
-					<span className="block max-w-40 truncate">
+					<span className="block min-w-0 truncate">
 						{String(getValue() ?? "-")}
 					</span>
 				),
@@ -69,8 +78,9 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 			{
 				accessorKey: "deviceName",
 				header: "Device Name",
+				size: 200,
 				cell: ({ getValue }) => (
-					<span className="block max-w-52 truncate">
+					<span className="block min-w-0 truncate">
 						{String(getValue() ?? "-")}
 					</span>
 				),
@@ -78,6 +88,7 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 			{
 				accessorKey: "type",
 				header: "Type",
+				size: 140,
 				cell: ({ getValue }) => {
 					const type = String(getValue() ?? "");
 					return (
@@ -95,8 +106,9 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 			{
 				accessorKey: "owner",
 				header: "Owner",
+				size: 150,
 				cell: ({ getValue }) => (
-					<span className="block max-w-40 truncate">
+					<span className="block min-w-0 truncate">
 						{String(getValue() ?? "-")}
 					</span>
 				),
@@ -104,6 +116,7 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 			{
 				accessorKey: "verified",
 				header: "Verified",
+				size: 50,
 				cell: ({ row }) =>
 					row.original.verified ? (
 						<BadgeCheck className="size-4 text-green-600" />
@@ -157,17 +170,23 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 			ref={parentRef}
 			className="max-h-[65vh] overflow-auto rounded-none border"
 		>
-			<Table>
+			<table className="w-full min-w-[880px] caption-bottom text-xs">
 				<TableHeader className="sticky top-0 z-10">
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow
 							key={headerGroup.id}
-							className="bg-muted/50 hover:bg-muted/50"
+							className="flex w-full bg-muted hover:bg-muted"
+							style={{ alignItems: "center" }}
 						>
 							{headerGroup.headers.map((header) => (
 								<TableHead
 									key={header.id}
-									className="h-9 text-xs font-semibold"
+									className="flex items-center overflow-hidden border-r px-2 text-xs font-semibold last:border-r-0"
+									style={cellStyle(
+										() => header.getSize(),
+										headerGroup.headers[headerGroup.headers.length - 1].id ===
+											header.id,
+									)}
 								>
 									{header.isPlaceholder
 										? null
@@ -184,6 +203,7 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 					style={{
 						height: `${rowVirtualizer.getTotalSize()}px`,
 						position: "relative",
+						display: "block",
 					}}
 				>
 					{rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -193,6 +213,7 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 								key={row.id}
 								data-index={virtualRow.index}
 								ref={rowVirtualizer.measureElement}
+								className="flex"
 								style={{
 									position: "absolute",
 									top: 0,
@@ -200,12 +221,19 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 									width: "100%",
 									transform: `translateY(${virtualRow.start}px)`,
 									height: `${virtualRow.size}px`,
-									justifyContent: "space-around",
-									display: "flex",
+									alignItems: "center",
 								}}
 							>
 								{row.getVisibleCells().map((cell) => (
-									<TableCell key={cell.id}>
+									<TableCell
+										key={cell.id}
+										className="flex items-center overflow-hidden border-r px-2 last:border-r-0"
+										style={cellStyle(
+											cell.column.getSize,
+											row.getVisibleCells()[row.getVisibleCells().length - 1]
+												.id === cell.id,
+										)}
+									>
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}
 									</TableCell>
 								))}
@@ -213,7 +241,7 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 						);
 					})}
 				</TableBody>
-			</Table>
+			</table>
 		</div>
 	);
 }

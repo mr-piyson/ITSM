@@ -1,6 +1,7 @@
 "use client";
 
 import { BadgeCheck, Loader2, Pencil, Trash2 } from "lucide-react";
+import QRCode from "react-qr-code";
 import { toast } from "sonner";
 
 import {
@@ -87,12 +88,16 @@ export function AssetDetailsDialog({
 		>
 			<DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader>
-					<DialogTitle>Asset Details</DialogTitle>
-					<DialogDescription>
-						{asset
-							? `${asset.code} — ${asset.deviceName ?? asset.type ?? ""}`
-							: ""}
-					</DialogDescription>
+					<div className="flex items-start justify-between gap-4 pr-8">
+						<div className="min-w-0">
+							<DialogTitle>Asset Details</DialogTitle>
+							<DialogDescription>
+								{asset
+									? `${asset.code} — ${asset.deviceName ?? asset.type ?? ""}`
+									: ""}
+							</DialogDescription>
+						</div>
+					</div>
 				</DialogHeader>
 
 				{isPending || !detail ? (
@@ -140,6 +145,24 @@ export function AssetDetailsDialog({
 									{detail.deviceName ?? "-"}
 								</p>
 							</div>
+							{asset && (
+								<div className="flex shrink-0 flex-col items-center gap-1 rounded-none border bg-white p-2">
+									<QRCode
+										value={`${
+											typeof window !== "undefined"
+												? window.location.origin
+												: ""
+										}/app/assets?code=${encodeURIComponent(asset.code)}`}
+										size={88}
+										level="M"
+										bgColor="#ffffff"
+										fgColor="#000000"
+									/>
+									<span className="max-w-full truncate text-[10px] text-muted-foreground">
+										{asset.code}
+									</span>
+								</div>
+							)}
 						</div>
 
 						{/* Owner */}

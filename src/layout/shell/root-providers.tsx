@@ -1,5 +1,7 @@
 "use client";
 
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+
 import { Toaster } from "@/components/ui/toast";
 import { TRPCProvider } from "@/trpc/provider";
 
@@ -13,8 +15,10 @@ export function RootProviders({ children }: { children: React.ReactNode }) {
 			enableSystem={true}
 			storageKey={"theme"}
 		>
-			<TRPCProvider>{children}</TRPCProvider>
-			<Toaster />
+			<NuqsAdapter>
+				<TRPCProvider>{children}</TRPCProvider>
+				<Toaster />
+			</NuqsAdapter>
 		</ThemeProvider>
 	);
 }
