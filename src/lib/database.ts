@@ -2,6 +2,14 @@ import mssql from "mssql";
 import mysql from "mysql2/promise";
 import type { Pool } from "mysql2/promise";
 
+function ensureDatabaseName(uri: string | undefined, database: string): string {
+	const url = new URL(uri ?? "");
+	if (!url.pathname || url.pathname === "/") {
+		url.pathname = `/${database}`;
+	}
+	return url.toString();
+}
+
 class DatabaseManager {
 	private static mesPool: Pool | null = null;
 	private static issPool: Pool | null = null;
@@ -23,7 +31,7 @@ class DatabaseManager {
 	static getIssPool(): Pool {
 		if (!this.issPool) {
 			this.issPool = mysql.createPool({
-				uri: process.env.ISS_DATABASE,
+				uri: ensureDatabaseName(process.env.ISS_DATABASE, "ISS"),
 				waitForConnections: true,
 				connectionLimit: 10,
 				queueLimit: 0,
