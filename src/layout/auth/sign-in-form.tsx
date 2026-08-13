@@ -78,7 +78,7 @@ export function SignInForm() {
 						validators={{
 							onChange: ({ value }) => {
 								const res = SignInSchema.shape.email.safeParse(value);
-								return res.success ? undefined : res.error.errors[0]?.message;
+								return res.success ? undefined : res.error.issues[0]?.message;
 							},
 						}}
 					>
@@ -109,7 +109,7 @@ export function SignInForm() {
 						validators={{
 							onChange: ({ value }) => {
 								const res = SignInSchema.shape.password.safeParse(value);
-								return res.success ? undefined : res.error.errors[0]?.message;
+								return res.success ? undefined : res.error.issues[0]?.message;
 							},
 						}}
 					>

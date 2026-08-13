@@ -30,7 +30,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { type RouteItem, routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
-export function MarketingNavbar(props: any) {
+export function MarketingNavbar({ hideSignIn }: { hideSignIn?: boolean }) {
 	const [isScrolled, setIsScrolled] = React.useState(false);
 
 	React.useLayoutEffect(() => {
@@ -64,11 +64,13 @@ export function MarketingNavbar(props: any) {
 						<NavMenu />
 
 						{/* Desktop Sign In Button */}
-						<div className="hidden md:block">
-							<Link href="/auth">
-								<Button>Sign In</Button>
-							</Link>
-						</div>
+						{!hideSignIn && (
+							<div className="hidden md:block">
+								<Link href="/auth">
+									<Button>Sign In</Button>
+								</Link>
+							</div>
+						)}
 					</div>
 				</div>
 			</nav>

@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import AppLogo from "@/assets/icons/Logo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MarketingNavbar } from "@/layout/shell/marketing-navbar";
 import { trpc } from "@/trpc/react";
 
 import { SignInForm } from "./sign-in-form";
@@ -28,15 +28,9 @@ export function AuthPage() {
 	}
 
 	return (
-		<div className="flex justify-between gap-5 relative h-full flex-col bg-background p-10 text-card-foreground lg:flex dark:border-r">
-			<div className=" relative  flex items-center text-3xl font-medium gap-2">
-				<AppLogo className="w-12 h-12" />
-				<span>ITSM</span>
-			</div>
-			<div className=" max-md:hidden ">
-				<div className="relative "></div>
-			</div>
-			<div className="w-full h-full flex flex-col justify-center items-center ">
+		<div className="flex min-h-screen flex-col bg-background text-card-foreground">
+			<MarketingNavbar hideSignIn />
+			<div className="flex w-full flex-1 items-center justify-center p-10 max-sm:p-4">
 				<Tabs
 					defaultValue="Sign-In"
 					className="max-sm:w-full max-sm:p-2 sm:w-[420px]"
