@@ -168,7 +168,7 @@ export function AssetsTable({ assets, onDetails, onEdit }: AssetsTableProps) {
 	return (
 		<div
 			ref={parentRef}
-			className="max-h-[65vh] overflow-auto rounded-none border"
+			className="flex-1 min-h-0 overflow-auto rounded-none border"
 		>
 			<table className="w-full min-w-[880px] caption-bottom text-xs">
 				<TableHeader className="sticky top-0 z-10">

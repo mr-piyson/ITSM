@@ -98,7 +98,7 @@ export function AssetsPage() {
 	const [view, setView] = useQueryState(
 		"view",
 		parseAsStringEnum([...VIEW_VALUES])
-			.withDefault("table")
+			.withDefault("grid")
 			.withOptions({ history: "replace" }),
 	);
 	const [assetCode, setAssetCode] = useQueryState("asset", parseAsString);
@@ -166,7 +166,7 @@ export function AssetsPage() {
 	};
 
 	return (
-		<div className="space-y-4 p-4 md:p-6">
+		<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
 			<div className="flex flex-col gap-4">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<div>
@@ -204,7 +204,7 @@ export function AssetsPage() {
 								<LayoutGrid className="size-4" />
 							</button>
 						</div>
-						<Button onClick={openAdd} size="sm">
+						<Button onClick={openAdd} size="default">
 							<Plus data-icon="inline-start" />
 							Add Asset
 						</Button>
@@ -220,7 +220,12 @@ export function AssetsPage() {
 							}
 						>
 							<SelectTrigger className="h-full w-fit rounded-none border-0 bg-transparent px-2.5 focus-visible:ring-0">
-								<SelectValue placeholder="All fields" />
+								<SelectValue>
+									{(value) =>
+										SEARCH_FIELDS.find((f) => f.value === value)?.label ??
+										"All fields"
+									}
+								</SelectValue>
 							</SelectTrigger>
 							<SelectContent align="start" alignItemWithTrigger={false}>
 								{SEARCH_FIELDS.map((field) => (
@@ -249,13 +254,13 @@ export function AssetsPage() {
 						</div>
 					</div>
 
-					<div className="flex flex-wrap gap-1.5">
+					<div className="flex gap-1.5 overflow-x-auto">
 						{([...TYPE_VALUES] as const).map((type) => (
 							<button
 								key={type}
 								onClick={() => setTypeFilter(type)}
 								className={cn(
-									"rounded-full border px-2.5 py-0.5 text-xs whitespace-nowrap transition-colors",
+									"shrink-0 rounded-full border px-2.5 py-0.5 text-xs whitespace-nowrap transition-colors",
 									typeFilter === type
 										? "border-primary bg-primary text-primary-foreground"
 										: "border-border bg-background text-muted-foreground hover:bg-muted",
@@ -269,11 +274,11 @@ export function AssetsPage() {
 			</div>
 
 			{isPending ? (
-				<div className="flex h-64 items-center justify-center">
+				<div className="flex flex-1 items-center justify-center">
 					<Loader2 className="size-6 animate-spin text-muted-foreground" />
 				</div>
 			) : filtered.length === 0 ? (
-				<div className="flex flex-col items-center justify-center gap-2 border border-dashed py-16 text-center">
+				<div className="flex flex-1 flex-col items-center justify-center gap-2 border border-dashed py-16 text-center">
 					<p className="text-sm text-muted-foreground">No assets found</p>
 					<Button variant="outline" size="sm" onClick={openAdd}>
 						<Plus data-icon="inline-start" />

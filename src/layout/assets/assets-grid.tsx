@@ -48,7 +48,7 @@ export function AssetsGrid({ assets, onDetails, onEdit }: AssetsGridProps) {
 	return (
 		<div
 			ref={parentRef}
-			className="max-h-[65vh] overflow-auto rounded-none border p-3"
+			className="flex-1 min-h-0 overflow-auto rounded-none border p-3"
 		>
 			<div
 				style={{
