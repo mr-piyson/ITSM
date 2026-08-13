@@ -204,14 +204,5 @@ export const routes: {
 				},
 			],
 		},
-		{
-			title: "MES Reports",
-			href: "http://172.18.1.140:3000/reports",
-			icon: BarChart3,
-		},
-		{
-			title: "Engineering",
-			icon: DraftingCompass,
-		},
 	],
 };
