@@ -8,9 +8,11 @@ import {
 	DraftingCompass,
 	FileSignature,
 	FileText,
+	HandHelping,
 	Keyboard,
 	LayoutDashboard,
 	Lock,
+	Mail,
 	Monitor,
 	Mouse,
 	PackageCheck,
@@ -68,7 +70,7 @@ export const routes: {
 				{
 					title: "Provide",
 					href: "/app/provide",
-					icon: PackageCheck,
+					icon: HandHelping,
 				},
 			],
 		},
@@ -144,6 +146,16 @@ export const routes: {
 					title: "Requests",
 					href: "/app/requests",
 					icon: ClipboardList,
+				},
+			],
+		},
+		{
+			label: "Settings",
+			items: [
+				{
+					title: "Mail",
+					href: "/app/settings/mail",
+					icon: Mail,
 				},
 			],
 		},

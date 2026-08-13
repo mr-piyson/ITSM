@@ -17,7 +17,7 @@ export default function Toolbar(props: any) {
 			{/* Left hand side */}
 			<div className="h-full w-full flex left flex-1 min-w-0 items-center gap-2 ">
 				<SidebarTrigger className="-ml-1" />
-				<Separator orientation="vertical" className="mr-2  h-4" />
+				<Separator orientation="vertical" className="mr-2  h-full" />
 				<NavPath />
 			</div>
 			{/* Right hand side */}
