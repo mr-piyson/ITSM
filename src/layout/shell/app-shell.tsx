@@ -39,11 +39,11 @@ export default function AppShell(props: AppShellProps) {
 	}
 
 	return (
-		<SidebarProvider className="flex h-screen overflow-hidden">
+		<SidebarProvider className="flex h-svh overflow-hidden">
 			<AppSidebar />
-			<div className="relative flex flex-col flex-1 min-h-full">
+			<div className="relative flex min-h-0 flex-1 flex-col">
 				<Toolbar className="sticky top-0 z-10" />
-				<div className="flex-1 overflow-auto relative">{props.children}</div>
+				<div className="relative min-h-0 flex-1 overflow-auto">{props.children}</div>
 			</div>
 		</SidebarProvider>
 	);

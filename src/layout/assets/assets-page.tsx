@@ -167,7 +167,7 @@ export function AssetsPage() {
 
 	return (
 		<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
-			<div className="flex flex-col gap-4">
+			<div className="flex min-w-0 flex-col gap-4">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<div>
 						<h1 className="text-xl font-semibold tracking-tight">Assets</h1>
@@ -211,7 +211,7 @@ export function AssetsPage() {
 					</div>
 				</div>
 
-				<div className="flex flex-col gap-3">
+				<div className="flex min-w-0 flex-col gap-3">
 					<div className="flex w-full max-w-lg items-stretch overflow-hidden rounded-none border bg-background transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/50">
 						<Select
 							value={searchField}
@@ -254,7 +254,7 @@ export function AssetsPage() {
 						</div>
 					</div>
 
-					<div className="flex gap-1.5 overflow-x-auto">
+					<div className="flex min-w-0 gap-1.5 overflow-x-auto">
 						{([...TYPE_VALUES] as const).map((type) => (
 							<button
 								key={type}

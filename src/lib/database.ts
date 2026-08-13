@@ -16,8 +16,8 @@ class DatabaseManager {
 	private static erpPool: mssql.ConnectionPool | null = null;
 
 	static getMesPool(): Pool {
-		if (!this.mesPool) {
-			this.mesPool = mysql.createPool({
+		if (!DatabaseManager.mesPool) {
+			DatabaseManager.mesPool = mysql.createPool({
 				uri: process.env.MES_DATABASE,
 				waitForConnections: true,
 				connectionLimit: 10,
@@ -25,12 +25,12 @@ class DatabaseManager {
 				enableKeepAlive: true,
 			});
 		}
-		return this.mesPool;
+		return DatabaseManager.mesPool;
 	}
 
 	static getIssPool(): Pool {
-		if (!this.issPool) {
-			this.issPool = mysql.createPool({
+		if (!DatabaseManager.issPool) {
+			DatabaseManager.issPool = mysql.createPool({
 				uri: ensureDatabaseName(process.env.ISS_DATABASE, "ISS"),
 				waitForConnections: true,
 				connectionLimit: 10,
@@ -38,12 +38,12 @@ class DatabaseManager {
 				enableKeepAlive: true,
 			});
 		}
-		return this.issPool;
+		return DatabaseManager.issPool;
 	}
 
 	// Fixed: Must be async because mssql.connect returns a Promise
 	static async getERPPool(): Promise<mssql.ConnectionPool> {
-		if (!this.erpPool || !this.erpPool.connected) {
+		if (!DatabaseManager.erpPool || !DatabaseManager.erpPool.connected) {
 			const config: mssql.config = {
 				user: "MES",
 				password: "M3$Ep!2X",
@@ -61,9 +61,11 @@ class DatabaseManager {
 				},
 			};
 			// We use 'new' and 'connect()' for better singleton management
-			this.erpPool = await new mssql.ConnectionPool(config).connect();
+			DatabaseManager.erpPool = await new mssql.ConnectionPool(
+				config,
+			).connect();
 		}
-		return this.erpPool;
+		return DatabaseManager.erpPool;
 	}
 }
 
