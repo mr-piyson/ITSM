@@ -97,6 +97,35 @@ export const ASSET_TYPE_BADGE: Record<string, string> = {
 	Router: "bg-green-200 text-green-900 dark:bg-green-900 dark:text-green-100",
 };
 
+// Chart-friendly hex colors per asset type (mirrors the ASSET_TYPE_BADGE hues)
+export const ASSET_TYPE_COLOR: Record<string, string> = {
+	Desktop: "#14b8a6",
+	Laptop: "#737373",
+	Monitor: "#b45309",
+	"Face Access": "#64748b",
+	CCTV: "#84cc16",
+	"Wifi Access Point": "#eab308",
+	Switches: "#0ea5e9",
+	"Blade Server": "#06b6d4",
+	UPS: "#84cc16",
+	"Tape Drive": "#eab308",
+	Firewall: "#facc15",
+	Tablet: "#f97316",
+	TV: "#6366f1",
+	Telephone: "#a855f7",
+	"P2P Network": "#eab308",
+	AC: "#ef4444",
+	"Display Projector": "#3b82f6",
+	Router: "#22c55e",
+};
+
+export function assetTypeColor(type?: string | null): string {
+	if (!type) {
+		return "#64748b";
+	}
+	return ASSET_TYPE_COLOR[type] ?? "#64748b";
+}
+
 export function assetTypeBadge(type?: string | null): string {
 	if (!type) {
 		return "bg-muted text-muted-foreground";

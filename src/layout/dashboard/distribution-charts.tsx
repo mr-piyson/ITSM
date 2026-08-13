@@ -24,19 +24,8 @@ import {
 	ChartTooltipContent,
 	type ChartConfig,
 } from "@/components/ui/chart";
+import { assetTypeColor } from "@/lib/assets-constants";
 import type { AssetTypeCount, StockCategory } from "@/server/routers/dashboard";
-
-const ASSET_COLORS = [
-	"var(--chart-1)",
-	"var(--chart-2)",
-	"var(--chart-3)",
-	"var(--chart-4)",
-	"var(--chart-5)",
-	"#64748b",
-	"#94a3b8",
-	"#cbd5e1",
-	"#e2e8f0",
-];
 
 const STOCK_CONFIG: ChartConfig = {
 	itemCount: { label: "Item count", color: "var(--chart-1)" },
@@ -81,11 +70,8 @@ export function AssetsByTypeCard({
 									paddingAngle={2}
 									strokeWidth={2}
 								>
-									{data.map((entry, index) => (
-										<Cell
-											key={entry.type}
-											fill={ASSET_COLORS[index % ASSET_COLORS.length]}
-										/>
+									{data.map((entry) => (
+										<Cell key={entry.type} fill={assetTypeColor(entry.type)} />
 									))}
 								</Pie>
 								<ChartTooltip
@@ -94,7 +80,7 @@ export function AssetsByTypeCard({
 							</PieChart>
 						</ChartContainer>
 						<ul className="flex min-w-0 flex-col gap-1.5 sm:w-44">
-							{data.slice(0, 7).map((entry, index) => {
+							{data.slice(0, 7).map((entry) => {
 								const percent =
 									total > 0 ? Math.round((entry.total / total) * 100) : 0;
 								return (
@@ -106,7 +92,7 @@ export function AssetsByTypeCard({
 											<span
 												className="size-2 shrink-0"
 												style={{
-													backgroundColor: `var(--chart-${(index % 5) + 1})`,
+													backgroundColor: assetTypeColor(entry.type),
 												}}
 											/>
 											<span className="truncate">{entry.type}</span>
