@@ -112,7 +112,7 @@ export function AssetDetailsDialog({
 								<img
 									src={imageUrl}
 									alt={detail.code}
-									className="h-28 w-36 shrink-0 object-cover"
+									className="h-28 w-36 shrink-0 object-contain"
 								/>
 							) : (
 								<div className="flex h-28 w-36 shrink-0 items-center justify-center border bg-muted text-xs text-muted-foreground">

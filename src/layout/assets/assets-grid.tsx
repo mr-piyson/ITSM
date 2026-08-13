@@ -111,7 +111,7 @@ function AssetCard({
 					<img
 						src={imageUrl}
 						alt={asset.code}
-						className="h-14 w-20 shrink-0 object-cover"
+						className="h-14 w-20 shrink-0 object-contain"
 					/>
 				)}
 				<div className="min-w-0 flex-1">
