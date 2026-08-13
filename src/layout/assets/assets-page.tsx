@@ -254,7 +254,7 @@ export function AssetsPage() {
 						</div>
 					</div>
 
-					<div className="flex min-w-0 gap-1.5 overflow-x-auto">
+					<div className="flex min-w-0 gap-1.5 overflow-x-auto pb-1">
 						{([...TYPE_VALUES] as const).map((type) => (
 							<button
 								key={type}
