@@ -5,6 +5,7 @@ import { dashboardRouter } from "./routers/dashboard";
 import { employeesRouter } from "./routers/employees";
 import { healthRouter } from "./routers/health";
 import { mailSettingsRouter } from "./routers/mail";
+import { providesRouter } from "./routers/provide";
 import { workbenchRouter } from "./routers/workbench";
 import { router } from "./trpc";
 
@@ -14,6 +15,7 @@ export const appRouter = router({
 	assets: assetsRouter,
 	employees: employeesRouter,
 	bookings: bookingsRouter,
+	provides: providesRouter,
 	mail: mailSettingsRouter,
 	dashboard: dashboardRouter,
 	workbench: workbenchRouter,

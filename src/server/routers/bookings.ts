@@ -42,6 +42,7 @@ export type BookingAssetOption = {
 	model: string | null;
 	location: string | null;
 	owner: string | null;
+	image: string | null;
 };
 
 const createSchema = z.object({
@@ -173,6 +174,7 @@ export const bookingsRouter = router({
 					a.manufacturer,
 					a.model,
 					a.location,
+					a.image,
 					e.name AS owner
 				FROM assets a
 				LEFT JOIN employees e ON e.empID = a.empID
@@ -188,6 +190,7 @@ export const bookingsRouter = router({
 				model: toString(row.model),
 				location: toString(row.location),
 				owner: toString(row.owner),
+				image: toString(row.image),
 			}));
 		},
 	),

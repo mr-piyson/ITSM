@@ -40,6 +40,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { BOOKING_PURPOSES, bookingToday } from "@/lib/booking-constants";
+import { assetImageUrl } from "@/lib/assets-constants";
 import { employeeImageUrl } from "@/lib/employees-constants";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/react";
@@ -309,6 +310,17 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 					>
 						{selectedAsset ? (
 							<span className="flex min-w-0 items-center gap-2">
+								<Avatar className="size-5 shrink-0">
+									{assetImageUrl(selectedAsset.image) && (
+										<AvatarImage
+											src={assetImageUrl(selectedAsset.image) ?? undefined}
+											alt={selectedAsset.deviceName ?? selectedAsset.code}
+										/>
+									)}
+									<AvatarFallback className="text-[9px]">
+										{selectedAsset.code[0]?.toUpperCase()}
+									</AvatarFallback>
+								</Avatar>
 								<span className="truncate font-mono">{selectedAsset.code}</span>
 								<span className="truncate text-muted-foreground">
 									{selectedAsset.deviceName ?? ""}
@@ -358,6 +370,17 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 												setAssetOpen(false);
 											}}
 										>
+											<Avatar className="size-9 shrink-0">
+												{assetImageUrl(asset.image) && (
+													<AvatarImage
+														src={assetImageUrl(asset.image) ?? undefined}
+														alt={asset.deviceName ?? asset.code}
+													/>
+												)}
+												<AvatarFallback className="text-[10px]">
+													{asset.code[0]?.toUpperCase()}
+												</AvatarFallback>
+											</Avatar>
 											<div className="min-w-0 flex-1">
 												<p className="truncate font-mono">{asset.code}</p>
 												<p className="truncate text-muted-foreground">
