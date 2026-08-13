@@ -1,26 +1,26 @@
 import {
-	LayoutDashboard,
-	Monitor,
-	Printer,
-	UserCheck,
-	Table,
-	User,
-	CreditCard,
-	Lock,
-	Palette,
-	Layout,
-	Package,
-	Route as RouteIcon,
-	Search,
-	LogOut,
-	Container,
-	Briefcase,
-	FileText,
-	Wrench,
-	Keyboard,
-	Mouse,
 	BarChart3,
+	Boxes,
+	CalendarDays,
+	ClipboardList,
+	CreditCard,
+	Database,
 	DraftingCompass,
+	FileSignature,
+	FileText,
+	Keyboard,
+	LayoutDashboard,
+	Lock,
+	Monitor,
+	Mouse,
+	PackageCheck,
+	Printer,
+	Server,
+	ShoppingCart,
+	Store,
+	User,
+	UserCheck,
+	Wrench,
 	type LucideIcon,
 } from "lucide-react";
 
@@ -32,32 +32,120 @@ export type RouteItem = {
 	children?: RouteItem[];
 };
 
-export const routes: Record<string, RouteItem[]> = {
+export type RouteGroup = {
+	label?: string;
+	items: RouteItem[];
+};
+
+export const routes: {
+	appSidebar: RouteGroup[];
+	settings: RouteItem[];
+	landingPage: RouteItem[];
+} = {
 	appSidebar: [
 		{
-			title: "Dashboard",
-			href: "/app/dashboard",
-			icon: LayoutDashboard,
+			items: [
+				{
+					title: "Dashboard",
+					href: "/app/dashboard",
+					icon: LayoutDashboard,
+				},
+			],
 		},
 		{
-			title: "Assets",
-			href: "/app/assets",
-			icon: Monitor,
+			label: "Operations",
+			items: [
+				{
+					title: "Assets",
+					href: "/app/assets",
+					icon: Monitor,
+				},
+				{
+					title: "Booking",
+					href: "/app/booking",
+					icon: CalendarDays,
+				},
+				{
+					title: "Provide",
+					href: "/app/provide",
+					icon: PackageCheck,
+				},
+			],
 		},
 		{
-			title: "Printers",
-			href: "/app/printers",
-			icon: Printer,
+			label: "Procurement",
+			items: [
+				{
+					title: "Purchase / Service",
+					href: "/app/purchases",
+					icon: ShoppingCart,
+				},
+			],
 		},
 		{
-			title: "Employees",
-			href: "/app/employees",
-			icon: UserCheck,
+			label: "Infrastructure",
+			items: [
+				{
+					title: "Printers",
+					href: "/app/printers",
+					icon: Printer,
+				},
+				{
+					title: "Servers",
+					href: "/app/servers",
+					icon: Server,
+				},
+				{
+					title: "Backup Tapes",
+					href: "/app/tapes",
+					icon: Database,
+				},
+			],
 		},
 		{
-			title: "Attendance",
-			href: "/app/attendance",
-			icon: Table,
+			label: "Inventory",
+			items: [
+				{
+					title: "Stock",
+					href: "/app/stock",
+					icon: Boxes,
+				},
+			],
+		},
+		{
+			label: "Directory",
+			items: [
+				{
+					title: "Employees",
+					href: "/app/employees",
+					icon: UserCheck,
+				},
+				{
+					title: "Vendors",
+					href: "/app/vendors",
+					icon: Store,
+				},
+				{
+					title: "Contracts",
+					href: "/app/contracts",
+					icon: FileSignature,
+				},
+			],
+		},
+		{
+			label: "Reports & Requests",
+			items: [
+				{
+					title: "Reports",
+					href: "/app/reports",
+					icon: BarChart3,
+				},
+				{
+					title: "Requests",
+					href: "/app/requests",
+					icon: ClipboardList,
+				},
+			],
 		},
 	],
 	settings: [
@@ -75,11 +163,6 @@ export const routes: Record<string, RouteItem[]> = {
 			title: "Security",
 			href: "/app/settings/security",
 			icon: Lock,
-		},
-		{
-			title: "Appearance",
-			href: "/app/settings/appearance",
-			icon: Palette,
 		},
 	],
 	landingPage: [

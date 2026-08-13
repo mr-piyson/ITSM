@@ -1,9 +1,7 @@
 "use client";
 
-type PageProps = {
-	children?: React.ReactNode;
-};
+import { DashboardPage } from "@/layout/dashboard/dashboard-page";
 
-export default function Page(props: PageProps) {
-	return <div></div>;
+export default function Page() {
+	return <DashboardPage />;
 }

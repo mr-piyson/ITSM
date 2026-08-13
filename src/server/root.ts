@@ -1,5 +1,6 @@
 import { assetsRouter } from "./routers/assets";
 import { authRouter } from "./routers/auth";
+import { dashboardRouter } from "./routers/dashboard";
 import { employeesRouter } from "./routers/employees";
 import { healthRouter } from "./routers/health";
 import { workbenchRouter } from "./routers/workbench";
@@ -10,6 +11,7 @@ export const appRouter = router({
 	auth: authRouter,
 	assets: assetsRouter,
 	employees: employeesRouter,
+	dashboard: dashboardRouter,
 	workbench: workbenchRouter,
 });
 
