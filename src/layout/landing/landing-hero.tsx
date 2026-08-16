@@ -97,12 +97,6 @@ const EmblaCarousel = () => {
 											</Badge>
 										))}
 									</div>
-									<Button
-										size="lg"
-										className="bg-white text-primary hover:bg-white/90"
-									>
-										Get Started Today
-									</Button>
 								</div>
 							</div>
 						</div>
