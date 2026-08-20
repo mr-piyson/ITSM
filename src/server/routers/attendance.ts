@@ -1,0 +1,267 @@
+import type { RowDataPacket } from "mysql2";
+import { z } from "zod";
+
+import { protectedProcedure, router } from "@/server/trpc";
+
+type Row = RowDataPacket & Record<string, unknown>;
+
+export type AttendanceEmployee = {
+	id: number;
+	empCode: number;
+	name: string;
+};
+
+export type AttendanceLog = {
+	personId: number;
+	datetime: Date;
+	timeRaw: string;
+	personName: string;
+};
+
+export type DailyAttendance = {
+	date: string;
+	checkIn: string | null;
+	checkOut: string | null;
+	status: "present" | "late" | "absent";
+	lateMinutes: number;
+	extraMinutes: number;
+	weekend: boolean;
+};
+
+export type AttendanceSummary = {
+	employee: AttendanceEmployee | null;
+	presentDays: number;
+	absentDays: number;
+	totalLateMinutes: number;
+	totalExtraMinutes: number;
+	days: DailyAttendance[];
+};
+
+function pad(n: number): string {
+	return n < 10 ? `0${n}` : `${n}`;
+}
+
+function formatTime(date: Date): string {
+	return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function minutesBetween(a: Date, b: Date): number {
+	return Math.round((b.getTime() - a.getTime()) / 60000);
+}
+
+function toDateString(d: Date): string {
+	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function parseDateTime(value: unknown): Date | null {
+	if (value instanceof Date) {
+		return value;
+	}
+	if (typeof value === "string" || typeof value === "number") {
+		const d = new Date(value);
+		return Number.isNaN(d.getTime()) ? null : d;
+	}
+	return null;
+}
+
+export const attendanceRouter = router({
+	employee: protectedProcedure
+		.input(z.object({ empCode: z.coerce.number().int().positive() }))
+		.query(async ({ ctx, input }): Promise<AttendanceEmployee | null> => {
+			const [rows] = await ctx.db.mes.execute<Row[]>(
+				`SELECT id, emp_code, name FROM mes.employees WHERE emp_code = ? LIMIT 1`,
+				[input.empCode],
+			);
+			if (rows.length === 0) {
+				return null;
+			}
+			const row = rows[0];
+			return {
+				id: Number(row.id),
+				empCode: Number(row.emp_code),
+				name: String(row.name ?? ""),
+			};
+		}),
+
+	logs: protectedProcedure
+		.input(
+			z.object({
+				personId: z.coerce.number().int().positive(),
+				month: z.coerce.number().int().min(1).max(12),
+				year: z.coerce.number().int().min(2020).max(2100),
+			}),
+		)
+		.query(async ({ ctx, input }): Promise<AttendanceLog[]> => {
+			const table = `hikvision.vlog_${input.year}${pad(input.month)}`;
+			const [rows] = await ctx.db.mes.query<Row[]>(
+				`SELECT person_id, \`datetime\`, time_raw, person_name
+				 FROM ${table}
+				 WHERE person_id = ?
+				 ORDER BY \`datetime\` ASC`,
+				[input.personId],
+			);
+			return rows.map((row) => ({
+				personId: Number(row.person_id),
+				datetime: parseDateTime(row.datetime) ?? new Date(),
+				timeRaw: String(row.time_raw ?? ""),
+				personName: String(row.person_name ?? ""),
+			}));
+		}),
+
+	summary: protectedProcedure
+		.input(
+			z.object({
+				personId: z.coerce.number().int().positive(),
+				month: z.coerce.number().int().min(1).max(12),
+				year: z.coerce.number().int().min(2020).max(2100),
+			}),
+		)
+		.query(async ({ ctx, input }): Promise<AttendanceSummary> => {
+			const table = `hikvision.vlog_${input.year}${pad(input.month)}`;
+			const [logRows] = await ctx.db.mes.query<Row[]>(
+				`SELECT person_id, \`datetime\`, time_raw, person_name
+				 FROM ${table}
+				 WHERE person_id = ?
+				 ORDER BY \`datetime\` ASC`,
+				[input.personId],
+			);
+
+			const logs: AttendanceLog[] = logRows.map((row) => ({
+				personId: Number(row.person_id),
+				datetime: parseDateTime(row.datetime) ?? new Date(),
+				timeRaw: String(row.time_raw ?? ""),
+				personName: String(row.person_name ?? ""),
+			}));
+
+			const [empRows] = await ctx.db.mes.execute<Row[]>(
+				`SELECT id, emp_code, name FROM mes.employees WHERE emp_code = ? LIMIT 1`,
+				[input.personId],
+			);
+			const employee: AttendanceEmployee | null =
+				empRows.length > 0
+					? {
+							id: Number(empRows[0].id),
+							empCode: Number(empRows[0].emp_code),
+							name: String(empRows[0].name ?? ""),
+						}
+					: null;
+
+			const WORK_START_HOUR = 8;
+			const WORK_END_HOUR = 17;
+
+			const byDate = new Map<string, AttendanceLog[]>();
+			for (const log of logs) {
+				const key = toDateString(log.datetime);
+				const arr = byDate.get(key) ?? [];
+				arr.push(log);
+				byDate.set(key, arr);
+			}
+
+			const daysInMonth = new Date(input.year, input.month, 0).getDate();
+			const days: DailyAttendance[] = [];
+			let presentDays = 0;
+			let absentDays = 0;
+			let totalLateMinutes = 0;
+			let totalExtraMinutes = 0;
+
+			for (let day = 1; day <= daysInMonth; day++) {
+				const dateObj = new Date(input.year, input.month - 1, day);
+				const dow = dateObj.getDay();
+				const dateStr = toDateString(dateObj);
+				const isWeekend = dow === 5 || dow === 6;
+
+				if (dow === 0) {
+					continue;
+				}
+
+				if (isWeekend) {
+					const dayLogs = byDate.get(dateStr);
+					if (dayLogs && dayLogs.length > 0) {
+						const firstPunch = dayLogs[0];
+						const lastPunch = dayLogs[dayLogs.length - 1];
+						days.push({
+							date: dateStr,
+							checkIn: formatTime(firstPunch.datetime),
+							checkOut: formatTime(lastPunch.datetime),
+							status: "present",
+							lateMinutes: 0,
+							extraMinutes: 0,
+							weekend: true,
+						});
+					} else {
+						days.push({
+							date: dateStr,
+							checkIn: null,
+							checkOut: null,
+							status: "absent",
+							lateMinutes: 0,
+							extraMinutes: 0,
+							weekend: true,
+						});
+					}
+					continue;
+				}
+
+				const dayLogs = byDate.get(dateStr);
+				if (!dayLogs || dayLogs.length === 0) {
+					days.push({
+						date: dateStr,
+						checkIn: null,
+						checkOut: null,
+						status: "absent",
+						lateMinutes: 0,
+						extraMinutes: 0,
+						weekend: false,
+					});
+					absentDays++;
+					continue;
+				}
+
+				const firstPunch = dayLogs[0];
+				const lastPunch = dayLogs[dayLogs.length - 1];
+
+				const checkInTime = firstPunch.datetime;
+				const checkOutTime = lastPunch.datetime;
+
+				const workStart = new Date(dateObj);
+				workStart.setHours(WORK_START_HOUR, 0, 0, 0);
+				const workEnd = new Date(dateObj);
+				workEnd.setHours(WORK_END_HOUR, 0, 0, 0);
+
+				let lateMinutes = 0;
+				if (checkInTime > workStart) {
+					lateMinutes = minutesBetween(workStart, checkInTime);
+				}
+
+				let extraMinutes = 0;
+				if (checkOutTime > workEnd) {
+					extraMinutes = minutesBetween(workEnd, checkOutTime);
+				}
+
+				const isLate = lateMinutes > 0;
+
+				days.push({
+					date: dateStr,
+					checkIn: formatTime(checkInTime),
+					checkOut: formatTime(checkOutTime),
+					status: isLate ? "late" : "present",
+					lateMinutes,
+					extraMinutes,
+					weekend: false,
+				});
+
+				presentDays++;
+				totalLateMinutes += lateMinutes;
+				totalExtraMinutes += extraMinutes;
+			}
+
+			return {
+				employee,
+				presentDays,
+				absentDays,
+				totalLateMinutes,
+				totalExtraMinutes,
+				days,
+			};
+		}),
+});

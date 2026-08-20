@@ -1,4 +1,5 @@
 import { assetsRouter } from "./routers/assets";
+import { attendanceRouter } from "./routers/attendance";
 import { authRouter } from "./routers/auth";
 import { bookingsRouter } from "./routers/bookings";
 import { dashboardRouter } from "./routers/dashboard";
@@ -14,6 +15,7 @@ export const appRouter = router({
 	health: healthRouter,
 	auth: authRouter,
 	assets: assetsRouter,
+	attendance: attendanceRouter,
 	employees: employeesRouter,
 	bookings: bookingsRouter,
 	provides: providesRouter,

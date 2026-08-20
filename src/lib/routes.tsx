@@ -4,6 +4,7 @@ import {
 	CalendarDays,
 	ClipboardList,
 	CreditCard,
+	Clock,
 	Database,
 	FileSignature,
 	FileText,
@@ -129,6 +130,16 @@ export const routes: {
 					title: "Contracts",
 					href: "/app/contracts",
 					icon: FileSignature,
+				},
+			],
+		},
+		{
+			label: "HR",
+			items: [
+				{
+					title: "Attendance",
+					href: "/app/attendance",
+					icon: Clock,
 				},
 			],
 		},
