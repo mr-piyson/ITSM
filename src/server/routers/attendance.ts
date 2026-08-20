@@ -22,7 +22,7 @@ export type DailyAttendance = {
 	date: string;
 	checkIn: string | null;
 	checkOut: string | null;
-	status: "present" | "late" | "absent";
+	status: "present" | "late" | "absent" | "weekend";
 	lateMinutes: number;
 	extraMinutes: number;
 	weekend: boolean;
@@ -164,13 +164,17 @@ export const attendanceRouter = router({
 			let totalLateMinutes = 0;
 			let totalExtraMinutes = 0;
 
+			const today = new Date();
+			const todayStr = toDateString(today);
+
 			for (let day = 1; day <= daysInMonth; day++) {
 				const dateObj = new Date(input.year, input.month - 1, day);
 				const dow = dateObj.getDay();
 				const dateStr = toDateString(dateObj);
 				const isWeekend = dow === 5 || dow === 6;
+				const isFuture = dateStr > todayStr;
 
-				if (dow === 0) {
+				if (dow === 0 || isFuture) {
 					continue;
 				}
 
@@ -183,7 +187,7 @@ export const attendanceRouter = router({
 							date: dateStr,
 							checkIn: formatTime(firstPunch.datetime),
 							checkOut: formatTime(lastPunch.datetime),
-							status: "present",
+							status: "weekend",
 							lateMinutes: 0,
 							extraMinutes: 0,
 							weekend: true,
@@ -193,7 +197,7 @@ export const attendanceRouter = router({
 							date: dateStr,
 							checkIn: null,
 							checkOut: null,
-							status: "absent",
+							status: "weekend",
 							lateMinutes: 0,
 							extraMinutes: 0,
 							weekend: true,

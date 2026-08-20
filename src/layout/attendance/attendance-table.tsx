@@ -69,6 +69,16 @@ function StatusBadge({ status }: { status: DailyAttendance["status"] }) {
 			</Badge>
 		);
 	}
+	if (status === "weekend") {
+		return (
+			<Badge
+				variant="secondary"
+				className="bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+			>
+				Weekend
+			</Badge>
+		);
+	}
 	return (
 		<Badge
 			variant="secondary"
