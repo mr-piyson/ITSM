@@ -1,26 +1,12 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import type { CSSProperties } from "react";
-
-import {
-	type ColumnDef,
-	flexRender,
-	getCoreRowModel,
-	useReactTable,
-} from "@tanstack/react-table";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { useMemo } from "react";
+import { AgGridReact } from "ag-grid-react";
+import type { ColDef, ICellRendererParams } from "ag-grid-community";
 
 import { Badge } from "@/components/ui/badge";
-import {
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import type { DailyAttendance } from "@/server/routers/attendance";
+import { useTableTheme } from "@/hooks/use-table-theme";
 
 type AttendanceTableProps = {
 	days: DailyAttendance[];
@@ -39,13 +25,6 @@ function formatMinutes(minutes: number): string {
 		return `${h}h`;
 	}
 	return `${m}m`;
-}
-
-function cellStyle(getSize: () => number, grow: boolean): CSSProperties {
-	if (grow) {
-		return { flex: 1, minWidth: 0 };
-	}
-	return { width: getSize(), flexShrink: 0 };
 }
 
 function StatusBadge({ status }: { status: DailyAttendance["status"] }) {
@@ -89,217 +68,122 @@ function StatusBadge({ status }: { status: DailyAttendance["status"] }) {
 	);
 }
 
+function getWeekday(dateStr: string): string {
+	const [y, m, d] = dateStr.split("-");
+	const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+	return dateObj.toLocaleDateString("en-US", { weekday: "long" });
+}
+
 export function AttendanceTable({ days }: AttendanceTableProps) {
-	const columns = useMemo<ColumnDef<DailyAttendance>[]>(
+	const tableTheme = useTableTheme();
+	const columnDefs = useMemo<ColDef<DailyAttendance>[]>(
 		() => [
 			{
-				id: "weekday",
-				header: "Day",
-				size: 80,
-				accessorFn: (row) => row.date,
-				cell: ({ getValue }) => {
-					const value = String(getValue());
-					const [y, m, d] = value.split("-");
-					const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
-					const weekday = dateObj.toLocaleDateString("en-US", {
-						weekday: "long",
-					});
-					return <span className="font-medium">{weekday}</span>;
+				headerName: "Day",
+				valueGetter: (params) =>
+					params.data ? getWeekday(params.data.date) : "",
+				width: 110,
+				sortable: false,
+				filter: false,
+			},
+			{
+				headerName: "Date",
+				field: "date",
+				width: 120,
+				sortable: false,
+				filter: false,
+				cellClass: "font-mono text-xs",
+			},
+			{
+				headerName: "Check In",
+				field: "checkIn",
+				width: 100,
+				sortable: false,
+				filter: false,
+				cellClass: (params) => [
+					"font-mono text-xs",
+					!params.value ? "text-muted-foreground" : "",
+				],
+				valueFormatter: (params) => params.value ?? "-",
+			},
+			{
+				headerName: "Check Out",
+				field: "checkOut",
+				width: 100,
+				sortable: false,
+				filter: false,
+				cellClass: (params) => [
+					"font-mono text-xs",
+					!params.value ? "text-muted-foreground" : "",
+				],
+				valueFormatter: (params) => params.value ?? "-",
+			},
+			{
+				headerName: "Status",
+				field: "status",
+				width: 110,
+				sortable: false,
+				filter: false,
+				cellRenderer: (params: ICellRendererParams<DailyAttendance>) => {
+					if (!params.data) return null;
+					return <StatusBadge status={params.data.status} />;
 				},
 			},
 			{
-				accessorKey: "date",
-				header: "Date",
-				size: 110,
-				cell: ({ getValue }) => {
-					const value = String(getValue());
-					return <span className="font-mono text-xs">{value}</span>;
-				},
+				headerName: "Late",
+				field: "lateMinutes",
+				width: 100,
+				sortable: false,
+				filter: false,
+				cellClass: (params) => [
+					"font-mono text-xs",
+					params.value > 0
+						? "text-red-600 dark:text-red-400"
+						: "text-muted-foreground",
+				],
+				valueFormatter: (params) => formatMinutes(params.value),
 			},
 			{
-				accessorKey: "checkIn",
-				header: "Check In",
-				size: 100,
-				cell: ({ getValue }) => {
-					const value = getValue() as string | null;
-					return (
-						<span
-							className={cn(
-								"font-mono text-xs",
-								!value && "text-muted-foreground",
-							)}
-						>
-							{value ?? "-"}
-						</span>
-					);
-				},
-			},
-			{
-				accessorKey: "checkOut",
-				header: "Check Out",
-				size: 100,
-				cell: ({ getValue }) => {
-					const value = getValue() as string | null;
-					return (
-						<span
-							className={cn(
-								"font-mono text-xs",
-								!value && "text-muted-foreground",
-							)}
-						>
-							{value ?? "-"}
-						</span>
-					);
-				},
-			},
-			{
-				accessorKey: "status",
-				header: "Status",
-				size: 100,
-				cell: ({ getValue }) => {
-					const status = getValue() as DailyAttendance["status"];
-					return <StatusBadge status={status} />;
-				},
-			},
-			{
-				accessorKey: "lateMinutes",
-				header: "Late",
-				size: 100,
-				cell: ({ getValue }) => {
-					const minutes = getValue() as number;
-					return (
-						<span
-							className={cn(
-								"font-mono text-xs",
-								minutes > 0
-									? "text-red-600 dark:text-red-400"
-									: "text-muted-foreground",
-							)}
-						>
-							{formatMinutes(minutes)}
-						</span>
-					);
-				},
-			},
-			{
-				accessorKey: "extraMinutes",
-				header: "Extra Hours",
-				size: 110,
-				cell: ({ getValue }) => {
-					const minutes = getValue() as number;
-					return (
-						<span
-							className={cn(
-								"font-mono text-xs",
-								minutes > 0
-									? "text-emerald-600 dark:text-emerald-400"
-									: "text-muted-foreground",
-							)}
-						>
-							{formatMinutes(minutes)}
-						</span>
-					);
-				},
+				headerName: "Extra Hours",
+				field: "extraMinutes",
+				width: 120,
+				sortable: false,
+				filter: false,
+				cellClass: (params) => [
+					"font-mono text-xs",
+					params.value > 0
+						? "text-emerald-600 dark:text-emerald-400"
+						: "text-muted-foreground",
+				],
+				valueFormatter: (params) => formatMinutes(params.value),
 			},
 		],
 		[],
 	);
 
-	const table = useReactTable({
-		data: days,
-		columns,
-		getCoreRowModel: getCoreRowModel(),
-	});
-
-	const parentRef = useRef<HTMLDivElement>(null);
-	const rows = table.getRowModel().rows;
-	const rowVirtualizer = useVirtualizer({
-		count: rows.length,
-		getScrollElement: () => parentRef.current,
-		estimateSize: () => 40,
-		overscan: 10,
-	});
-
 	return (
 		<div
-			ref={parentRef}
-			className="flex-1 min-h-0 overflow-auto rounded-none border"
+			className="ag-theme-alpine flex-1 min-h-0 rounded-none border"
+			style={{ height: "100%" }}
 		>
-			<table className="w-full min-w-[640px] caption-bottom text-xs">
-				<TableHeader className="sticky top-0 z-10">
-					{table.getHeaderGroups().map((headerGroup) => (
-						<TableRow
-							key={headerGroup.id}
-							className="flex w-full bg-muted hover:bg-muted"
-							style={{ alignItems: "center" }}
-						>
-							{headerGroup.headers.map((header) => (
-								<TableHead
-									key={header.id}
-									className="flex items-center overflow-hidden border-r px-2 text-xs font-semibold last:border-r-0"
-									style={cellStyle(
-										() => header.getSize(),
-										headerGroup.headers[headerGroup.headers.length - 1].id ===
-											header.id,
-									)}
-								>
-									{header.isPlaceholder
-										? null
-										: flexRender(
-												header.column.columnDef.header,
-												header.getContext(),
-											)}
-								</TableHead>
-							))}
-						</TableRow>
-					))}
-				</TableHeader>
-				<TableBody
-					style={{
-						height: `${rowVirtualizer.getTotalSize()}px`,
-						position: "relative",
-						display: "block",
-					}}
-				>
-					{rowVirtualizer.getVirtualItems().map((virtualRow) => {
-						const row = rows[virtualRow.index];
-						return (
-							<TableRow
-								key={row.id}
-								data-index={virtualRow.index}
-								ref={rowVirtualizer.measureElement}
-								className={cn(
-									"flex",
-									row.original.weekend && "bg-muted/50 text-muted-foreground",
-								)}
-								style={{
-									position: "absolute",
-									top: 0,
-									left: 0,
-									width: "100%",
-									transform: `translateY(${virtualRow.start}px)`,
-									height: `${virtualRow.size}px`,
-									alignItems: "center",
-								}}
-							>
-								{row.getVisibleCells().map((cell) => (
-									<TableCell
-										key={cell.id}
-										className="flex items-center overflow-hidden border-r px-2 last:border-r-0"
-										style={cellStyle(
-											cell.column.getSize,
-											row.getVisibleCells()[row.getVisibleCells().length - 1]
-												.id === cell.id,
-										)}
-									>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</TableCell>
-								))}
-							</TableRow>
-						);
-					})}
-				</TableBody>
-			</table>
+			<AgGridReact
+				theme={tableTheme}
+				rowData={days}
+				columnDefs={columnDefs}
+				getRowId={(params) => params.data.date}
+				getRowStyle={(params) => {
+					if (params.data?.weekend) {
+						return {
+							background: "hsl(var(--muted) / 0.5)",
+							color: "hsl(var(--muted-foreground))",
+						};
+					}
+					return undefined;
+				}}
+				headerHeight={36}
+				rowHeight={40}
+				suppressRowHoverHighlight={false}
+			/>
 		</div>
 	);
 }
