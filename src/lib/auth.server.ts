@@ -40,7 +40,7 @@ type UserRow = RowDataPacket & {
  * Get the current user session from the cookies (server-side only)
  */
 export async function getUser(): Promise<UserRow | null> {
-	const sessionToken = (await cookies()).get("session_token")?.value;
+	const sessionToken = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
 	if (!sessionToken) {
 		return null;
 	}
