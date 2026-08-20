@@ -93,9 +93,10 @@ export function AttendanceTable({ days }: AttendanceTableProps) {
 	const columns = useMemo<ColumnDef<DailyAttendance>[]>(
 		() => [
 			{
-				accessorKey: "date",
+				id: "weekday",
 				header: "Day",
 				size: 80,
+				accessorFn: (row) => row.date,
 				cell: ({ getValue }) => {
 					const value = String(getValue());
 					const [y, m, d] = value.split("-");

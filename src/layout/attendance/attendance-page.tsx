@@ -88,6 +88,21 @@ export function AttendancePage() {
 	const isLoading = employeePending || summaryPending;
 	const showResults = empCode !== null;
 
+	const dateRangeLabel = useMemo(() => {
+		const prevMonth = month === 1 ? 12 : month - 1;
+		const prevYear = month === 1 ? year - 1 : year;
+		const startLabel = new Date(prevYear, prevMonth - 1, 23).toLocaleDateString(
+			"en-US",
+			{ month: "short", day: "numeric" },
+		);
+		const endLabel = new Date(year, month - 1, 22).toLocaleDateString("en-US", {
+			month: "short",
+			day: "numeric",
+			year: "numeric",
+		});
+		return `${startLabel} – ${endLabel}`;
+	}, [month, year]);
+
 	return (
 		<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
 			<div className="flex min-w-0 flex-col gap-4">
@@ -163,6 +178,8 @@ export function AttendancePage() {
 							</SelectContent>
 						</Select>
 					</div>
+
+					<p className="text-xs text-muted-foreground">{dateRangeLabel}</p>
 				</div>
 			</div>
 

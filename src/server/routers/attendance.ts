@@ -64,6 +64,18 @@ function parseDateTime(value: unknown): Date | null {
 	return null;
 }
 
+function getWorkingMonthRange(year: number, month: number) {
+	const prevMonth = month === 1 ? 12 : month - 1;
+	const prevYear = month === 1 ? year - 1 : year;
+	const startDate = new Date(prevYear, prevMonth - 1, 23);
+	const endDate = new Date(year, month - 1, 22);
+	return { startDate, endDate, prevYear, prevMonth };
+}
+
+function buildVlogTableName(year: number, month: number): string {
+	return `hikvision.vlog_${year}${pad(month)}`;
+}
+
 export const attendanceRouter = router({
 	employee: protectedProcedure
 		.input(z.object({ empCode: z.coerce.number().int().positive() }))
@@ -92,20 +104,43 @@ export const attendanceRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }): Promise<AttendanceLog[]> => {
-			const table = `hikvision.vlog_${input.year}${pad(input.month)}`;
-			const [rows] = await ctx.db.mes.query<Row[]>(
-				`SELECT person_id, \`datetime\`, time_raw, person_name
-				 FROM ${table}
-				 WHERE person_id = ?
-				 ORDER BY \`datetime\` ASC`,
-				[input.personId],
+			const { prevYear, prevMonth, startDate, endDate } = getWorkingMonthRange(
+				input.year,
+				input.month,
 			);
-			return rows.map((row) => ({
-				personId: Number(row.person_id),
-				datetime: parseDateTime(row.datetime) ?? new Date(),
-				timeRaw: String(row.time_raw ?? ""),
-				personName: String(row.person_name ?? ""),
-			}));
+
+			const prevTable = buildVlogTableName(prevYear, prevMonth);
+			const curTable = buildVlogTableName(input.year, input.month);
+
+			const [prevRows, curRows] = await Promise.all([
+				ctx.db.mes.query<Row[]>(
+					`SELECT person_id, \`datetime\`, time_raw, person_name
+					 FROM ${prevTable}
+					 WHERE person_id = ?
+					 ORDER BY \`datetime\` ASC`,
+					[input.personId],
+				),
+				ctx.db.mes.query<Row[]>(
+					`SELECT person_id, \`datetime\`, time_raw, person_name
+					 FROM ${curTable}
+					 WHERE person_id = ?
+					 ORDER BY \`datetime\` ASC`,
+					[input.personId],
+				),
+			]);
+
+			const allRows = [...prevRows[0], ...curRows[0]];
+			return allRows
+				.map((row) => ({
+					personId: Number(row.person_id),
+					datetime: parseDateTime(row.datetime) ?? new Date(),
+					timeRaw: String(row.time_raw ?? ""),
+					personName: String(row.person_name ?? ""),
+				}))
+				.filter((log) => {
+					const ts = log.datetime.getTime();
+					return ts >= startDate.getTime() && ts <= endDate.getTime();
+				});
 		}),
 
 	summary: protectedProcedure
@@ -117,21 +152,43 @@ export const attendanceRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }): Promise<AttendanceSummary> => {
-			const table = `hikvision.vlog_${input.year}${pad(input.month)}`;
-			const [logRows] = await ctx.db.mes.query<Row[]>(
-				`SELECT person_id, \`datetime\`, time_raw, person_name
-				 FROM ${table}
-				 WHERE person_id = ?
-				 ORDER BY \`datetime\` ASC`,
-				[input.personId],
+			const { startDate, endDate, prevYear, prevMonth } = getWorkingMonthRange(
+				input.year,
+				input.month,
 			);
 
-			const logs: AttendanceLog[] = logRows.map((row) => ({
-				personId: Number(row.person_id),
-				datetime: parseDateTime(row.datetime) ?? new Date(),
-				timeRaw: String(row.time_raw ?? ""),
-				personName: String(row.person_name ?? ""),
-			}));
+			const prevTable = buildVlogTableName(prevYear, prevMonth);
+			const curTable = buildVlogTableName(input.year, input.month);
+
+			const [prevLogRows, curLogRows] = await Promise.all([
+				ctx.db.mes.query<Row[]>(
+					`SELECT person_id, \`datetime\`, time_raw, person_name
+					 FROM ${prevTable}
+					 WHERE person_id = ?
+					 ORDER BY \`datetime\` ASC`,
+					[input.personId],
+				),
+				ctx.db.mes.query<Row[]>(
+					`SELECT person_id, \`datetime\`, time_raw, person_name
+					 FROM ${curTable}
+					 WHERE person_id = ?
+					 ORDER BY \`datetime\` ASC`,
+					[input.personId],
+				),
+			]);
+
+			const allLogRows = [...prevLogRows[0], ...curLogRows[0]];
+			const logs: AttendanceLog[] = allLogRows
+				.map((row) => ({
+					personId: Number(row.person_id),
+					datetime: parseDateTime(row.datetime) ?? new Date(),
+					timeRaw: String(row.time_raw ?? ""),
+					personName: String(row.person_name ?? ""),
+				}))
+				.filter((log) => {
+					const ts = log.datetime.getTime();
+					return ts >= startDate.getTime() && ts <= endDate.getTime();
+				});
 
 			const [empRows] = await ctx.db.mes.execute<Row[]>(
 				`SELECT id, emp_code, name FROM mes.employees WHERE emp_code = ? LIMIT 1`,
@@ -157,7 +214,6 @@ export const attendanceRouter = router({
 				byDate.set(key, arr);
 			}
 
-			const daysInMonth = new Date(input.year, input.month, 0).getDate();
 			const days: DailyAttendance[] = [];
 			let presentDays = 0;
 			let absentDays = 0;
@@ -167,10 +223,10 @@ export const attendanceRouter = router({
 			const today = new Date();
 			const todayStr = toDateString(today);
 
-			for (let day = 1; day <= daysInMonth; day++) {
-				const dateObj = new Date(input.year, input.month - 1, day);
-				const dow = dateObj.getDay();
-				const dateStr = toDateString(dateObj);
+			const cursor = new Date(startDate);
+			while (cursor <= endDate) {
+				const dateStr = toDateString(cursor);
+				const dow = cursor.getDay();
 				const isWeekend = dow === 5 || dow === 6;
 				const isFuture = dateStr > todayStr;
 
@@ -199,6 +255,7 @@ export const attendanceRouter = router({
 							weekend: true,
 						});
 					}
+					cursor.setDate(cursor.getDate() + 1);
 					continue;
 				}
 
@@ -212,6 +269,7 @@ export const attendanceRouter = router({
 						extraMinutes: 0,
 						weekend: false,
 					});
+					cursor.setDate(cursor.getDate() + 1);
 					continue;
 				}
 
@@ -227,6 +285,7 @@ export const attendanceRouter = router({
 						weekend: false,
 					});
 					absentDays++;
+					cursor.setDate(cursor.getDate() + 1);
 					continue;
 				}
 
@@ -236,9 +295,9 @@ export const attendanceRouter = router({
 				const checkInTime = firstPunch.datetime;
 				const checkOutTime = lastPunch.datetime;
 
-				const workStart = new Date(dateObj);
+				const workStart = new Date(cursor);
 				workStart.setHours(WORK_START_HOUR, 0, 0, 0);
-				const workEnd = new Date(dateObj);
+				const workEnd = new Date(cursor);
 				workEnd.setHours(WORK_END_HOUR, 0, 0, 0);
 
 				let lateMinutes = 0;
@@ -266,6 +325,7 @@ export const attendanceRouter = router({
 				presentDays++;
 				totalLateMinutes += lateMinutes;
 				totalExtraMinutes += extraMinutes;
+				cursor.setDate(cursor.getDate() + 1);
 			}
 
 			return {
