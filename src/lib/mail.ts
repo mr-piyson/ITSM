@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-import { iss } from "@/lib/database";
+import db from "@/lib/database";
 
 export type MailConfig = {
 	id: number;
@@ -28,7 +28,7 @@ export type BookingEmailContext = {
 const TABLE = "mail_settings";
 
 async function ensureMailSettingsTable(): Promise<void> {
-	await iss.execute(`
+	await db.iss.execute(`
 		CREATE TABLE IF NOT EXISTS ${TABLE} (
 			id INT PRIMARY KEY,
 			host VARCHAR(255),
@@ -47,7 +47,7 @@ async function ensureMailSettingsTable(): Promise<void> {
 
 export async function getMailConfig(): Promise<MailConfig | null> {
 	await ensureMailSettingsTable();
-	const [rows] = await iss.execute<import("mysql2").RowDataPacket[]>(
+	const [rows] = await db.iss.execute<import("mysql2").RowDataPacket[]>(
 		`SELECT * FROM ${TABLE} WHERE id = 1 LIMIT 1`,
 	);
 	const row = rows[0];
