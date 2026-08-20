@@ -1,6 +1,7 @@
 import type { RowDataPacket } from "mysql2";
 import { z } from "zod";
 
+import { ATTENDANCE_RULES } from "@/lib/attendance-rules";
 import { protectedProcedure, router } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
@@ -203,8 +204,8 @@ export const attendanceRouter = router({
 						}
 					: null;
 
-			const WORK_START_HOUR = 8;
-			const WORK_END_HOUR = 17;
+			const { workStartHour, workStartMinute, workEndHour, workEndMinute } =
+				ATTENDANCE_RULES;
 
 			const byDate = new Map<string, AttendanceLog[]>();
 			for (const log of logs) {
@@ -296,9 +297,9 @@ export const attendanceRouter = router({
 				const checkOutTime = lastPunch.datetime;
 
 				const workStart = new Date(cursor);
-				workStart.setHours(WORK_START_HOUR, 0, 0, 0);
+				workStart.setHours(workStartHour, workStartMinute, 0, 0);
 				const workEnd = new Date(cursor);
-				workEnd.setHours(WORK_END_HOUR, 0, 0, 0);
+				workEnd.setHours(workEndHour, workEndMinute, 0, 0);
 
 				let lateMinutes = 0;
 				if (checkInTime > workStart) {
