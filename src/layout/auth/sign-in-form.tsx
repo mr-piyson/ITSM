@@ -42,7 +42,7 @@ export function SignInForm() {
 		},
 	});
 
-	const form = useForm<SignInValues>({
+	const form = useForm({
 		defaultValues: {
 			email: "",
 			password: "",

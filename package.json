@@ -16,10 +16,6 @@
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.7.0",
-		"@capacitor-community/contacts": "^7.0.0",
-		"@capacitor/android": "^7.4.4",
-		"@capacitor/cli": "^7.4.4",
-		"@capacitor/core": "^7.4.4",
 		"@hookform/resolvers": "^5.2.2",
 		"@prisma/adapter-better-sqlite3": "^7.1.0",
 		"@prisma/client": "^7.1.0",
@@ -53,7 +49,7 @@
 		"react-dom": "^19.2.3",
 		"react-hook-form": "^7.68.0",
 		"react-qr-code": "^2.2.0",
-		"react-resizable-panels": "^3.0.6",
+		"react-resizable-panels": "^4.12.3",
 		"recharts": "3.8.0",
 		"shadcn": "^4.16.2",
 		"sonner": "^2.0.7",
@@ -65,7 +61,6 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.7",
-		"@iconify/tailwind4": "^1.2.0",
 		"@tailwindcss/postcss": "^4.1.18",
 		"@types/mssql": "^9.1.9",
 		"@types/node": "^20.19.27",

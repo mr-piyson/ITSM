@@ -17,7 +17,10 @@ export const NavPath: React.FC = () => {
 	return (
 		<Breadcrumb>
 			<BreadcrumbList className="flex-nowrap">
-				<Button variant="ghost" className=" h-full min-w-0 overflow-hidden p-1 px-2">
+				<Button
+					variant="ghost"
+					className=" h-full min-w-0 overflow-hidden p-1 px-2"
+				>
 					<BreadcrumbItem>
 						<BreadcrumbLink
 							onClick={() => {

@@ -90,7 +90,9 @@ export function UserMenu(props: any) {
 						<Switch
 							size={"sm"}
 							checked={isDark}
-							onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+							onCheckedChange={(checked) =>
+								setTheme(checked ? "dark" : "light")
+							}
 						/>
 					</div>
 				</DropdownMenuGroup>

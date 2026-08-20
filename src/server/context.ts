@@ -3,7 +3,7 @@ import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import { getUser } from "@/lib/auth.server";
 import db from "@/lib/database";
 
-export async function createContext(opts: FetchCreateContextFnOptions) {
+export async function createContext(opts?: FetchCreateContextFnOptions) {
 	const user = await getUser();
 
 	return {
