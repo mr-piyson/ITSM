@@ -10,74 +10,68 @@ function ensureDatabaseName(uri: string | undefined, database: string): string {
 	return url.toString();
 }
 
-class DatabaseManager {
-	private static mesPool: Pool | null = null;
-	private static issPool: Pool | null = null;
-	private static erpPool: mssql.ConnectionPool | null = null;
+let mesPool: Pool | null = null;
+let issPool: Pool | null = null;
+let erpPool: mssql.ConnectionPool | null = null;
 
-	static getMesPool(): Pool {
-		if (!DatabaseManager.mesPool) {
-			DatabaseManager.mesPool = mysql.createPool({
-				uri: process.env.MES_DATABASE,
-				waitForConnections: true,
-				connectionLimit: 10,
-				queueLimit: 0,
-				enableKeepAlive: true,
-			});
-		}
-		return DatabaseManager.mesPool;
+function getMesPool(): Pool {
+	if (!mesPool) {
+		mesPool = mysql.createPool({
+			uri: process.env.MES_DATABASE,
+			waitForConnections: true,
+			connectionLimit: 10,
+			queueLimit: 0,
+			enableKeepAlive: true,
+		});
 	}
+	return mesPool;
+}
 
-	static getIssPool(): Pool {
-		if (!DatabaseManager.issPool) {
-			DatabaseManager.issPool = mysql.createPool({
-				uri: ensureDatabaseName(process.env.ISS_DATABASE, "ISS"),
-				waitForConnections: true,
-				connectionLimit: 10,
-				queueLimit: 0,
-				enableKeepAlive: true,
-			});
-		}
-		return DatabaseManager.issPool;
+function getIssPool(): Pool {
+	if (!issPool) {
+		issPool = mysql.createPool({
+			uri: ensureDatabaseName(process.env.ISS_DATABASE, "ISS"),
+			waitForConnections: true,
+			connectionLimit: 10,
+			queueLimit: 0,
+			enableKeepAlive: true,
+		});
 	}
+	return issPool;
+}
 
-	// Fixed: Must be async because mssql.connect returns a Promise
-	static async getERPPool(): Promise<mssql.ConnectionPool> {
-		if (!DatabaseManager.erpPool || !DatabaseManager.erpPool.connected) {
-			const config: mssql.config = {
-				user: "MES",
-				password: "M3$Ep!2X",
-				database: "ERP10Live",
-				server: "172.18.1.31",
-				port: 1433,
-				pool: {
-					max: 10,
-					min: 0,
-					idleTimeoutMillis: 30000,
-				},
-				options: {
-					encrypt: false,
-					trustServerCertificate: true,
-				},
-			};
-			// We use 'new' and 'connect()' for better singleton management
-			DatabaseManager.erpPool = await new mssql.ConnectionPool(
-				config,
-			).connect();
-		}
-		return DatabaseManager.erpPool;
+async function getERPPool(): Promise<mssql.ConnectionPool> {
+	if (!erpPool || !erpPool.connected) {
+		const config: mssql.config = {
+			user: "MES",
+			password: "M3$Ep!2X",
+			database: "ERP10Live",
+			server: "172.18.1.31",
+			port: 1433,
+			pool: {
+				max: 10,
+				min: 0,
+				idleTimeoutMillis: 30000,
+			},
+			options: {
+				encrypt: false,
+				trustServerCertificate: true,
+			},
+		};
+		erpPool = await new mssql.ConnectionPool(config).connect();
 	}
+	return erpPool;
 }
 
 const db = {
 	get mes() {
-		return DatabaseManager.getMesPool();
+		return getMesPool();
 	},
 	get iss() {
-		return DatabaseManager.getIssPool();
+		return getIssPool();
 	},
 	get erp() {
-		return DatabaseManager.getERPPool();
+		return getERPPool();
 	},
 };
 export default db;
