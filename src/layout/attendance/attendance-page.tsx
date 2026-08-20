@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { CalendarDays, Clock, Loader2, Search, UserCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -71,6 +70,11 @@ export function AttendancePage() {
 		const current = now.getFullYear();
 		return Array.from({ length: 5 }, (_, i) => current - i);
 	}, []);
+
+	const safeSide = useMemo(() => {
+		if (!summary) return 0;
+		return summary.totalLateMinutes - summary.totalExtraMinutes;
+	}, [summary]);
 
 	const handleSearch = () => {
 		const parsed = Number.parseInt(empCodeInput, 10);
@@ -202,57 +206,58 @@ export function AttendancePage() {
 				</div>
 			) : (
 				<>
-					<div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-						<Card size="sm">
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-muted-foreground">
-									<UserCheck className="size-4" />
-									Present
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<p className="text-2xl font-bold">{summary.presentDays}</p>
-							</CardContent>
-						</Card>
-						<Card size="sm">
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-muted-foreground">
-									<CalendarDays className="size-4" />
-									Absent
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<p className="text-2xl font-bold text-red-600 dark:text-red-400">
+					<div className="grid grid-cols-3 gap-2 md:grid-cols-5">
+						<div className="flex items-center gap-2 rounded-none border p-2.5">
+							<UserCheck className="size-4 text-muted-foreground" />
+							<div>
+								<p className="text-[10px] text-muted-foreground">Present</p>
+								<p className="text-lg font-bold leading-tight">
+									{summary.presentDays}
+								</p>
+							</div>
+						</div>
+						<div className="flex items-center gap-2 rounded-none border p-2.5">
+							<CalendarDays className="size-4 text-muted-foreground" />
+							<div>
+								<p className="text-[10px] text-muted-foreground">Absent</p>
+								<p className="text-lg font-bold leading-tight text-red-600 dark:text-red-400">
 									{summary.absentDays}
 								</p>
-							</CardContent>
-						</Card>
-						<Card size="sm">
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-muted-foreground">
-									<Clock className="size-4" />
-									Total Late
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+							</div>
+						</div>
+						<div className="flex items-center gap-2 rounded-none border p-2.5">
+							<Clock className="size-4 text-muted-foreground" />
+							<div>
+								<p className="text-[10px] text-muted-foreground">Late</p>
+								<p className="text-lg font-bold leading-tight text-amber-600 dark:text-amber-400">
 									{formatMinutes(summary.totalLateMinutes)}
 								</p>
-							</CardContent>
-						</Card>
-						<Card size="sm">
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-muted-foreground">
-									<Clock className="size-4" />
-									Extra Hours
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+							</div>
+						</div>
+						<div className="flex items-center gap-2 rounded-none border p-2.5">
+							<Clock className="size-4 text-muted-foreground" />
+							<div>
+								<p className="text-[10px] text-muted-foreground">Extra Hours</p>
+								<p className="text-lg font-bold leading-tight text-emerald-600 dark:text-emerald-400">
 									{formatMinutes(summary.totalExtraMinutes)}
 								</p>
-							</CardContent>
-						</Card>
+							</div>
+						</div>
+						<div className="flex items-center gap-2 rounded-none border p-2.5">
+							<Clock className="size-4 text-muted-foreground" />
+							<div>
+								<p className="text-[10px] text-muted-foreground">Safe Side</p>
+								<p
+									className={`text-lg font-bold leading-tight ${
+										safeSide <= 0
+											? "text-emerald-600 dark:text-emerald-400"
+											: "text-red-600 dark:text-red-400"
+									}`}
+								>
+									{formatMinutes(safeSide <= 0 ? 0 : safeSide)}
+								</p>
+							</div>
+						</div>
 					</div>
 
 					{summary.days.length === 0 ? (
