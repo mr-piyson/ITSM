@@ -94,20 +94,25 @@ export function AttendanceTable({ days }: AttendanceTableProps) {
 		() => [
 			{
 				accessorKey: "date",
-				header: "Date",
-				size: 120,
+				header: "Day",
+				size: 80,
 				cell: ({ getValue }) => {
 					const value = String(getValue());
 					const [y, m, d] = value.split("-");
 					const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
 					const weekday = dateObj.toLocaleDateString("en-US", {
-						weekday: "short",
+						weekday: "long",
 					});
-					return (
-						<span className="font-medium">
-							{weekday} {value}
-						</span>
-					);
+					return <span className="font-medium">{weekday}</span>;
+				},
+			},
+			{
+				accessorKey: "date",
+				header: "Date",
+				size: 110,
+				cell: ({ getValue }) => {
+					const value = String(getValue());
+					return <span className="font-mono text-xs">{value}</span>;
 				},
 			},
 			{

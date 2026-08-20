@@ -174,10 +174,6 @@ export const attendanceRouter = router({
 				const isWeekend = dow === 5 || dow === 6;
 				const isFuture = dateStr > todayStr;
 
-				if (dow === 0 || isFuture) {
-					continue;
-				}
-
 				if (isWeekend) {
 					const dayLogs = byDate.get(dateStr);
 					if (dayLogs && dayLogs.length > 0) {
@@ -203,6 +199,19 @@ export const attendanceRouter = router({
 							weekend: true,
 						});
 					}
+					continue;
+				}
+
+				if (isFuture) {
+					days.push({
+						date: dateStr,
+						checkIn: null,
+						checkOut: null,
+						status: "absent",
+						lateMinutes: 0,
+						extraMinutes: 0,
+						weekend: false,
+					});
 					continue;
 				}
 
