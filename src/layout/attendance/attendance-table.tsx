@@ -2,11 +2,19 @@
 
 import { useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
-import type { ColDef, ICellRendererParams } from "ag-grid-community";
+import {
+	AllCommunityModule,
+	ModuleRegistry,
+	type ColDef,
+	type ICellRendererParams,
+	type RowStyle,
+} from "ag-grid-community";
 
 import { Badge } from "@/components/ui/badge";
 import type { DailyAttendance } from "@/server/routers/attendance";
 import { useTableTheme } from "@/hooks/use-table-theme";
+
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 type AttendanceTableProps = {
 	days: DailyAttendance[];
@@ -100,10 +108,10 @@ export function AttendanceTable({ days }: AttendanceTableProps) {
 				width: 100,
 				sortable: false,
 				filter: false,
-				cellClass: (params) => [
-					"font-mono text-xs",
-					!params.value ? "text-muted-foreground" : "",
-				],
+				cellClass: (params) =>
+					params.value
+						? "font-mono text-xs"
+						: "font-mono text-xs text-muted-foreground",
 				valueFormatter: (params) => params.value ?? "-",
 			},
 			{
@@ -112,10 +120,10 @@ export function AttendanceTable({ days }: AttendanceTableProps) {
 				width: 100,
 				sortable: false,
 				filter: false,
-				cellClass: (params) => [
-					"font-mono text-xs",
-					!params.value ? "text-muted-foreground" : "",
-				],
+				cellClass: (params) =>
+					params.value
+						? "font-mono text-xs"
+						: "font-mono text-xs text-muted-foreground",
 				valueFormatter: (params) => params.value ?? "-",
 			},
 			{
@@ -135,12 +143,10 @@ export function AttendanceTable({ days }: AttendanceTableProps) {
 				width: 100,
 				sortable: false,
 				filter: false,
-				cellClass: (params) => [
-					"font-mono text-xs",
+				cellClass: (params) =>
 					params.value > 0
-						? "text-red-600 dark:text-red-400"
-						: "text-muted-foreground",
-				],
+						? "font-mono text-xs text-red-600 dark:text-red-400"
+						: "font-mono text-xs text-muted-foreground",
 				valueFormatter: (params) => formatMinutes(params.value),
 			},
 			{
@@ -149,12 +155,10 @@ export function AttendanceTable({ days }: AttendanceTableProps) {
 				width: 120,
 				sortable: false,
 				filter: false,
-				cellClass: (params) => [
-					"font-mono text-xs",
+				cellClass: (params) =>
 					params.value > 0
-						? "text-emerald-600 dark:text-emerald-400"
-						: "text-muted-foreground",
-				],
+						? "font-mono text-xs text-emerald-600 dark:text-emerald-400"
+						: "font-mono text-xs text-muted-foreground",
 				valueFormatter: (params) => formatMinutes(params.value),
 			},
 		],
@@ -171,7 +175,7 @@ export function AttendanceTable({ days }: AttendanceTableProps) {
 				rowData={days}
 				columnDefs={columnDefs}
 				getRowId={(params) => params.data.date}
-				getRowStyle={(params) => {
+				getRowStyle={(params): RowStyle | undefined => {
 					if (params.data?.weekend) {
 						return {
 							background: "hsl(var(--muted) / 0.5)",

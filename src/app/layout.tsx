@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+
 import { cn } from "@/lib/utils";
 
 import { RootProviders } from "@/layout/shell/root-providers";
