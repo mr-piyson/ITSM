@@ -7,6 +7,24 @@ import db from "@/lib/database";
 // Session duration in milliseconds (1 day)
 const SESSION_DURATION = 24 * 60 * 60 * 1000;
 
+export const SESSION_COOKIE_NAME = "session_token";
+
+function getSecureFlag(): boolean {
+	return process.env.COOKIE_SECURE === "true";
+}
+
+function getSessionOptions(token: string) {
+	return {
+		name: SESSION_COOKIE_NAME,
+		value: token,
+		httpOnly: true,
+		secure: getSecureFlag(),
+		sameSite: "lax" as const,
+		expires: new Date(Date.now() + SESSION_DURATION),
+		path: "/",
+	};
+}
+
 type UserRow = RowDataPacket & {
 	name: string;
 	id: number;
@@ -70,17 +88,7 @@ export async function handleSignIn(identifier: string, password: string) {
 				};
 			}
 
-			const expiresAt = new Date(Date.now() + SESSION_DURATION);
-
-			(await cookies()).set({
-				name: "session_token",
-				value: account.token,
-				httpOnly: true,
-				secure: process.env.NODE_ENV === "production",
-				sameSite: "lax",
-				expires: expiresAt,
-				path: "/",
-			});
+			(await cookies()).set(getSessionOptions(account.token));
 			return {
 				data: account,
 				error: undefined,
@@ -99,7 +107,7 @@ export async function handleSignIn(identifier: string, password: string) {
  * Server-side sign out handler
  */
 export async function handleSignOut() {
-	(await cookies()).delete("session_token");
+	(await cookies()).delete(SESSION_COOKIE_NAME);
 	return { redirect: "/auth" };
 }
 

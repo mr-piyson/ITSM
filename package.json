@@ -7,11 +7,7 @@
 		"lint": "next lint",
 		"dev": "next dev -p 4000",
 		"build": "next build ",
-		"build:Android": "npx cap add android && npx cap sync android && npx cap open android",
-		"db:pull": "npx prisma db pull --schema ./prisma/schema.prisma;",
-		"db:generate": "npx prisma generate --schema ./prisma/schema.prisma",
-		"db:push": "npx prisma db push --schema ./prisma/schema.prisma",
-		"db:studio": "npx prisma studio --schema ./prisma/schema.prisma",
+		"deploy": "git reset --hard HEAD && git pull origin main && bun install && bun run build && sudo systemctl restart itsm.service",
 		"update": "rm -rf .next && git pull && bun install && bun run build && bun start"
 	},
 	"dependencies": {
