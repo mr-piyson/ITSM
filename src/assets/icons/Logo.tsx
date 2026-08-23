@@ -1,3 +1,4 @@
+"use client";
 import { Monitor } from "lucide-react";
 
 export default function AppLogo(props: React.SVGProps<SVGSVGElement>) {

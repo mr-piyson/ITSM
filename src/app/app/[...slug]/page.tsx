@@ -2,7 +2,6 @@
 
 import {
 	BarChart3,
-	Boxes,
 	CalendarDays,
 	ClipboardList,
 	Database,
@@ -58,12 +57,6 @@ const MODULES: Record<
 		description:
 			"Manage backup tapes, rotation, and retention. This module is coming soon.",
 		icon: Database,
-	},
-	stock: {
-		title: "Stock",
-		description:
-			"Monitor inventory levels, categories, and low-stock alerts. This module is coming soon.",
-		icon: Boxes,
 	},
 	vendors: {
 		title: "Vendors",
