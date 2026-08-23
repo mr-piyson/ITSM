@@ -9,6 +9,7 @@ import { mailSettingsRouter } from "./routers/mail";
 import { printersRouter } from "./routers/printers";
 import { providesRouter } from "./routers/provide";
 import { purchasesRouter } from "./routers/purchases";
+import { serversRouter } from "./routers/servers";
 import { workbenchRouter } from "./routers/workbench";
 import { router } from "./trpc";
 
@@ -22,6 +23,7 @@ export const appRouter = router({
 	provides: providesRouter,
 	purchases: purchasesRouter,
 	printers: printersRouter,
+	servers: serversRouter,
 	mail: mailSettingsRouter,
 	dashboard: dashboardRouter,
 	workbench: workbenchRouter,
