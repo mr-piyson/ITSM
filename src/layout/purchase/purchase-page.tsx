@@ -14,9 +14,11 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
+import type { Purchase } from "@/server/routers/purchases";
 import { trpc } from "@/trpc/react";
 
 import { PurchaseDetailsDialog } from "./purchase-details-dialog";
+import { PurchaseEditDialog } from "./purchase-edit-dialog";
 import { PurchaseFormDialog } from "./purchase-form-dialog";
 import { PurchaseTable } from "./purchase-table";
 
@@ -31,6 +33,8 @@ export function PurchasePage() {
 	const [purchaseId, setPurchaseId] = useQueryState("id", parseAsString);
 
 	const [formOpen, setFormOpen] = useState(false);
+	const [prefillPurchase, setPrefillPurchase] = useState<Purchase | null>(null);
+	const [editPurchase, setEditPurchase] = useState<Purchase | null>(null);
 
 	const detailsPurchase = useMemo(
 		() => purchases.find((p) => String(p.id) === purchaseId) ?? null,
@@ -65,10 +69,22 @@ export function PurchasePage() {
 
 	const handleFormSuccess = () => {
 		setFormOpen(false);
+		setPrefillPurchase(null);
+		invalidate();
+	};
+
+	const handleEditSuccess = () => {
+		setEditPurchase(null);
 		invalidate();
 	};
 
 	const closeDetails = () => setPurchaseId(null, { history: "replace" });
+
+	const openDuplicate = (purchase: Purchase) => {
+		closeDetails();
+		setPrefillPurchase(purchase);
+		setFormOpen(true);
+	};
 
 	return (
 		<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
@@ -144,6 +160,13 @@ export function PurchasePage() {
 				open={formOpen}
 				onOpenChange={setFormOpen}
 				onSuccess={handleFormSuccess}
+				prefill={prefillPurchase}
+			/>
+
+			<PurchaseEditDialog
+				purchase={editPurchase}
+				onOpenChange={setEditPurchase}
+				onSuccess={handleEditSuccess}
 			/>
 
 			<PurchaseDetailsDialog
@@ -153,6 +176,11 @@ export function PurchasePage() {
 						closeDetails();
 					}
 				}}
+				onEdit={(purchase) => {
+					closeDetails();
+					setEditPurchase(purchase);
+				}}
+				onDuplicate={openDuplicate}
 			/>
 		</div>
 	);

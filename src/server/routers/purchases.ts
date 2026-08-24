@@ -413,4 +413,51 @@ export const purchasesRouter = router({
 
 			return { success: true, id: purchaseID };
 		}),
+
+	update: protectedProcedure
+		.input(
+			z.object({
+				id: z.coerce.number().int().positive(),
+				data: z.object({
+					poNumber: z.coerce.number().int().positive(),
+					mrnNumber: z.string().trim().max(50).optional(),
+					quotationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+					paidDate: z
+						.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)])
+						.optional(),
+					forWho: z.string().trim().max(2000).optional(),
+					notes: z.string().trim().max(2000).optional(),
+					link: z.string().trim().max(2000).optional(),
+				}),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { data } = input;
+			const [result] = await ctx.db.iss.execute<ResultSetHeader>(
+				`UPDATE purchase
+				 SET poNumber = ?, mrnNumber = ?, quotationDate = ?, paidDate = ?,
+				     forWho = ?, notes = ?, link = ?
+				 WHERE id = ?`,
+				[
+					data.poNumber,
+					data.mrnNumber ?? "",
+					data.quotationDate,
+					data.paidDate ? data.paidDate : null,
+					data.forWho ?? "",
+					data.notes ?? "",
+					data.link ?? "",
+					input.id,
+				],
+			);
+
+			if (result.affectedRows > 0) {
+				await ctx.db.iss.execute(
+					`INSERT INTO changes_logs (userID, date, action, node, nodeID)
+					 VALUES (?, NOW(), 'update', 'purchase', ?)`,
+					[ctx.user.id, input.id],
+				);
+			}
+
+			return { success: true, affectedRows: result.affectedRows };
+		}),
 });

@@ -1,6 +1,6 @@
 import * as bcrypt from "bcrypt";
 import type { RowDataPacket } from "mysql2";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 import db from "@/lib/database";
 
@@ -56,6 +56,24 @@ export async function getUser(): Promise<UserRow | null> {
 }
 
 /**
+ * Records an authentication attempt into the legacy logins_logs table.
+ */
+async function logLoginAttempt(userID: number, success: boolean) {
+	try {
+		const headerList = await headers();
+		const forwarded = headerList.get("x-forwarded-for");
+		const ip =
+			forwarded?.split(",")[0]?.trim() || headerList.get("x-real-ip") || "";
+		await db.iss.execute(
+			"INSERT INTO ISS.logins_logs (ip, date, userID, login_success) VALUES (?, NOW(), ?, ?)",
+			[ip, userID, success],
+		);
+	} catch {
+		// Logging must never block authentication.
+	}
+}
+
+/**
  * Server-side sign in handler
  */
 export async function handleSignIn(identifier: string, password: string) {
@@ -67,34 +85,38 @@ export async function handleSignIn(identifier: string, password: string) {
 
 	try {
 		const [resAccount] = await db.iss.execute<UserRow[]>(
-			`select * from ISS.users where email = '${identifier}' or username = '${identifier}' limit 1;`,
+			"SELECT * FROM ISS.users WHERE email = ? OR username = ? LIMIT 1",
+			[identifier, identifier],
 		);
 		const account = resAccount[0] as UserRow | undefined;
 
 		if (!account) {
+			await logLoginAttempt(0, false);
 			return {
 				data: undefined,
 				error: "Invalid email or password",
 				status: 401,
 			};
-		} else {
-			account.password = account.password.replace("$2y$", "$2b$");
-			const passwordMatch = await bcrypt.compare(password, account.password);
-			if (!passwordMatch) {
-				return {
-					data: undefined,
-					error: "Invalid email or password",
-					status: 401,
-				};
-			}
+		}
 
-			(await cookies()).set(getSessionOptions(account.token));
+		account.password = account.password.replace("$2y$", "$2b$");
+		const passwordMatch = await bcrypt.compare(password, account.password);
+		if (!passwordMatch) {
+			await logLoginAttempt(account.id, false);
 			return {
-				data: account,
-				error: undefined,
-				status: 200,
+				data: undefined,
+				error: "Invalid email or password",
+				status: 401,
 			};
 		}
+
+		await logLoginAttempt(account.id, true);
+		(await cookies()).set(getSessionOptions(account.token));
+		return {
+			data: account,
+			error: undefined,
+			status: 200,
+		};
 	} catch (error) {
 		console.error("Sign in error:", error);
 		return {

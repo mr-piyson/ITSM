@@ -55,6 +55,7 @@ import {
 } from "@/lib/purchase-constants";
 import { cn } from "@/lib/utils";
 import type {
+	Purchase,
 	PurchaseItemOption,
 	VendorOption,
 } from "@/server/routers/purchases";
@@ -117,23 +118,32 @@ export function PurchaseFormDialog({
 	open,
 	onOpenChange,
 	onSuccess,
+	prefill,
 }: {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSuccess: () => void;
+	prefill?: Purchase | null;
 }) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
 				<DialogHeader>
-					<DialogTitle>New Purchase / Service</DialogTitle>
+					<DialogTitle>
+						{prefill
+							? `Duplicate PO #${prefill.poNumber}`
+							: "New Purchase / Service"}
+					</DialogTitle>
 					<DialogDescription>
-						Register a purchase order or service PO.
+						{prefill
+							? "Create a new PO pre-filled with this record's details."
+							: "Register a purchase order or service PO."}
 					</DialogDescription>
 				</DialogHeader>
 				<PurchaseFormContent
-					key={open ? "open" : "closed"}
+					key={`${open ? "open" : "closed"}-${prefill?.id ?? "new"}`}
 					onSuccess={onSuccess}
+					prefill={prefill ?? null}
 				/>
 			</DialogContent>
 		</Dialog>
@@ -503,7 +513,13 @@ function AddItemDialog({
 	);
 }
 
-function PurchaseFormContent({ onSuccess }: { onSuccess: () => void }) {
+function PurchaseFormContent({
+	onSuccess,
+	prefill,
+}: {
+	onSuccess: () => void;
+	prefill: Purchase | null;
+}) {
 	const utils = trpc.useUtils();
 	const { data: vendors = [] } = trpc.purchases.vendors.useQuery();
 	const { data: stockItems = [] } = trpc.purchases.items.useQuery();
@@ -513,7 +529,7 @@ function PurchaseFormContent({ onSuccess }: { onSuccess: () => void }) {
 	const nextServiceIdRef = useRef(1);
 	const addItemTargetRef = useRef<number | null>(null);
 
-	const createItemRow = (): FormItemRow => {
+	const createItemRow = (from?: Partial<FormItemRow>): FormItemRow => {
 		const rowId = nextItemIdRef.current++;
 		return {
 			rowId,
@@ -523,17 +539,37 @@ function PurchaseFormContent({ onSuccess }: { onSuccess: () => void }) {
 			stock: 0,
 			quantity: "1",
 			price: "",
+			...from,
 		};
 	};
-	const createServiceRow = (): FormServiceRow => {
+	const createServiceRow = (from?: Partial<FormServiceRow>): FormServiceRow => {
 		const rowId = nextServiceIdRef.current++;
-		return { rowId, name: "", price: "" };
+		return { rowId, name: "", price: "", ...from };
 	};
 
-	const [rows, setRows] = useState<FormItemRow[]>([createItemRow()]);
-	const [serviceRows, setServiceRows] = useState<FormServiceRow[]>([
-		createServiceRow(),
-	]);
+	const [rows, setRows] = useState<FormItemRow[]>(() =>
+		prefill && !prefill.serviceType
+			? prefill.items.map((item) =>
+					createItemRow({
+						itemID: item.itemID,
+						itemName: item.itemName,
+						itemBrand: item.itemBrand,
+						quantity: String(item.quantity),
+						price: item.price,
+					}),
+				)
+			: [createItemRow()],
+	);
+	const [serviceRows, setServiceRows] = useState<FormServiceRow[]>(() =>
+		prefill?.serviceType
+			? prefill.services.map((service) =>
+					createServiceRow({
+						name: service.serviceName,
+						price: service.servicePrice,
+					}),
+				)
+			: [createServiceRow()],
+	);
 	const [currentTotal, setCurrentTotal] = useState("");
 	const [vat, setVat] = useState("");
 	const [grandTotal, setGrandTotal] = useState("");
@@ -542,22 +578,25 @@ function PurchaseFormContent({ onSuccess }: { onSuccess: () => void }) {
 
 	const form = useForm({
 		defaultValues: {
-			poType: "Purchase" as "Purchase" | "Service",
+			poType: (prefill?.serviceType ? "Service" : "Purchase") as
+				| "Purchase"
+				| "Service",
 			poNumber: "",
-			mrnNumber: "",
-			vendorID: 0,
-			currency: "BHD" as (typeof PURCHASE_CURRENCIES)[number],
-			quotationDate: purchaseToday(),
-			paidDate: "",
-			buyer: PURCHASE_BUYERS[0],
-			advanceRequest: false,
-			LPO: false,
-			invoice: false,
-			deliveryNote: false,
-			mrn: false,
-			forWho: "",
-			notes: "",
-			link: "",
+			mrnNumber: prefill?.mrnNumber ?? "",
+			vendorID: prefill?.vendorID ?? 0,
+			currency: (prefill?.currency ??
+				"BHD") as (typeof PURCHASE_CURRENCIES)[number],
+			quotationDate: prefill?.quotationDate?.slice(0, 10) || purchaseToday(),
+			paidDate: prefill?.paidDate?.slice(0, 10) || "",
+			buyer: prefill?.buyer ?? PURCHASE_BUYERS[0],
+			advanceRequest: prefill?.advanceRequest ?? false,
+			LPO: prefill?.LPO ?? false,
+			invoice: prefill?.invoice ?? false,
+			deliveryNote: prefill?.deliveryNote ?? false,
+			mrn: prefill?.mrn ?? false,
+			forWho: prefill?.forWho ?? "",
+			notes: prefill?.notes ?? "",
+			link: prefill?.link ?? "",
 		},
 		onSubmit: async ({ value }) => {
 			const poNumber = Number(value.poNumber);

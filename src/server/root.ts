@@ -10,11 +10,12 @@ import { mailSettingsRouter } from "./routers/mail";
 import { printersRouter } from "./routers/printers";
 import { providesRouter } from "./routers/provide";
 import { purchasesRouter } from "./routers/purchases";
+import { reportsRouter } from "./routers/reports";
+import { requestsRouter } from "./routers/requests";
 import { serversRouter } from "./routers/servers";
 import { stockRouter } from "./routers/stock";
 import { tapesRouter } from "./routers/tapes";
 import { vendorsRouter } from "./routers/vendors";
-import { workbenchRouter } from "./routers/workbench";
 import { router } from "./trpc";
 
 export const appRouter = router({
@@ -34,7 +35,8 @@ export const appRouter = router({
 	contracts: contractsRouter,
 	mail: mailSettingsRouter,
 	dashboard: dashboardRouter,
-	workbench: workbenchRouter,
+	requests: requestsRouter,
+	reports: reportsRouter,
 });
 
 export type AppRouter = typeof appRouter;

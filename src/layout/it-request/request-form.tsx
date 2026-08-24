@@ -2,6 +2,8 @@
 
 import type React from "react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,33 +28,36 @@ import { SoftwareSelection } from "./software-selection";
 
 export function RequestForm() {
 	const [formData, setFormData] = useState<RequestFormData>(emptyRequestForm);
+	const [submitting, setSubmitting] = useState(false);
+	const router = useRouter();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		// const res = await createRequest({
-		// 	department: formData.department,
-		// 	location: formData.location,
-		// 	software: JSON.stringify([
-		// 		formData.softwareMES,
-		// 		formData.softwareOffice365,
-		// 		formData.softwareEPICOR,
-		// 		formData.softwareOther,
-		// 	]),
-		// 	Permissions: formData.similarPermissions,
-		// 	hardware: formData.hardwareSelection,
-		// 	other: formData.hardwareOther,
-		// 	sharedFilesAccess: formData.sharedFilesAccess,
-		// 	justification: formData.justification,
-		// 	requesterManager: formData.requesterManager,
-		// 	requesterName: formData.requesterName,
-		// 	createdAt: new Date(), // Add this line to include the createdAt property
-		// });
-		// if (res.status === 200) {
-		// 	toast.success("Request submitted successfully!");
-		// 	router.replace("/");
-		// } else {
-		// 	toast.error(res.error);
-		// }
+		if (submitting) {
+			return;
+		}
+		setSubmitting(true);
+		try {
+			const res = await fetch("/api/it-request", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(formData),
+			});
+			if (res.ok) {
+				toast.success("Request submitted successfully!");
+				setFormData(emptyRequestForm);
+				router.replace("/");
+			} else {
+				const payload = (await res.json().catch(() => null)) as {
+					error?: string;
+				} | null;
+				toast.error(payload?.error ?? "Failed to submit request");
+			}
+		} catch {
+			toast.error("Failed to submit request");
+		} finally {
+			setSubmitting(false);
+		}
 	};
 
 	const handleInputChange = (
@@ -197,8 +202,8 @@ export function RequestForm() {
 
 					{/* Submit Button */}
 					<div className="flex flex-col sm:flex-row gap-4 pt-6">
-						<Button type="submit" className="flex-1">
-							Submit IT Request
+						<Button type="submit" className="flex-1" disabled={submitting}>
+							{submitting ? "Submitting…" : "Submit IT Request"}
 						</Button>
 					</div>
 				</form>

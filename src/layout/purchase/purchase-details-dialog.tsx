@@ -1,12 +1,14 @@
 "use client";
 
-import { ExternalLink, ShoppingCart } from "lucide-react";
+import { Copy, ExternalLink, Pencil, ShoppingCart } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
@@ -30,9 +32,13 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 export function PurchaseDetailsDialog({
 	purchase,
 	onOpenChange,
+	onEdit,
+	onDuplicate,
 }: {
 	purchase: Purchase | null;
 	onOpenChange: (open: boolean) => void;
+	onEdit: (purchase: Purchase) => void;
+	onDuplicate: (purchase: Purchase) => void;
 }) {
 	const flags = purchase
 		? [
@@ -233,6 +239,17 @@ export function PurchaseDetailsDialog({
 								<span>Purchase record #{purchase.id}</span>
 							</div>
 						</div>
+
+						<DialogFooter>
+							<Button variant="outline" onClick={() => onEdit(purchase)}>
+								<Pencil data-icon="inline-start" />
+								Edit
+							</Button>
+							<Button variant="outline" onClick={() => onDuplicate(purchase)}>
+								<Copy data-icon="inline-start" />
+								Duplicate
+							</Button>
+						</DialogFooter>
 					</>
 				)}
 			</DialogContent>
