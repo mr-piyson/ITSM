@@ -11,6 +11,7 @@ import { providesRouter } from "./routers/provide";
 import { purchasesRouter } from "./routers/purchases";
 import { serversRouter } from "./routers/servers";
 import { stockRouter } from "./routers/stock";
+import { vendorsRouter } from "./routers/vendors";
 import { workbenchRouter } from "./routers/workbench";
 import { router } from "./trpc";
 
@@ -26,6 +27,7 @@ export const appRouter = router({
 	printers: printersRouter,
 	servers: serversRouter,
 	stock: stockRouter,
+	vendors: vendorsRouter,
 	mail: mailSettingsRouter,
 	dashboard: dashboardRouter,
 	workbench: workbenchRouter,

@@ -71,19 +71,6 @@ export type PurchaseItemOption = {
 	category: string;
 };
 
-const contactSchema = z.object({
-	type: z.enum(["mobile", "email", "other"]),
-	position: z.string().trim().max(100).optional(),
-	name: z.string().trim().max(100),
-	value: z.string().trim().max(100),
-});
-
-const createVendorSchema = z.object({
-	name: z.string().trim().min(1).max(150),
-	notes: z.string().trim().max(2000).optional(),
-	contacts: z.array(contactSchema).max(50).optional(),
-});
-
 const createItemSchema = z.object({
 	name: z.string().trim().min(1).max(100),
 	brand: z.string().trim().max(100).optional(),
@@ -302,52 +289,6 @@ export const purchasesRouter = router({
 			}));
 		},
 	),
-
-	createVendor: protectedProcedure
-		.input(createVendorSchema)
-		.mutation(async ({ ctx, input }) => {
-			const [existing] = await ctx.db.iss.execute<Row[]>(
-				`SELECT id FROM vendors WHERE name = ? LIMIT 1`,
-				[input.name],
-			);
-			if (existing[0]) {
-				throw new Error("Failed, Already Added");
-			}
-
-			const [result] = await ctx.db.iss.execute<ResultSetHeader>(
-				`INSERT INTO vendors (name, notes, user, inActive) VALUES (?, ?, ?, 0)`,
-				[input.name, input.notes ?? "", ctx.user.id],
-			);
-			const vendorID = result.insertId;
-
-			await ctx.db.iss.execute(
-				`INSERT INTO changes_logs (userID, date, action, node, nodeID)
-				 VALUES (?, NOW(), 'add', 'vendor', ?)`,
-				[ctx.user.id, vendorID],
-			);
-
-			for (const contact of input.contacts ?? []) {
-				if (!contact.name || !contact.value) {
-					continue;
-				}
-				await ctx.db.iss.execute(
-					`INSERT INTO vendorsContacts (vendorID, contactType, contactName, contact, personPosition)
-					 VALUES (?, ?, ?, ?, ?)`,
-					[
-						vendorID,
-						contact.type,
-						contact.name,
-						contact.value,
-						contact.position ?? "",
-					],
-				);
-			}
-
-			return {
-				success: true,
-				vendor: { id: vendorID, name: input.name, notes: input.notes ?? "" },
-			};
-		}),
 
 	createItem: protectedProcedure
 		.input(createItemSchema)

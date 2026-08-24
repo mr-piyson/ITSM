@@ -208,7 +208,7 @@ function MailSettingsForm({
 					<div className="flex items-end space-y-2">
 						<form.Field name="secure">
 							{(field) => (
-								<Label className="flex w-full cursor-pointer items-center justify-between gap-3 border p-3">
+								<Label className="flex w-full cursor-pointer items-center justify-between gap-3 border px-2 py-1">
 									<span className="text-xs font-medium">Use TLS (SSL)</span>
 									<Switch
 										checked={field.state.value}

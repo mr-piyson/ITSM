@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { VendorFormDialog } from "@/layout/vendors/vendor-form-dialog";
 import { ITEM_CATEGORIES } from "@/lib/provide-constants";
 import {
 	PURCHASE_BUYERS,
@@ -73,14 +74,6 @@ type FormServiceRow = {
 	rowId: number;
 	name: string;
 	price: string;
-};
-
-type FormContactRow = {
-	rowId: number;
-	type: "mobile" | "email" | "other";
-	position: string;
-	name: string;
-	value: string;
 };
 
 function round3(value: number): number {
@@ -253,205 +246,6 @@ function VendorPicker({
 				</Popover>
 			</div>
 		</div>
-	);
-}
-
-function AddVendorDialog({
-	open,
-	onOpenChange,
-	onCreated,
-}: {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	onCreated: (vendor: VendorOption) => void;
-}) {
-	const nextRowIdRef = useRef(1);
-	const createContactRow = (): FormContactRow => {
-		const rowId = nextRowIdRef.current++;
-		return { rowId, type: "mobile", position: "", name: "", value: "" };
-	};
-
-	const [name, setName] = useState("");
-	const [notes, setNotes] = useState("");
-	const [contacts, setContacts] = useState<FormContactRow[]>([
-		createContactRow(),
-	]);
-	const createVendorMutation = trpc.purchases.createVendor.useMutation();
-
-	const updateContact = (rowId: number, patch: Partial<FormContactRow>) => {
-		setContacts((prev) =>
-			prev.map((row) => (row.rowId === rowId ? { ...row, ...patch } : row)),
-		);
-	};
-
-	const handleSubmit = async () => {
-		if (name.trim().length < 1) {
-			toast.error("Please fill vendor's name");
-			return;
-		}
-		try {
-			const result = await createVendorMutation.mutateAsync({
-				name: name.trim(),
-				notes: notes.trim() || undefined,
-				contacts: contacts.map((contact) => ({
-					type: contact.type,
-					position: contact.position.trim() || undefined,
-					name: contact.name.trim(),
-					value: contact.value.trim(),
-				})),
-			});
-			toast.success("Vendor added successfully");
-			onCreated({
-				id: result.vendor.id,
-				name: result.vendor.name,
-				notes: result.vendor.notes ?? "",
-				contacts: [],
-			});
-			onOpenChange(false);
-		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : "Failed to add vendor",
-			);
-		}
-	};
-
-	const resetAndClose = (nextOpen: boolean) => {
-		if (!nextOpen) {
-			setName("");
-			setNotes("");
-			setContacts([createContactRow()]);
-		}
-		onOpenChange(nextOpen);
-	};
-
-	return (
-		<Dialog open={open} onOpenChange={resetAndClose}>
-			<DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
-				<DialogHeader>
-					<DialogTitle>Add New Vendor</DialogTitle>
-					<DialogDescription>
-						Create a vendor record and select it for this purchase.
-					</DialogDescription>
-				</DialogHeader>
-
-				<div className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="new-vendor-name">Name *</Label>
-						<Input
-							id="new-vendor-name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							maxLength={150}
-							placeholder="Vendor name"
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="new-vendor-notes">Notes</Label>
-						<Textarea
-							id="new-vendor-notes"
-							value={notes}
-							onChange={(e) => setNotes(e.target.value)}
-							rows={3}
-							placeholder="Optional notes…"
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label>Contacts</Label>
-						{contacts.map((contact) => (
-							<div key={contact.rowId} className="flex items-center gap-2">
-								<Select
-									value={contact.type}
-									onValueChange={(value) =>
-										updateContact(contact.rowId, {
-											type: value as FormContactRow["type"],
-										})
-									}
-								>
-									<SelectTrigger className="w-28 shrink-0">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="mobile">mobile</SelectItem>
-										<SelectItem value="email">email</SelectItem>
-										<SelectItem value="other">other</SelectItem>
-									</SelectContent>
-								</Select>
-								<Input
-									className="w-28 shrink-0"
-									value={contact.position}
-									onChange={(e) =>
-										updateContact(contact.rowId, { position: e.target.value })
-									}
-									maxLength={100}
-									placeholder="position"
-								/>
-								<Input
-									className="min-w-0 flex-1"
-									value={contact.name}
-									onChange={(e) =>
-										updateContact(contact.rowId, { name: e.target.value })
-									}
-									maxLength={100}
-									placeholder="name"
-								/>
-								<Input
-									className="min-w-0 flex-1"
-									value={contact.value}
-									onChange={(e) =>
-										updateContact(contact.rowId, { value: e.target.value })
-									}
-									maxLength={100}
-									placeholder="value"
-								/>
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon-sm"
-									title="Remove contact"
-									onClick={() =>
-										setContacts((prev) =>
-											prev.length === 1
-												? prev
-												: prev.filter((row) => row.rowId !== contact.rowId),
-										)
-									}
-									disabled={contacts.length === 1}
-								>
-									<Trash2 />
-								</Button>
-							</div>
-						))}
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							onClick={() =>
-								setContacts((prev) => [...prev, createContactRow()])
-							}
-						>
-							<Plus data-icon="inline-start" />
-							Add more
-						</Button>
-					</div>
-				</div>
-
-				<DialogFooter>
-					<Button
-						type="button"
-						onClick={handleSubmit}
-						disabled={createVendorMutation.isPending}
-					>
-						{createVendorMutation.isPending ? (
-							<Loader2 className="animate-spin" />
-						) : (
-							<Plus />
-						)}
-						Add vendor
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
 	);
 }
 
@@ -1347,12 +1141,12 @@ function PurchaseFormContent({ onSuccess }: { onSuccess: () => void }) {
 				</DialogFooter>
 			</form>
 
-			<AddVendorDialog
+			<VendorFormDialog
 				open={addVendorOpen}
 				onOpenChange={setAddVendorOpen}
+				vendor={null}
 				onCreated={(vendor) => {
 					form.setFieldValue("vendorID", vendor.id);
-					utils.purchases.vendors.invalidate();
 				}}
 			/>
 
