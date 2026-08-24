@@ -4,7 +4,6 @@ import {
 	BarChart3,
 	CalendarDays,
 	ClipboardList,
-	Database,
 	PackageCheck,
 	Printer,
 	Server,
@@ -50,12 +49,6 @@ const MODULES: Record<
 		description:
 			"Track server inventory, maintenance schedules, and backup status. This module is coming soon.",
 		icon: Server,
-	},
-	tapes: {
-		title: "Backup Tapes",
-		description:
-			"Manage backup tapes, rotation, and retention. This module is coming soon.",
-		icon: Database,
 	},
 	vendors: {
 		title: "Vendors",

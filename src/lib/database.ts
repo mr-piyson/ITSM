@@ -41,7 +41,7 @@ function getIssPool(): Pool {
 }
 
 async function getERPPool(): Promise<mssql.ConnectionPool> {
-	if (!erpPool || !erpPool.connected) {
+	if (!erpPool?.connected) {
 		const config: mssql.config = {
 			user: "MES",
 			password: "M3$Ep!2X",

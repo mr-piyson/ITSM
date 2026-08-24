@@ -12,6 +12,7 @@ import { providesRouter } from "./routers/provide";
 import { purchasesRouter } from "./routers/purchases";
 import { serversRouter } from "./routers/servers";
 import { stockRouter } from "./routers/stock";
+import { tapesRouter } from "./routers/tapes";
 import { vendorsRouter } from "./routers/vendors";
 import { workbenchRouter } from "./routers/workbench";
 import { router } from "./trpc";
@@ -28,6 +29,7 @@ export const appRouter = router({
 	printers: printersRouter,
 	servers: serversRouter,
 	stock: stockRouter,
+	tapes: tapesRouter,
 	vendors: vendorsRouter,
 	contracts: contractsRouter,
 	mail: mailSettingsRouter,
