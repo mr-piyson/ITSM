@@ -104,7 +104,7 @@ function VendorCard({
 	const imageUrl = vendorImageUrl(vendor.image);
 
 	return (
-		<button
+		<Button
 			type="button"
 			onClick={() => onDetails(vendor)}
 			className="flex h-[184px] cursor-pointer flex-col rounded-none border bg-card p-3 text-left transition-colors hover:bg-muted/50"
@@ -172,6 +172,6 @@ function VendorCard({
 					<Pencil />
 				</Button>
 			</div>
-		</button>
+		</Button>
 	);
 }

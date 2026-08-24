@@ -3,11 +3,17 @@
 import { useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import { Loader2, Mail, Save, Send, Settings2 } from "lucide-react";
+import { BellRing, Loader2, Mail, Save, Send, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -80,6 +86,8 @@ export function MailSettingsPage() {
 					onSaved={() => utils.mail.get.invalidate()}
 				/>
 			)}
+
+			<ContractRemindersSection />
 		</div>
 	);
 }
@@ -410,5 +418,123 @@ function MailSettingsForm({
 				</form.Subscribe>
 			</div>
 		</form>
+	);
+}
+
+function ContractRemindersSection() {
+	const { data: reminders } = trpc.contracts.reminders.get.useQuery();
+	const saveMutation = trpc.contracts.reminders.save.useMutation();
+	const runMutation = trpc.contracts.reminders.run.useMutation();
+
+	const [enabled, setEnabled] = useState(false);
+	const [remindDays, setRemindDays] = useState("30,60,90");
+	const [loaded, setLoaded] = useState(false);
+
+	if (reminders && !loaded) {
+		setEnabled(reminders.enabled);
+		setRemindDays(reminders.remindDays);
+		setLoaded(true);
+	}
+
+	const dirty =
+		!reminders ||
+		reminders.enabled !== enabled ||
+		reminders.remindDays !== remindDays;
+
+	const handleSave = async () => {
+		try {
+			await saveMutation.mutateAsync({ enabled, remindDays });
+			toast.success(
+				enabled
+					? "Contract reminders saved and enabled"
+					: "Contract reminders saved",
+			);
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to save reminders",
+			);
+		}
+	};
+
+	const handleSendNow = async () => {
+		try {
+			const result = await runMutation.mutateAsync();
+			if (result.sent) {
+				toast.success(`Reminder email sent for ${result.matched} contract(s)`);
+			} else if (result.error) {
+				toast.error(result.error);
+			} else {
+				toast.warning(result.reason ?? "Nothing to send");
+			}
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to run reminders",
+			);
+		}
+	};
+
+	return (
+		<Card className="rounded-none">
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2 text-base">
+					<BellRing className="size-4" />
+					Contract Reminders
+				</CardTitle>
+				<CardDescription>
+					Daily digest of active contracts reaching their reminder dates.
+					Recipients come from the mail settings above. Schedule a daily call to{" "}
+					<code className="text-[10px]">/api/cron/contract-reminders</code> to
+					automate it.
+				</CardDescription>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				<Label className="flex cursor-pointer items-center justify-between gap-3 border p-3">
+					<span className="text-xs font-medium">
+						Send contract renewal reminders
+					</span>
+					<Switch checked={enabled} onCheckedChange={setEnabled} />
+				</Label>
+				<div className="space-y-2">
+					<Label htmlFor="contract-remind-days">Reminder days before end</Label>
+					<Input
+						id="contract-remind-days"
+						value={remindDays}
+						onChange={(e) => setRemindDays(e.target.value)}
+						maxLength={100}
+						placeholder="30,60,90"
+					/>
+					<p className="text-xs text-muted-foreground">
+						Comma-separated days before the contract end date, e.g. 30,60,90.
+					</p>
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={runMutation.isPending || saveMutation.isPending}
+						onClick={handleSendNow}
+					>
+						{runMutation.isPending ? (
+							<Loader2 className="animate-spin" />
+						) : (
+							<Send />
+						)}
+						Send now
+					</Button>
+					<Button
+						type="button"
+						disabled={!dirty || saveMutation.isPending || runMutation.isPending}
+						onClick={handleSave}
+					>
+						{saveMutation.isPending ? (
+							<Loader2 className="animate-spin" />
+						) : (
+							<Save />
+						)}
+						Save
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
 	);
 }

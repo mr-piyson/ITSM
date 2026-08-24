@@ -5,7 +5,6 @@ import {
 	CalendarDays,
 	ClipboardList,
 	Database,
-	FileSignature,
 	PackageCheck,
 	Printer,
 	Server,
@@ -63,12 +62,6 @@ const MODULES: Record<
 		description:
 			"Manage vendor records, contacts, and purchase history. This module is coming soon.",
 		icon: Store,
-	},
-	contracts: {
-		title: "Contracts",
-		description:
-			"Track service contracts, renewal dates, and support agreements. This module is coming soon.",
-		icon: FileSignature,
 	},
 	reports: {
 		title: "Reports",

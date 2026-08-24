@@ -2,6 +2,7 @@ import { assetsRouter } from "./routers/assets";
 import { attendanceRouter } from "./routers/attendance";
 import { authRouter } from "./routers/auth";
 import { bookingsRouter } from "./routers/bookings";
+import { contractsRouter } from "./routers/contracts";
 import { dashboardRouter } from "./routers/dashboard";
 import { employeesRouter } from "./routers/employees";
 import { healthRouter } from "./routers/health";
@@ -28,6 +29,7 @@ export const appRouter = router({
 	servers: serversRouter,
 	stock: stockRouter,
 	vendors: vendorsRouter,
+	contracts: contractsRouter,
 	mail: mailSettingsRouter,
 	dashboard: dashboardRouter,
 	workbench: workbenchRouter,
