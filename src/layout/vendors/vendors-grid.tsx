@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ExternalLink, Pencil, Store } from "lucide-react";
+import { Pencil, Store } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { vendorImageUrl } from "@/lib/vendor-constants";
@@ -103,25 +103,34 @@ function VendorCard({
 }) {
 	const imageUrl = vendorImageUrl(vendor.image);
 
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+		if (event.key === "Enter" || event.key === " ") {
+			event.preventDefault();
+			onDetails(vendor);
+		}
+	};
+
 	return (
-		<Button
-			type="button"
+		<div
+			role="button"
+			tabIndex={0}
 			onClick={() => onDetails(vendor)}
-			className="flex h-[184px] cursor-pointer flex-col rounded-none border bg-card p-3 text-left transition-colors hover:bg-muted/50"
+			onKeyDown={handleKeyDown}
+			className="flex h-[184px] cursor-pointer flex-col rounded-none border bg-card p-3 text-left outline-none transition-colors hover:bg-muted/50 focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50"
 		>
 			<div className="flex items-start gap-3">
 				{imageUrl ? (
 					<img
 						src={imageUrl}
-						alt={vendor.name}
+						alt=""
 						className="h-12 w-20 shrink-0 object-contain"
 					/>
 				) : (
-					<div className="flex h-12 w-20 shrink-0 items-center justify-center bg-muted text-muted-foreground">
+					<div className="flex h-12 w-20 shrink-0 items-center justify-center border bg-muted text-muted-foreground">
 						<Store className="size-5" />
 					</div>
 				)}
-				<p className="line-clamp-2 min-w-0 flex-1 text-sm font-medium">
+				<p className="line-clamp-2 min-w-0 flex-1 text-sm leading-snug font-medium">
 					{vendor.name}
 				</p>
 			</div>
@@ -130,48 +139,36 @@ function VendorCard({
 				{vendor.notes || "No notes"}
 			</p>
 
-			<ul className="mt-2 min-h-0 flex-1 space-y-0.5 overflow-hidden text-xs">
+			<ul className="mt-2 min-h-0 flex-1 space-y-1 overflow-hidden text-xs">
 				{vendor.contacts.slice(0, 3).map((contact) => (
-					<li key={contact.id} className="flex items-center gap-1 truncate">
-						<span className="font-medium">{contact.contactName}</span>
-						{contact.personPosition && (
-							<span className="text-muted-foreground">
-								({contact.personPosition})
-							</span>
-						)}
+					<li key={contact.id} className="flex min-w-0 items-baseline gap-1.5">
+						<span className="max-w-24 shrink-0 truncate font-medium">
+							{contact.contactName || "-"}
+						</span>
 						<span className="truncate text-muted-foreground">
-							{contact.contact}
+							{contact.contact || "-"}
 						</span>
 					</li>
 				))}
-				{vendor.contacts.length > 3 && (
-					<li className="text-muted-foreground">
-						+{vendor.contacts.length - 3} more…
-					</li>
-				)}
 			</ul>
 
-			<div
-				className="mt-auto flex justify-end gap-1 border-t pt-1.5"
-				onClick={(e) => e.stopPropagation()}
-			>
+			<div className="mt-auto flex items-center justify-between border-t pt-1.5">
+				<span className="text-xs text-muted-foreground">
+					{vendor.contacts.length}{" "}
+					{vendor.contacts.length === 1 ? "contact" : "contacts"}
+				</span>
 				<Button
 					variant="ghost"
 					size="icon-sm"
-					title="Details"
-					onClick={() => onDetails(vendor)}
-				>
-					<ExternalLink />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					title="Edit"
-					onClick={() => onEdit(vendor)}
+					title="Edit vendor"
+					onClick={(e) => {
+						e.stopPropagation();
+						onEdit(vendor);
+					}}
 				>
 					<Pencil />
 				</Button>
 			</div>
-		</Button>
+		</div>
 	);
 }

@@ -6,14 +6,6 @@ import { Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -29,6 +21,7 @@ import {
 	vendorImageUrl,
 	type ContactType,
 } from "@/lib/vendor-constants";
+import { ResponsiveOverlay } from "@/layout/contracts/responsive-overlay";
 import type { Vendor } from "@/server/routers/vendors";
 import { trpc } from "@/trpc/react";
 
@@ -46,35 +39,18 @@ type VendorFormDialogProps = {
 	onCreated?: (vendor: CreatedVendor) => void;
 };
 
-export function VendorFormDialog({
-	open,
-	onOpenChange,
-	vendor,
-	onSuccess,
-	onCreated,
-}: VendorFormDialogProps) {
+const VALUE_LABELS: Record<ContactType, string> = {
+	mobile: "Phone",
+	email: "Email",
+	other: "Contact",
+};
+
+export function VendorFormDialog(props: VendorFormDialogProps) {
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
-				<DialogHeader>
-					<DialogTitle>
-						{vendor ? `Edit Vendor — ${vendor.name}` : "Add New Vendor"}
-					</DialogTitle>
-					<DialogDescription>
-						{vendor
-							? "Update the details and contacts of this vendor."
-							: "Register a new vendor record."}
-					</DialogDescription>
-				</DialogHeader>
-				<VendorFormContent
-					key={`${vendor?.id ?? "new"}-${open}`}
-					vendor={vendor}
-					onOpenChange={onOpenChange}
-					onSuccess={onSuccess}
-					onCreated={onCreated}
-				/>
-			</DialogContent>
-		</Dialog>
+		<VendorFormContent
+			key={`${props.vendor?.id ?? "new"}-${props.open}`}
+			{...props}
+		/>
 	);
 }
 
@@ -87,17 +63,19 @@ type FormContactRow = {
 };
 
 function VendorFormContent({
-	vendor,
+	open,
 	onOpenChange,
+	vendor,
 	onSuccess,
 	onCreated,
-}: Omit<VendorFormDialogProps, "open">) {
+}: VendorFormDialogProps) {
 	const utils = trpc.useUtils();
 	const uploadImageMutation = trpc.vendors.uploadImage.useMutation();
 	const createMutation = trpc.vendors.create.useMutation();
 	const updateMutation = trpc.vendors.update.useMutation();
 
 	const nextRowIdRef = useRef(1);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 	const createContactRow = (): FormContactRow => ({
 		rowId: nextRowIdRef.current++,
 		type: "mobile",
@@ -125,6 +103,9 @@ function VendorFormContent({
 				}))
 			: [createContactRow()],
 	);
+
+	const isSaving =
+		createMutation.isPending || updateMutation.isPending || imageBusy;
 
 	const updateContact = (rowId: number, patch: Partial<FormContactRow>) => {
 		setContacts((prev) =>
@@ -217,169 +198,215 @@ function VendorFormContent({
 	const previewImage = vendorImageUrl(image || null);
 
 	return (
-		<div className="space-y-4">
-			<div className="space-y-2">
-				<Label htmlFor="vendor-name">Name *</Label>
-				<Input
-					id="vendor-name"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					maxLength={150}
-					placeholder="Vendor name"
-				/>
-			</div>
-			<div className="space-y-2">
-				<Label htmlFor="vendor-notes">Notes</Label>
-				<Textarea
-					id="vendor-notes"
-					value={notes}
-					onChange={(e) => setNotes(e.target.value)}
-					rows={3}
-					placeholder="Optional notes…"
-				/>
-			</div>
+		<ResponsiveOverlay
+			open={open}
+			onOpenChange={onOpenChange}
+			title={vendor ? `Edit Vendor — ${vendor.name}` : "Add New Vendor"}
+			description={
+				vendor
+					? "Update the details and contacts of this vendor."
+					: "Register a new vendor record."
+			}
+			footer={
+				<>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => onOpenChange(false)}
+					>
+						Cancel
+					</Button>
+					<Button type="submit" form="vendor-form" disabled={isSaving}>
+						{isSaving ? <Loader2 className="animate-spin" /> : <Plus />}
+						{vendor ? "Save Changes" : "Add Vendor"}
+					</Button>
+				</>
+			}
+		>
+			<form
+				id="vendor-form"
+				onSubmit={(e) => {
+					e.preventDefault();
+					void handleSubmit();
+				}}
+				className="space-y-4"
+			>
+				<div className="space-y-2">
+					<Label htmlFor="vendor-name">Name *</Label>
+					<Input
+						id="vendor-name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						maxLength={150}
+						placeholder="Vendor name"
+					/>
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="vendor-notes">Notes</Label>
+					<Textarea
+						id="vendor-notes"
+						value={notes}
+						onChange={(e) => setNotes(e.target.value)}
+						rows={3}
+						placeholder="Optional notes…"
+					/>
+				</div>
 
-			<div className="space-y-2">
-				<Label>Logo</Label>
-				<div className="flex items-start gap-3">
-					{previewImage ? (
-						<img
-							src={previewImage}
-							alt="Vendor logo preview"
-							className="size-16 shrink-0 border bg-background object-contain"
-						/>
-					) : (
-						<div className="flex size-16 shrink-0 items-center justify-center border bg-muted text-xs text-muted-foreground">
-							No logo
+				<div className="space-y-2">
+					<Label>Logo</Label>
+					<div className="flex items-start gap-3">
+						{previewImage ? (
+							<img
+								src={previewImage}
+								alt="Vendor logo preview"
+								className="size-16 shrink-0 border bg-background object-contain"
+							/>
+						) : (
+							<div className="flex size-16 shrink-0 items-center justify-center border bg-muted text-xs text-muted-foreground">
+								No logo
+							</div>
+						)}
+						<div className="flex-1 space-y-1.5">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="w-full sm:w-auto"
+								disabled={imageBusy}
+								onClick={() => fileInputRef.current?.click()}
+							>
+								{imageBusy ? <Loader2 className="animate-spin" /> : <Upload />}
+								{imageBusy ? "Uploading…" : "Upload logo"}
+							</Button>
+							<input
+								ref={fileInputRef}
+								type="file"
+								accept="image/*"
+								className="hidden"
+								onChange={(e) => {
+									void handleFile(e.target.files?.[0]);
+									e.target.value = "";
+								}}
+							/>
+							<p className="text-xs text-muted-foreground">
+								PNG, JPG or WebP up to 5 MB.
+							</p>
 						</div>
-					)}
-					<div className="flex-1 space-y-1.5">
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							className="w-full"
-							disabled={imageBusy}
-							onClick={() =>
-								document.getElementById("vendorLogoInput")?.click()
-							}
-						>
-							{imageBusy ? <Loader2 className="animate-spin" /> : <Upload />}
-							{imageBusy ? "Uploading…" : "Upload logo"}
-						</Button>
-						<input
-							id="vendorLogoInput"
-							type="file"
-							accept="image/*"
-							className="hidden"
-							onChange={(e) => handleFile(e.target.files?.[0])}
-						/>
-						<p className="text-xs text-muted-foreground">
-							PNG, JPG or WebP up to 5 MB.
-						</p>
 					</div>
 				</div>
-			</div>
 
-			<div className="space-y-2">
-				<Label>Contacts</Label>
-				{contacts.map((contact) => (
-					<div
-						key={contact.rowId}
-						className="grid grid-cols-12 items-center gap-2"
-					>
-						<Select
-							value={contact.type}
-							onValueChange={(value) =>
-								updateContact(contact.rowId, {
-									type: (value ?? "other") as ContactType,
-								})
-							}
-						>
-							<SelectTrigger className="col-span-3">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{CONTACT_TYPES.map((option) => (
-									<SelectItem key={option} value={option}>
-										{option}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						<Input
-							className="col-span-3"
-							value={contact.position}
-							onChange={(e) =>
-								updateContact(contact.rowId, { position: e.target.value })
-							}
-							maxLength={100}
-							placeholder="position"
-						/>
-						<Input
-							className="col-span-3"
-							value={contact.name}
-							onChange={(e) =>
-								updateContact(contact.rowId, { name: e.target.value })
-							}
-							maxLength={100}
-							placeholder="name"
-						/>
-						<Input
-							className="col-span-2"
-							value={contact.value}
-							onChange={(e) =>
-								updateContact(contact.rowId, { value: e.target.value })
-							}
-							maxLength={100}
-							placeholder="value"
-						/>
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							title="Remove contact"
-							className="col-span-1"
-							onClick={() =>
-								setContacts((prev) =>
-									prev.length === 1
-										? prev
-										: prev.filter((row) => row.rowId !== contact.rowId),
-								)
-							}
-							disabled={contacts.length === 1}
-						>
-							<Trash2 />
-						</Button>
+				<div className="space-y-2">
+					<Label>Contacts</Label>
+					<div className="space-y-2">
+						{contacts.map((contact) => (
+							<div key={contact.rowId} className="space-y-2 border p-2.5">
+								<div className="flex items-center gap-2">
+									<Select
+										value={contact.type}
+										onValueChange={(value) =>
+											updateContact(contact.rowId, {
+												type: (value ?? "other") as ContactType,
+											})
+										}
+									>
+										<SelectTrigger className="w-32">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{CONTACT_TYPES.map((option) => (
+												<SelectItem key={option} value={option}>
+													{option}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon-sm"
+										title="Remove contact"
+										className="ml-auto"
+										onClick={() =>
+											setContacts((prev) =>
+												prev.length === 1
+													? prev
+													: prev.filter((row) => row.rowId !== contact.rowId),
+											)
+										}
+										disabled={contacts.length === 1}
+									>
+										<Trash2 />
+									</Button>
+								</div>
+								<div className="grid gap-2 sm:grid-cols-3">
+									<div className="space-y-1">
+										<Label
+											htmlFor={`vendor-contact-position-${contact.rowId}`}
+											className="text-xs text-muted-foreground"
+										>
+											Position
+										</Label>
+										<Input
+											id={`vendor-contact-position-${contact.rowId}`}
+											value={contact.position}
+											onChange={(e) =>
+												updateContact(contact.rowId, {
+													position: e.target.value,
+												})
+											}
+											maxLength={100}
+											placeholder="Position"
+										/>
+									</div>
+									<div className="space-y-1">
+										<Label
+											htmlFor={`vendor-contact-name-${contact.rowId}`}
+											className="text-xs text-muted-foreground"
+										>
+											Name
+										</Label>
+										<Input
+											id={`vendor-contact-name-${contact.rowId}`}
+											value={contact.name}
+											onChange={(e) =>
+												updateContact(contact.rowId, { name: e.target.value })
+											}
+											maxLength={100}
+											placeholder="Name"
+										/>
+									</div>
+									<div className="space-y-1">
+										<Label
+											htmlFor={`vendor-contact-value-${contact.rowId}`}
+											className="text-xs text-muted-foreground"
+										>
+											{VALUE_LABELS[contact.type]}
+										</Label>
+										<Input
+											id={`vendor-contact-value-${contact.rowId}`}
+											value={contact.value}
+											onChange={(e) =>
+												updateContact(contact.rowId, { value: e.target.value })
+											}
+											maxLength={100}
+											placeholder={VALUE_LABELS[contact.type]}
+										/>
+									</div>
+								</div>
+							</div>
+						))}
 					</div>
-				))}
-				<Button
-					type="button"
-					variant="outline"
-					size="sm"
-					onClick={() => setContacts((prev) => [...prev, createContactRow()])}
-				>
-					<Plus data-icon="inline-start" />
-					Add more
-				</Button>
-			</div>
-
-			<DialogFooter>
-				<Button
-					type="button"
-					onClick={handleSubmit}
-					disabled={
-						createMutation.isPending || updateMutation.isPending || imageBusy
-					}
-				>
-					{createMutation.isPending || updateMutation.isPending || imageBusy ? (
-						<Loader2 className="animate-spin" />
-					) : (
-						<Plus />
-					)}
-					{vendor ? "Save Changes" : "Add Vendor"}
-				</Button>
-			</DialogFooter>
-		</div>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() => setContacts((prev) => [...prev, createContactRow()])}
+					>
+						<Plus data-icon="inline-start" />
+						Add more
+					</Button>
+				</div>
+			</form>
+		</ResponsiveOverlay>
 	);
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Plus, Search, Store } from "lucide-react";
+import { Plus, Search, Store } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 
@@ -14,15 +14,62 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Vendor } from "@/server/routers/vendors";
 import { trpc } from "@/trpc/react";
 
 import { VendorDetailsDialog } from "./vendor-details-dialog";
 import { VendorFormDialog } from "./vendor-form-dialog";
+import { VendorsCardList } from "./vendors-card-list";
 import { VendorsGrid } from "./vendors-grid";
+
+function VendorsGridSkeleton() {
+	return (
+		<div className="min-h-0 flex-1 rounded-none border p-3">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+				{Array.from({ length: 8 }).map((_, index) => (
+					<div
+						key={index}
+						className="flex h-[184px] flex-col rounded-none border bg-card p-3"
+					>
+						<div className="flex items-start gap-3">
+							<Skeleton className="h-12 w-20 shrink-0" />
+							<Skeleton className="h-4 w-2/3 flex-1" />
+						</div>
+						<Skeleton className="mt-3 h-3 w-full" />
+						<Skeleton className="mt-2 h-3 w-3/4" />
+						<div className="mt-auto flex items-center justify-between border-t pt-1.5">
+							<Skeleton className="h-3 w-16" />
+							<Skeleton className="size-7" />
+						</div>
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
+
+function VendorsListSkeleton() {
+	return (
+		<div className="divide-y rounded-none border">
+			{Array.from({ length: 8 }).map((_, index) => (
+				<div key={index} className="flex items-center gap-3 p-3">
+					<Skeleton className="size-10 shrink-0" />
+					<div className="min-w-0 flex-1 space-y-1.5">
+						<Skeleton className="h-4 w-2/3" />
+						<Skeleton className="h-3 w-1/2" />
+					</div>
+					<Skeleton className="size-4 shrink-0" />
+				</div>
+			))}
+		</div>
+	);
+}
 
 export function VendorsPage() {
 	const utils = trpc.useUtils();
+	const isMobile = useIsMobile();
 	const { data: vendors = [], isPending } = trpc.vendors.list.useQuery();
 
 	const [query, setQuery] = useQueryState("q", {
@@ -51,6 +98,8 @@ export function VendorsPage() {
 		);
 	}, [vendors, query]);
 
+	const isFiltering = query.trim().length > 0;
+
 	const openAdd = () => {
 		setEditingVendor(null);
 		setFormOpen(true);
@@ -76,42 +125,46 @@ export function VendorsPage() {
 	};
 
 	return (
-		<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
+		<div className="flex h-full min-h-0 flex-col gap-4 p-4 md:p-6">
 			<div className="flex min-w-0 flex-col gap-4">
 				<div className="flex flex-wrap items-center justify-between gap-3">
-					<div>
+					<div className="min-w-0">
 						<h1 className="text-xl font-semibold tracking-tight">Vendors</h1>
 						<p className="text-xs text-muted-foreground">
-							Vendors ({isPending ? "…" : filtered.length})
+							{isPending
+								? "Loading vendors…"
+								: isFiltering
+									? `Showing ${filtered.length} of ${vendors.length} vendors`
+									: `${vendors.length} vendor${vendors.length === 1 ? "" : "s"}`}
 						</p>
 					</div>
-					<Button onClick={openAdd}>
+					<Button onClick={openAdd} className="w-full sm:w-auto">
 						<Plus data-icon="inline-start" />
 						Add Vendor
 					</Button>
 				</div>
 
-				<div className="flex flex-wrap items-center gap-3">
-					<div className="relative w-full max-w-lg">
-						<Search
-							data-icon="inline-start"
-							className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-						/>
-						<Input
-							type="search"
-							value={query}
-							onChange={(e) => setQuery(e.target.value)}
-							placeholder="Search by name or notes…"
-							className="h-9 pl-8"
-						/>
-					</div>
+				<div className="relative w-full sm:max-w-sm">
+					<Search
+						data-icon="inline-start"
+						className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+					/>
+					<Input
+						type="search"
+						value={query}
+						onChange={(e) => setQuery(e.target.value)}
+						placeholder="Search by name or notes…"
+						className="pl-8"
+					/>
 				</div>
 			</div>
 
 			{isPending ? (
-				<div className="flex flex-1 items-center justify-center">
-					<Loader2 className="size-6 animate-spin text-muted-foreground" />
-				</div>
+				isMobile ? (
+					<VendorsListSkeleton />
+				) : (
+					<VendorsGridSkeleton />
+				)
 			) : filtered.length === 0 ? (
 				<Empty className="flex-1 border">
 					<EmptyHeader>
@@ -136,6 +189,11 @@ export function VendorsPage() {
 						)}
 					</EmptyContent>
 				</Empty>
+			) : isMobile ? (
+				<VendorsCardList
+					vendors={filtered}
+					onDetails={(vendor) => setVendorID(String(vendor.id))}
+				/>
 			) : (
 				<VendorsGrid
 					vendors={filtered}
