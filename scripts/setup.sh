@@ -25,9 +25,9 @@ fi
 
 echo ""
 echo "[1/6] Installing system dependencies..."
-if ! dpkg -l | grep -q "libaio1"; then
+if ! dpkg -l | grep -q "libaio1" || ! dpkg -l | grep -q "libnsl1"; then
   sudo apt-get update -qq
-  sudo apt-get install -y -qq libaio1 unzip curl
+  sudo apt-get install -y -qq libaio1 libaio-dev libnsl1 unzip curl
 else
   echo "  System dependencies already installed"
 fi
@@ -70,6 +70,11 @@ if [ "$INSTALLED" = false ]; then
   EXTRACTED_DIR=$(ls -d instantclient_* | head -1)
   sudo mv "$EXTRACTED_DIR" instantclient_23 2>/dev/null || true
   rm /tmp/instantclient-basic-linux.zip
+
+  echo ""
+  echo "  Updating shared library cache..."
+  echo "/opt/oracle/instantclient_23" | sudo tee /etc/ld.so.conf.d/oracle-instantclient.conf > /dev/null
+  sudo ldconfig
 else
   echo ""
   echo "[2/6] Skipping download (already installed)"

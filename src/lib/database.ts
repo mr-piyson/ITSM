@@ -33,11 +33,7 @@ function ensureOracleClient() {
 	const libDir = env.ORACLE_CLIENT_DIR;
 	process.env.ORACLE_HOME = libDir;
 	process.env.TNS_ADMIN = env.TNS_ADMIN;
-	try {
-		oracledb.initOracleClient({ libDir });
-	} catch (e) {
-		console.warn("Oracle Thick mode init failed:", e);
-	}
+	oracledb.initOracleClient({ libDir });
 }
 
 function ensureDatabaseName(uri: string | undefined, database: string): string {
@@ -116,7 +112,7 @@ async function getOdbPool() {
 		odbPool = await oracledb.createPool({
 			user: env.ORACLE_USER,
 			password: env.ORACLE_PASSWORD,
-			connectString: "BFG",
+			connectString: `//${env.ORACLE_HOST}:${env.ORACLE_PORT}/${env.ORACLE_SERVICE_NAME}`,
 			poolMin: 1,
 			poolMax: 10,
 			poolIncrement: 1,
