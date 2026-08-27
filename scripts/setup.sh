@@ -25,11 +25,32 @@ fi
 
 echo ""
 echo "[1/6] Installing system dependencies..."
-if ! dpkg -l | grep -q "libaio1" || ! dpkg -l | grep -q "libnsl1"; then
+if ! dpkg -l | grep -q "libaio1"; then
   sudo apt-get update -qq
-  sudo apt-get install -y -qq libaio1 libaio-dev libnsl1 unzip curl
+  sudo apt-get install -y -qq libaio1 libaio-dev unzip curl
 else
   echo "  System dependencies already installed"
+fi
+
+# libnsl is named differently across Ubuntu versions
+LIBNSL_PKG=""
+if dpkg -l | grep -q "libnsl2"; then
+  LIBNSL_PKG="libnsl2"
+elif dpkg -l | grep -q "libnsl1"; then
+  LIBNSL_PKG="libnsl1"
+else
+  if apt-cache show libnsl2 &>/dev/null; then
+    LIBNSL_PKG="libnsl2"
+  elif apt-cache show libnsl1 &>/dev/null; then
+    LIBNSL_PKG="libnsl1"
+  fi
+fi
+
+if [ -n "$LIBNSL_PKG" ]; then
+  echo "  Installing $LIBNSL_PKG..."
+  sudo apt-get install -y -qq "$LIBNSL_PKG"
+else
+  echo "  libnsl not available (may not be needed on this Ubuntu version)"
 fi
 
 if [ "$INSTALLED" = false ]; then
