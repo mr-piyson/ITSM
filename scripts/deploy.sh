@@ -3,7 +3,7 @@ set -e
 
 APP_NAME="itsm"
 SERVICE_NAME="${APP_NAME}.service"
-APP_DIR="$(cd "$(dirname "$0")" && pwd)"
+APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PORT=3000
 NODE_USER="$(whoami)"
 NODE_ENV="production"
