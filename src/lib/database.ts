@@ -32,6 +32,7 @@ function ensureOracleClient() {
 	oracleInitialized = true;
 	const libDir = env.ORACLE_CLIENT_DIR;
 	process.env.ORACLE_HOME = libDir;
+	process.env.LD_LIBRARY_PATH = libDir;
 	process.env.TNS_ADMIN = env.TNS_ADMIN;
 	oracledb.initOracleClient({ libDir });
 }

@@ -24,7 +24,7 @@ if [ -f "$ORACLE_HOME/libclntsh.so" ] || [ -f "$ORACLE_HOME/libclntsh.so.23.1" ]
 fi
 
 echo ""
-echo "[1/6] Installing system dependencies..."
+echo "[1/7] Installing system dependencies..."
 if ! dpkg -l | grep -q "libaio1"; then
   sudo apt-get update -qq
   sudo apt-get install -y -qq libaio1 libaio-dev unzip curl
@@ -55,7 +55,7 @@ fi
 
 if [ "$INSTALLED" = false ]; then
   echo ""
-  echo "[2/6] Downloading Oracle Instant Client..."
+  echo "[2/7] Downloading Oracle Instant Client..."
   if [ -f /tmp/instantclient-basic-linux.zip ] && file /tmp/instantclient-basic-linux.zip | grep -q "Zip archive"; then
     echo "  File already exists and is valid, skipping download"
   else
@@ -84,27 +84,28 @@ if [ "$INSTALLED" = false ]; then
   fi
 
   echo ""
-  echo "[3/6] Installing to /opt/oracle..."
+  echo "[3/7] Installing to /opt/oracle..."
   sudo mkdir -p /opt/oracle
   cd /opt/oracle
   sudo unzip -o -q /tmp/instantclient-basic-linux.zip
   EXTRACTED_DIR=$(ls -d instantclient_* | head -1)
   sudo mv "$EXTRACTED_DIR" instantclient_23 2>/dev/null || true
-  rm /tmp/instantclient-basic-linux.zip
-
-  echo ""
-  echo "  Updating shared library cache..."
-  echo "/opt/oracle/instantclient_23" | sudo tee /etc/ld.so.conf.d/oracle-instantclient.conf > /dev/null
-  sudo ldconfig
 else
   echo ""
-  echo "[2/6] Skipping download (already installed)"
+  echo "[2/7] Skipping download (already installed)"
   echo ""
-  echo "[3/6] Skipping installation (already installed)"
+  echo "[3/7] Skipping installation (already installed)"
 fi
 
 echo ""
-echo "[4/6] Setting up environment variables..."
+echo "[4/7] Registering shared libraries..."
+if [ ! -f /etc/ld.so.conf.d/oracle-instantclient.conf ]; then
+  echo "/opt/oracle/instantclient_23" | sudo tee /etc/ld.so.conf.d/oracle-instantclient.conf > /dev/null
+fi
+sudo ldconfig
+
+echo ""
+echo "[5/7] Setting up environment variables..."
 if ! grep -q "ORACLE_HOME=/opt/oracle/instantclient_23" ~/.bashrc 2>/dev/null; then
   cat >> ~/.bashrc << 'EOF'
 
@@ -124,7 +125,7 @@ export LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
 export TNS_ADMIN=$ORACLE_HOME/network/admin
 
 echo ""
-echo "[5/6] Creating tnsnames.ora..."
+echo "[6/7] Creating tnsnames.ora..."
 sudo mkdir -p "$ORACLE_HOME/network/admin"
 sudo tee "$ORACLE_HOME/network/admin/tnsnames.ora" > /dev/null << EOF
 BFG =
@@ -142,7 +143,7 @@ EOF
 echo "  Created tnsnames.ora"
 
 echo ""
-echo "[6/6] Creating .env file..."
+echo "[7/7] Creating .env file..."
 cp "${PROJECT_ROOT}/.env" "${PROJECT_ROOT}/.env.bak" 2>/dev/null || true
 cat > "${PROJECT_ROOT}/.env" << 'ENVEOF'
 MES_DATABASE="mysql://root:bfgA$$essDb@172.18.1.20:3306"
