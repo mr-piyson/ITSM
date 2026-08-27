@@ -23,9 +23,16 @@ const oracledb = require("oracledb") as {
 	}>;
 };
 
-if (process.env.ORACLE_CLIENT_DIR) {
+let oracleInitialized = false;
+
+function ensureOracleClient() {
+	if (oracleInitialized) return;
+	oracleInitialized = true;
+	const libDir = "/Users/muntdher/Downloads/instantclient_23_3";
+	process.env.ORACLE_HOME = libDir;
+	process.env.TNS_ADMIN = `${libDir}/network/admin`;
 	try {
-		oracledb.initOracleClient({ libDir: process.env.ORACLE_CLIENT_DIR });
+		oracledb.initOracleClient({ libDir });
 	} catch (e) {
 		console.warn("Oracle Thick mode init failed:", e);
 	}
@@ -73,10 +80,10 @@ function getIssPool(): Pool {
 async function getERPPool(): Promise<mssql.ConnectionPool> {
 	if (!erpPool?.connected) {
 		const config: mssql.config = {
-			user: process.env.ERP_USER,
-			password: process.env.ERP_PASSWORD,
-			database: process.env.ERP_DATABASE,
-			server: process.env.ERP_SERVER,
+			user: process.env.ERP_USER!,
+			password: process.env.ERP_PASSWORD!,
+			database: process.env.ERP_DATABASE!,
+			server: process.env.ERP_SERVER!,
 			port: 1433,
 			pool: {
 				max: 10,
@@ -94,11 +101,12 @@ async function getERPPool(): Promise<mssql.ConnectionPool> {
 }
 
 async function getOdbPool() {
+	ensureOracleClient();
 	if (!odbPool) {
 		odbPool = await oracledb.createPool({
 			user: process.env.ORACLE_USER,
 			password: process.env.ORACLE_PASSWORD,
-			connectString: `${process.env.ORACLE_HOST}:${process.env.ORACLE_PORT}/${process.env.ORACLE_SERVICE_NAME}`,
+			connectString: "BFG",
 			poolMin: 1,
 			poolMax: 10,
 			poolIncrement: 1,
@@ -117,7 +125,7 @@ const db = {
 	get erp() {
 		return getERPPool();
 	},
-	get odb() {
+	get mis() {
 		return getOdbPool();
 	},
 };

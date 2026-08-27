@@ -37,7 +37,7 @@ async function checkMssql(): Promise<DbCheckResult> {
 async function checkOracle(): Promise<DbCheckResult> {
 	const start = Date.now();
 	try {
-		const pool = await db.odb;
+		const pool = await db.mis;
 		const conn = await pool.getConnection();
 		await conn.execute("SELECT 1 FROM DUAL");
 		conn.release();
