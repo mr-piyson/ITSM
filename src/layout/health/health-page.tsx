@@ -16,7 +16,7 @@ import { trpc } from "@/trpc/react";
 type DbStatus = { ok: boolean; latency: number; error?: string };
 
 const DBS: {
-	key: "mes" | "iss" | "erp";
+	key: "mes" | "iss" | "erp" | "odb";
 	label: string;
 	type: string;
 	icon: React.ComponentType<{ className?: string }>;
@@ -24,6 +24,7 @@ const DBS: {
 	{ key: "mes", label: "MES Database", type: "MySQL", icon: Database },
 	{ key: "iss", label: "ISS Database", type: "MySQL", icon: Database },
 	{ key: "erp", label: "ERP Database", type: "MSSQL", icon: Server },
+	{ key: "odb", label: "Oracle Database", type: "Oracle", icon: Database },
 ];
 
 function StatusCard({ db, status }: { db: (typeof DBS)[number]; status?: DbStatus }) {
@@ -90,7 +91,7 @@ export function HealthPage() {
 				</Button>
 			</div>
 
-			<div className="grid gap-3 md:grid-cols-3">
+			<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
 				{DBS.map((db) => (
 					<StatusCard
 						key={db.key}

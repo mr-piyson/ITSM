@@ -4,7 +4,6 @@ import { ChevronDown, Menu, Monitor, X } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
 	Collapsible,
@@ -64,13 +63,13 @@ export function MarketingNavbar({ hideSignIn }: { hideSignIn?: boolean }) {
 						<NavMenu />
 
 						{/* Desktop Sign In Button */}
-						{!hideSignIn && (
-							<div className="hidden md:block">
+						<div className="hidden md:block">
+							{!hideSignIn && (
 								<Link href="/auth">
 									<Button>Sign In</Button>
 								</Link>
-							</div>
-						)}
+							)}
+						</div>
 					</div>
 				</div>
 			</nav>

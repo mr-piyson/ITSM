@@ -2,6 +2,35 @@ import mssql from "mssql";
 import mysql from "mysql2/promise";
 import type { Pool } from "mysql2/promise";
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const oracledb = require("oracledb") as {
+	initOracleClient: (opts?: { libDir?: string }) => void;
+	createPool: (attrs: {
+		user?: string;
+		password?: string;
+		connectString?: string;
+		poolMin?: number;
+		poolMax?: number;
+		poolIncrement?: number;
+		edition?: string;
+		events?: boolean;
+	}) => Promise<{
+		getConnection: () => Promise<{
+			execute: (sql: string, binds?: any[], opts?: any) => Promise<any>;
+			release: () => Promise<void>;
+		}>;
+		close: () => Promise<void>;
+	}>;
+};
+
+if (process.env.ORACLE_CLIENT_DIR) {
+	try {
+		oracledb.initOracleClient({ libDir: process.env.ORACLE_CLIENT_DIR });
+	} catch (e) {
+		console.warn("Oracle Thick mode init failed:", e);
+	}
+}
+
 function ensureDatabaseName(uri: string | undefined, database: string): string {
 	const url = new URL(uri ?? "");
 	if (!url.pathname || url.pathname === "/") {
@@ -13,6 +42,7 @@ function ensureDatabaseName(uri: string | undefined, database: string): string {
 let mesPool: Pool | null = null;
 let issPool: Pool | null = null;
 let erpPool: mssql.ConnectionPool | null = null;
+let odbPool: Awaited<ReturnType<typeof oracledb.createPool>> | null = null;
 
 function getMesPool(): Pool {
 	if (!mesPool) {
@@ -43,10 +73,10 @@ function getIssPool(): Pool {
 async function getERPPool(): Promise<mssql.ConnectionPool> {
 	if (!erpPool?.connected) {
 		const config: mssql.config = {
-			user: "MES",
-			password: "M3$Ep!2X",
-			database: "ERP10Live",
-			server: "172.18.1.31",
+			user: process.env.ERP_USER,
+			password: process.env.ERP_PASSWORD,
+			database: process.env.ERP_DATABASE,
+			server: process.env.ERP_SERVER,
 			port: 1433,
 			pool: {
 				max: 10,
@@ -63,6 +93,20 @@ async function getERPPool(): Promise<mssql.ConnectionPool> {
 	return erpPool;
 }
 
+async function getOdbPool() {
+	if (!odbPool) {
+		odbPool = await oracledb.createPool({
+			user: process.env.ORACLE_USER,
+			password: process.env.ORACLE_PASSWORD,
+			connectString: `${process.env.ORACLE_HOST}:${process.env.ORACLE_PORT}/${process.env.ORACLE_SERVICE_NAME}`,
+			poolMin: 1,
+			poolMax: 10,
+			poolIncrement: 1,
+		});
+	}
+	return odbPool;
+}
+
 const db = {
 	get mes() {
 		return getMesPool();
@@ -72,6 +116,9 @@ const db = {
 	},
 	get erp() {
 		return getERPPool();
+	},
+	get odb() {
+		return getOdbPool();
 	},
 };
 export default db;

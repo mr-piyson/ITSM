@@ -34,16 +34,34 @@ async function checkMssql(): Promise<DbCheckResult> {
 	}
 }
 
+async function checkOracle(): Promise<DbCheckResult> {
+	const start = Date.now();
+	try {
+		const pool = await db.odb;
+		const conn = await pool.getConnection();
+		await conn.execute("SELECT 1 FROM DUAL");
+		conn.release();
+		return { ok: true, latency: Date.now() - start };
+	} catch (e) {
+		return {
+			ok: false,
+			latency: Date.now() - start,
+			error: e instanceof Error ? e.message : String(e),
+		};
+	}
+}
+
 export const healthRouter = router({
 	ping: publicProcedure.query(() => ({ message: "pong", ts: Date.now() })),
 
 	dbStatus: publicProcedure.query(async () => {
-		const [mes, iss, erp] = await Promise.all([
+		const [mes, iss, erp, odb] = await Promise.all([
 			checkMysql(db.mes),
 			checkMysql(db.iss),
 			checkMssql(),
+			checkOracle(),
 		]);
 
-		return { mes, iss, erp };
+		return { mes, iss, erp, odb };
 	}),
 });
