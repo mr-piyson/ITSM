@@ -46,7 +46,7 @@ hdiutil detach /Volumes/instantclient-basic-macos*/
 
 # Set environment variables (add to ~/.zshrc or ~/.bash_profile)
 cat >> ~/.zshrc << 'EOF'
-export ORACLE_HOME="$HOME/Downloads/instantclient_23_3"
+export ORACLE_HOME="$HOME/Downloads/instantclient_23"
 export DYLD_LIBRARY_PATH="$ORACLE_HOME:$DYLD_LIBRARY_PATH"
 export TNS_ADMIN="$ORACLE_HOME/network/admin"
 export PATH="$ORACLE_HOME:$PATH"
@@ -81,13 +81,13 @@ curl -L -o /tmp/instantclient-basic-linux.zip \
 sudo mkdir -p /opt/oracle
 cd /opt/oracle
 sudo unzip /tmp/instantclient-basic-linux.zip
-export ORACLE_HOME=/opt/oracle/instantclient_23_4
+export ORACLE_HOME=/opt/oracle/instantclient_23
 export LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
 export TNS_ADMIN=$ORACLE_HOME/network/admin
 
 # Add to ~/.bashrc or ~/.bash_profile
 cat >> ~/.bashrc << 'EOF'
-export ORACLE_HOME=/opt/oracle/instantclient_23_4
+export ORACLE_HOME=/opt/oracle/instantclient_23
 export LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
 export TNS_ADMIN=$ORACLE_HOME/network/admin
 EOF
@@ -102,7 +102,7 @@ curl -L -o /tmp/instantclient-basic-linux-arm64.zip \
 sudo mkdir -p /opt/oracle
 cd /opt/oracle
 sudo unzip /tmp/instantclient-basic-linux-arm64.zip
-export ORACLE_HOME=/opt/oracle/instantclient_23_4
+export ORACLE_HOME=/opt/oracle/instantclient_23
 export LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
 ```
 
@@ -269,8 +269,8 @@ export DYLD_LIBRARY_PATH=$ORACLE_HOME:$DYLD_LIBRARY_PATH
 | `ORACLE_SERVICE_NAME` | Database service name/SID | `BFGPROD` |
 | `ORACLE_USER` | Database username | `bfgi` |
 | `ORACLE_PASSWORD` | Database password | `oracle123` |
-| `ORACLE_CLIENT_DIR` | Path to Oracle Instant Client | `/opt/oracle/instantclient_23_4` |
-| `TNS_ADMIN` | Path to tnsnames.ora directory | `/opt/oracle/instantclient_23_4/network/admin` |
+| `ORACLE_CLIENT_DIR` | Path to Oracle Instant Client | `/opt/oracle/instantclient_23` |
+| `TNS_ADMIN` | Path to tnsnames.ora directory | `/opt/oracle/instantclient_23/network/admin` |
 | `ORACLE_HOME` | Oracle installation directory | Same as `ORACLE_CLIENT_DIR` |
 | `DYLD_LIBRARY_PATH` | (macOS) Library search path | `$ORACLE_HOME` |
 | `LD_LIBRARY_PATH` | (Linux) Library search path | `$ORACLE_HOME` |

@@ -6,8 +6,7 @@ echo "  Oracle Instant Client Setup (Ubuntu)"
 echo "========================================="
 
 # Configuration
-ORACLE_VERSION="23.4.0.24.05"
-ORACLE_HOME="/opt/oracle/instantclient_23_4"
+ORACLE_VERSION="23.26.3.0.0"
 ORACLE_HOST="172.18.1.11"
 ORACLE_PORT="1521"
 ORACLE_SID="BFGPROD"
@@ -23,7 +22,7 @@ sudo apt-get install -y -qq libaio1 unzip curl
 echo ""
 echo "[2/8] Downloading Oracle Instant Client..."
 curl -L -o /tmp/instantclient-basic-linux.zip \
-  -H "User-Agent: Mozilla/5.0" \
+  -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" \
   "https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linux.x64-${ORACLE_VERSION}.zip"
 
 if ! file /tmp/instantclient-basic-linux.zip | grep -q "Zip archive"; then
@@ -34,20 +33,22 @@ if ! file /tmp/instantclient-basic-linux.zip | grep -q "Zip archive"; then
 fi
 
 echo ""
-echo "[3/8] Installing to ${ORACLE_HOME}..."
+echo "[3/8] Installing to /opt/oracle..."
 sudo mkdir -p /opt/oracle
 cd /opt/oracle
 sudo unzip -o -q /tmp/instantclient-basic-linux.zip
-sudo mv instantclient_*_${ORACLE_VERSION#*.} instantclient_23_4 2>/dev/null || true
+EXTRACTED_DIR=$(ls -d instantclient_* | head -1)
+sudo mv "$EXTRACTED_DIR" instantclient_23 2>/dev/null || true
+ORACLE_HOME="/opt/oracle/instantclient_23"
 rm /tmp/instantclient-basic-linux.zip
 
 echo ""
 echo "[4/8] Setting up environment variables..."
-if ! grep -q "ORACLE_HOME=/opt/oracle/instantclient_23_4" ~/.bashrc 2>/dev/null; then
+if ! grep -q "ORACLE_HOME=/opt/oracle/instantclient_23" ~/.bashrc 2>/dev/null; then
   cat >> ~/.bashrc << 'EOF'
 
 # Oracle Instant Client
-export ORACLE_HOME=/opt/oracle/instantclient_23_4
+export ORACLE_HOME=/opt/oracle/instantclient_23
 export LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
 export TNS_ADMIN=$ORACLE_HOME/network/admin
 export PATH=$ORACLE_HOME:$PATH
