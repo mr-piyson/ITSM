@@ -4,6 +4,22 @@ import type { Pool } from "mysql2/promise";
 
 import { env } from "./env";
 
+export type OracleConnection = {
+	execute: (
+		sql: string,
+		binds?: unknown[],
+		opts?: { autoCommit?: boolean },
+	) => Promise<{ rows?: unknown[]; rowsAffected?: number }>;
+	commit: () => Promise<void>;
+	rollback: () => Promise<void>;
+	release: () => Promise<void>;
+};
+
+export type OraclePool = {
+	getConnection: () => Promise<OracleConnection>;
+	close: () => Promise<void>;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const oracledb = require("oracledb") as {
 	initOracleClient: (opts?: { libDir?: string }) => void;
@@ -16,13 +32,7 @@ const oracledb = require("oracledb") as {
 		poolIncrement?: number;
 		edition?: string;
 		events?: boolean;
-	}) => Promise<{
-		getConnection: () => Promise<{
-			execute: (sql: string, binds?: any[], opts?: any) => Promise<any>;
-			release: () => Promise<void>;
-		}>;
-		close: () => Promise<void>;
-	}>;
+	}) => Promise<OraclePool>;
 };
 
 let oracleInitialized = false;
@@ -56,7 +66,7 @@ function encodeDbUri(uri: string): string {
 let mesPool: Pool | null = null;
 let issPool: Pool | null = null;
 let erpPool: mssql.ConnectionPool | null = null;
-let odbPool: Awaited<ReturnType<typeof oracledb.createPool>> | null = null;
+let odbPool: OraclePool | null = null;
 
 function getMesPool(): Pool {
 	if (!mesPool) {
@@ -107,7 +117,7 @@ async function getERPPool(): Promise<mssql.ConnectionPool> {
 	return erpPool;
 }
 
-async function getOdbPool() {
+async function getOdbPool(): Promise<OraclePool> {
 	ensureOracleClient();
 	if (!odbPool) {
 		odbPool = await oracledb.createPool({

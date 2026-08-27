@@ -1,9 +1,9 @@
+import { TRPCError } from "@trpc/server";
 import type { RowDataPacket } from "mysql2";
 import { z } from "zod";
 
+import type { OracleConnection } from "@/lib/database";
 import { protectedProcedure, router } from "@/server/trpc";
-
-type Row = RowDataPacket & Record<string, unknown>;
 
 export type SyncPhotoEmployee = {
 	id: number;
@@ -16,11 +16,62 @@ export type SyncPhotoEmployee = {
 	syncStatus: "synced" | "different" | "not_in_oracle" | "no_photo";
 };
 
+export type SyncPhotoFailure = {
+	empCode: string;
+	message: string;
+};
+
+export type SyncAllResult = {
+	total: number;
+	succeeded: number;
+	failed: number;
+	failures: SyncPhotoFailure[];
+};
+
+type EmployeePhotoRow = RowDataPacket & {
+	id: number;
+	emp_id: number;
+	emp_code: string;
+	name: string;
+	department: string | null;
+	filename: string | null;
+	image_url: string | null;
+};
+
+type SyncAllRow = RowDataPacket & {
+	emp_code: string;
+	image_url: string;
+};
+
 const PHOTO_URL_EXPR = `CONCAT('http://intranet.bfginternational.com:88/storage/employee/', MD5(e.id), '/', r.filename, '.jpg')`;
+
+const EMPLOYEE_PATH_TABLE = "T633_EMPL_MASTER";
+const ORACLE_READ_BATCH_SIZE = 1000;
+
+async function fetchEmpPicPaths(
+	conn: OracleConnection,
+	empCodes: string[],
+): Promise<Map<string, string | null>> {
+	const result = new Map<string, string | null>();
+
+	for (let i = 0; i < empCodes.length; i += ORACLE_READ_BATCH_SIZE) {
+		const batch = empCodes.slice(i, i + ORACLE_READ_BATCH_SIZE);
+		const placeholders = batch.map((_, j) => `:${j + 1}`).join(",");
+		const { rows } = await conn.execute(
+			`SELECT EMPL_CODE, EMP_PIC_PATH FROM ${EMPLOYEE_PATH_TABLE} WHERE EMPL_CODE IN (${placeholders})`,
+			batch,
+		);
+		for (const row of (rows ?? []) as [string, string | null][]) {
+			result.set(row[0], row[1] || null);
+		}
+	}
+
+	return result;
+}
 
 export const syncPhotosRouter = router({
 	list: protectedProcedure
-		.input(z.object({ q: z.string().default("") }))
+		.input(z.object({ q: z.string().max(100).default("") }))
 		.query(async ({ ctx, input }): Promise<SyncPhotoEmployee[]> => {
 			const search = input.q.trim();
 
@@ -33,7 +84,7 @@ export const syncPhotosRouter = router({
 				params.push(`%${search}%`, `%${search}%`, `%${search}%`);
 			}
 
-			const [rows] = await ctx.db.mes.execute<Row[]>(
+			const [rows] = await ctx.db.mes.execute<EmployeePhotoRow[]>(
 				`SELECT e.id, e.emp_id, e.emp_code, e.name, e.department,
 					r.filename, ${PHOTO_URL_EXPR} AS image_url
 				 FROM mes.employees e
@@ -43,49 +94,33 @@ export const syncPhotosRouter = router({
 				params,
 			);
 
-			const employees = rows as {
-				id: number;
-				emp_id: number;
-				emp_code: string;
-				name: string;
-				department: string;
-				filename: string | null;
-				image_url: string | null;
-			}[];
+			const employees = rows as EmployeePhotoRow[];
 
-			// Fetch Oracle EMP_PIC_PATH for these employees
-			const oracleMap: Record<string, string | null> = {};
-
+			let oracleMap = new Map<string, string | null>();
 			if (employees.length > 0) {
+				const pool = await ctx.db.mis;
+				const conn = await pool.getConnection();
 				try {
-					const pool = await ctx.db.mis;
-					const conn = await pool.getConnection();
-					try {
-						const empCodes = employees.map((e) => e.emp_code);
-						const BATCH_SIZE = 1000;
-						for (let i = 0; i < empCodes.length; i += BATCH_SIZE) {
-							const batch = empCodes.slice(i, i + BATCH_SIZE);
-							const placeholders = batch.map((_, j) => `:${j + 1}`).join(",");
-							const result = await conn.execute(
-								`SELECT EMPL_CODE, EMP_PIC_PATH FROM T633_EMPL_MASTER WHERE EMPL_CODE IN (${placeholders})`,
-								batch,
-							);
-							for (const row of result.rows as [string, string | null][]) {
-								oracleMap[row[0]] = row[1] || null;
-							}
-						}
-					} finally {
-						conn.release();
-					}
-				} catch (e) {
-					console.error("Oracle read error:", e);
+					oracleMap = await fetchEmpPicPaths(
+						conn,
+						employees.map((e) => e.emp_code),
+					);
+				} catch (error) {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: `Failed to read Oracle EMP_PIC_PATH: ${
+							error instanceof Error ? error.message : "unknown error"
+						}`,
+					});
+				} finally {
+					await conn.release();
 				}
 			}
 
 			return employees.map((emp) => {
 				const empCode = emp.emp_code;
 				const imageUrl = emp.image_url || "";
-				const oraclePath = oracleMap[empCode] || null;
+				const oraclePath = oracleMap.get(empCode) ?? null;
 
 				let syncStatus: SyncPhotoEmployee["syncStatus"] = "no_photo";
 				if (imageUrl && oraclePath === imageUrl) syncStatus = "synced";
@@ -97,7 +132,7 @@ export const syncPhotosRouter = router({
 					empId: emp.emp_id,
 					empCode,
 					name: emp.name,
-					department: emp.department,
+					department: emp.department ?? "",
 					imageUrl,
 					oraclePicPath: oraclePath,
 					syncStatus,
@@ -108,93 +143,99 @@ export const syncPhotosRouter = router({
 	syncOne: protectedProcedure
 		.input(
 			z.object({
-				empCode: z.string(),
-				imageUrl: z.string(),
+				empCode: z.string().min(1).max(50),
+				imageUrl: z.string().url(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const pool = await ctx.db.mis;
+			const conn = await pool.getConnection();
+
 			try {
-				const pool = await ctx.db.mis;
-				const conn = await pool.getConnection();
-				let rowsAffected = 0;
-				try {
-					const result = await conn.execute(
-						`UPDATE T633_EMPL_MASTER SET EMP_PIC_PATH = :1 WHERE EMPL_CODE = :2`,
-						[input.imageUrl, input.empCode],
-					);
-					rowsAffected = result.rowsAffected ?? 0;
-				} finally {
-					conn.release();
-				}
+				const result = await conn.execute(
+					`UPDATE ${EMPLOYEE_PATH_TABLE} SET EMP_PIC_PATH = :1 WHERE EMPL_CODE = :2`,
+					[input.imageUrl, input.empCode],
+				);
 
-				if (rowsAffected === 0) {
-					return {
-						success: false,
+				if ((result.rowsAffected ?? 0) === 0) {
+					throw new TRPCError({
+						code: "NOT_FOUND",
 						message: `No Oracle record found for ${input.empCode}`,
-					};
+					});
 				}
 
-				return {
-					success: true,
-					message: `Photo synced for ${input.empCode}`,
-					empCode: input.empCode,
-					imageUrl: input.imageUrl,
-				};
-			} catch (e: unknown) {
-				const message = e instanceof Error ? e.message : "Oracle update failed";
-				console.error("Oracle update error:", e);
-				return { success: false, message };
+				await conn.commit();
+
+				return { empCode: input.empCode, imageUrl: input.imageUrl };
+			} catch (error) {
+				if (error instanceof TRPCError) {
+					throw error;
+				}
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: `Oracle update failed: ${
+						error instanceof Error ? error.message : "unknown error"
+					}`,
+				});
+			} finally {
+				await conn.release();
 			}
 		}),
 
-	syncAll: protectedProcedure.mutation(async ({ ctx }) => {
-		const [rows] = await ctx.db.mes.execute<Row[]>(
-			`SELECT e.id, e.emp_id,
-				${PHOTO_URL_EXPR} AS image_url
+	syncAll: protectedProcedure.mutation(
+		async ({ ctx }): Promise<SyncAllResult> => {
+			const [rows] = await ctx.db.mes.execute<SyncAllRow[]>(
+				`SELECT e.emp_code, ${PHOTO_URL_EXPR} AS image_url
 			 FROM mes.employees e
 			 INNER JOIN mes.resources r ON r.uid = e.id AND r.model = 'employee' AND r.attr = 'photo'
 			 WHERE e.emp_id IS NOT NULL AND e.deleted_at IS NULL
 			 ORDER BY e.emp_id ASC`,
-		);
+			);
 
-		const employees = rows as {
-			id: number;
-			emp_id: number;
-			image_url: string;
-		}[];
+			const employees = rows as SyncAllRow[];
 
-		if (employees.length === 0) {
-			return { success: true, total: 0, successCount: 0, failCount: 0 };
-		}
-
-		const pool = await ctx.db.mis;
-		const conn = await pool.getConnection();
-		let successCount = 0;
-		let failCount = 0;
-
-		try {
-			for (const emp of employees) {
-				const empCode = String(emp.emp_id).padStart(4, "0");
-
-				try {
-					await conn.execute(
-						`UPDATE T633_EMPL_MASTER SET EMP_PIC_PATH = :1 WHERE EMPL_CODE = :2`,
-						[emp.image_url, empCode],
-					);
-					successCount++;
-				} catch {
-					failCount++;
-				}
+			if (employees.length === 0) {
+				return { total: 0, succeeded: 0, failed: 0, failures: [] };
 			}
-		} finally {
-			conn.release();
-		}
 
-		return {
-			success: true,
-			total: employees.length,
-			successCount,
-			failCount,
-		};
-	}),
+			const pool = await ctx.db.mis;
+			const conn = await pool.getConnection();
+			const failures: SyncPhotoFailure[] = [];
+			let succeeded = 0;
+
+			try {
+				for (const emp of employees) {
+					try {
+						await conn.execute(
+							`UPDATE ${EMPLOYEE_PATH_TABLE} SET EMP_PIC_PATH = :1 WHERE EMPL_CODE = :2`,
+							[emp.image_url, emp.emp_code],
+						);
+						succeeded++;
+					} catch (error) {
+						failures.push({
+							empCode: emp.emp_code,
+							message: error instanceof Error ? error.message : "Unknown error",
+						});
+					}
+				}
+				await conn.commit();
+			} catch (error) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: `Oracle sync failed: ${
+						error instanceof Error ? error.message : "unknown error"
+					}`,
+				});
+			} finally {
+				await conn.release();
+			}
+
+			return {
+				total: employees.length,
+				succeeded,
+				failed: failures.length,
+				failures,
+			};
+		},
+	),
 });
