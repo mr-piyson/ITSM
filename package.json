@@ -6,9 +6,9 @@
 		"start": "next start",
 		"lint": "next lint",
 		"dev": "next dev -p 4000",
-		"build": "next build ",
-		"deploy": "git reset --hard HEAD && git pull origin main && bun install && bun run build && sudo systemctl restart itsm.service",
-		"update": "rm -rf .next && git pull && bun install && bun run build && bun start"
+		"build": "next build",
+		"deploy": "./deploy.sh",
+		"deploy:oracle": "./scripts/setup-oracle-linux.sh"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.7.0",
