@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 
+import { env } from "@/lib/env";
+
 /**
  * Validates the CRON_SECRET guard used by /api/cron routes.
  * Returns a JSON response to reject the request, or null when authorized.
  */
 export function checkCronSecret(request: Request): NextResponse | null {
-	const secret = process.env.CRON_SECRET;
+	const secret = env.CRON_SECRET;
 	if (!secret) {
 		return null;
 	}

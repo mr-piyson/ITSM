@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { env } from "@/lib/env";
 import { runContractReminderScan } from "@/lib/contract-mail";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-	const secret = process.env.CRON_SECRET;
+	const secret = env.CRON_SECRET;
 	if (secret) {
 		const url = new URL(request.url);
 		const provided =

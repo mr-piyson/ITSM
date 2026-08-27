@@ -3,6 +3,7 @@ import type { RowDataPacket } from "mysql2";
 import { cookies, headers } from "next/headers";
 
 import db from "@/lib/database";
+import { env } from "@/lib/env";
 
 // Session duration in milliseconds (1 day)
 const SESSION_DURATION = 24 * 60 * 60 * 1000;
@@ -10,7 +11,7 @@ const SESSION_DURATION = 24 * 60 * 60 * 1000;
 export const SESSION_COOKIE_NAME = "session_token";
 
 function getSecureFlag(): boolean {
-	return process.env.COOKIE_SECURE === "true";
+	return env.COOKIE_SECURE;
 }
 
 function getSessionOptions(token: string) {

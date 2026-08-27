@@ -2,6 +2,8 @@ import mssql from "mssql";
 import mysql from "mysql2/promise";
 import type { Pool } from "mysql2/promise";
 
+import { env } from "./env";
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const oracledb = require("oracledb") as {
 	initOracleClient: (opts?: { libDir?: string }) => void;
@@ -46,6 +48,14 @@ function ensureDatabaseName(uri: string | undefined, database: string): string {
 	return url.toString();
 }
 
+function encodeDbUri(uri: string): string {
+	const url = new URL(uri);
+	if (url.password) {
+		url.password = encodeURIComponent(decodeURIComponent(url.password));
+	}
+	return url.toString();
+}
+
 let mesPool: Pool | null = null;
 let issPool: Pool | null = null;
 let erpPool: mssql.ConnectionPool | null = null;
@@ -54,7 +64,7 @@ let odbPool: Awaited<ReturnType<typeof oracledb.createPool>> | null = null;
 function getMesPool(): Pool {
 	if (!mesPool) {
 		mesPool = mysql.createPool({
-			uri: process.env.MES_DATABASE,
+			uri: encodeDbUri(env.MES_DATABASE),
 			waitForConnections: true,
 			connectionLimit: 10,
 			queueLimit: 0,
@@ -67,7 +77,7 @@ function getMesPool(): Pool {
 function getIssPool(): Pool {
 	if (!issPool) {
 		issPool = mysql.createPool({
-			uri: ensureDatabaseName(process.env.ISS_DATABASE, "ISS"),
+			uri: ensureDatabaseName(encodeDbUri(env.ISS_DATABASE), "ISS"),
 			waitForConnections: true,
 			connectionLimit: 10,
 			queueLimit: 0,
@@ -80,10 +90,10 @@ function getIssPool(): Pool {
 async function getERPPool(): Promise<mssql.ConnectionPool> {
 	if (!erpPool?.connected) {
 		const config: mssql.config = {
-			user: process.env.ERP_USER!,
-			password: process.env.ERP_PASSWORD!,
-			database: process.env.ERP_DATABASE!,
-			server: process.env.ERP_SERVER!,
+			user: env.ERP_USER,
+			password: env.ERP_PASSWORD,
+			database: env.ERP_DATABASE,
+			server: env.ERP_SERVER,
 			port: 1433,
 			pool: {
 				max: 10,
@@ -104,8 +114,8 @@ async function getOdbPool() {
 	ensureOracleClient();
 	if (!odbPool) {
 		odbPool = await oracledb.createPool({
-			user: process.env.ORACLE_USER,
-			password: process.env.ORACLE_PASSWORD,
+			user: env.ORACLE_USER,
+			password: env.ORACLE_PASSWORD,
 			connectString: "BFG",
 			poolMin: 1,
 			poolMax: 10,
