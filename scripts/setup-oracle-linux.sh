@@ -100,21 +100,29 @@ echo "  Created tnsnames.ora"
 
 echo ""
 echo "[6/8] Creating .env file..."
-if [ ! -f "${PROJECT_ROOT}/.env" ]; then
-  cat > "${PROJECT_ROOT}/.env" << EOF
+cp "${PROJECT_ROOT}/.env" "${PROJECT_ROOT}/.env.bak" 2>/dev/null || true
+cat > "${PROJECT_ROOT}/.env" << 'ENVEOF'
+MES_DATABASE="mysql://root:bfgA$$essDb@172.18.1.20:3306"
+ISS_DATABASE="mysql://admin:$Admin2629@172.18.1.137:3306/ISS"
+
+ERP_USER="MES"
+ERP_PASSWORD='M3$Ep!2X'
+ERP_SERVER="172.18.1.31"
+ERP_DATABASE="ERP10Live"
+
+COOKIE_SECURE=false
+
 # Oracle Database
-ORACLE_HOST="${ORACLE_HOST}"
-ORACLE_PORT="${ORACLE_PORT}"
-ORACLE_SERVICE_NAME="${ORACLE_SID}"
-ORACLE_USER="${ORACLE_USER}"
-ORACLE_PASSWORD="${ORACLE_PASSWORD}"
-ORACLE_CLIENT_DIR="${ORACLE_HOME}"
-TNS_ADMIN="${ORACLE_HOME}/network/admin"
-EOF
-  echo "  Created .env at project root"
-else
-  echo "  .env already exists, skipping"
-fi
+ORACLE_HOST="172.18.1.11"
+ORACLE_PORT="1521"
+ORACLE_SERVICE_NAME="BFGPROD"
+ORACLE_USER="bfgi"
+ORACLE_PASSWORD="oracle123"
+ORACLE_CLIENT_DIR="/opt/oracle/instantclient_23"
+TNS_ADMIN="/opt/oracle/instantclient_23/network/admin"
+ENVEOF
+echo "  Created .env at project root"
+[ -f "${PROJECT_ROOT}/.env.bak" ] && echo "  Backup saved to .env.bak"
 
 echo ""
 echo "[7/8] Verifying installation..."
