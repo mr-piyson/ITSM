@@ -14,6 +14,7 @@ import { reportsRouter } from "./routers/reports";
 import { requestsRouter } from "./routers/requests";
 import { serversRouter } from "./routers/servers";
 import { stockRouter } from "./routers/stock";
+import { syncPhotosRouter } from "./routers/sync-photos";
 import { tapesRouter } from "./routers/tapes";
 import { vendorsRouter } from "./routers/vendors";
 import { router } from "./trpc";
@@ -37,6 +38,7 @@ export const appRouter = router({
 	dashboard: dashboardRouter,
 	requests: requestsRouter,
 	reports: reportsRouter,
+	syncPhotos: syncPhotosRouter,
 });
 
 export type AppRouter = typeof appRouter;
