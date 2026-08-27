@@ -30,9 +30,9 @@ let oracleInitialized = false;
 function ensureOracleClient() {
 	if (oracleInitialized) return;
 	oracleInitialized = true;
-	const libDir = "/Users/muntdher/Downloads/instantclient_23_3";
+	const libDir = env.ORACLE_CLIENT_DIR;
 	process.env.ORACLE_HOME = libDir;
-	process.env.TNS_ADMIN = `${libDir}/network/admin`;
+	process.env.TNS_ADMIN = env.TNS_ADMIN;
 	try {
 		oracledb.initOracleClient({ libDir });
 	} catch (e) {
