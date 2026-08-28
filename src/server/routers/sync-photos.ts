@@ -23,9 +23,15 @@ export type SyncPhotoFailure = {
 
 export type SyncAllResult = {
 	total: number;
+	skipped: number;
 	succeeded: number;
 	failed: number;
 	failures: SyncPhotoFailure[];
+};
+
+export type SyncPhotoListResult = {
+	rows: SyncPhotoEmployee[];
+	total: number;
 };
 
 type EmployeePhotoRow = RowDataPacket & {
@@ -43,10 +49,31 @@ type SyncAllRow = RowDataPacket & {
 	image_url: string;
 };
 
+type CountRow = RowDataPacket & {
+	total: number | string;
+};
+
 const PHOTO_URL_EXPR = `CONCAT('http://intranet.bfginternational.com:88/storage/employee/', MD5(e.id), '/', r.filename, '.jpg')`;
 
 const EMPLOYEE_PATH_TABLE = "T633_EMPL_MASTER";
 const ORACLE_READ_BATCH_SIZE = 1000;
+const MAX_IN_CLAUSES_PER_STATEMENT = 10;
+const SYNC_BATCH_SIZE = 500;
+
+const UPDATE_PIC_PATH_SQL = `UPDATE ${EMPLOYEE_PATH_TABLE} SET EMP_PIC_PATH = :1 WHERE EMPL_CODE = :2`;
+
+function buildBulkUpdateSql(rowCount: number): string {
+	const rows: string[] = [];
+	for (let i = 0; i < rowCount; i++) {
+		rows.push(
+			`SELECT :${i * 2 + 1} AS EMPL_CODE, :${i * 2 + 2} AS EMP_PIC_PATH FROM DUAL`,
+		);
+	}
+	return `MERGE INTO ${EMPLOYEE_PATH_TABLE} t
+		USING (${rows.join(" UNION ALL ")}) s
+		ON (t.EMPL_CODE = s.EMPL_CODE)
+		WHEN MATCHED THEN UPDATE SET t.EMP_PIC_PATH = s.EMP_PIC_PATH`;
+}
 
 async function fetchEmpPicPaths(
 	conn: OracleConnection,
@@ -54,13 +81,29 @@ async function fetchEmpPicPaths(
 ): Promise<Map<string, string | null>> {
 	const result = new Map<string, string | null>();
 
-	for (let i = 0; i < empCodes.length; i += ORACLE_READ_BATCH_SIZE) {
-		const batch = empCodes.slice(i, i + ORACLE_READ_BATCH_SIZE);
-		const placeholders = batch.map((_, j) => `:${j + 1}`).join(",");
-		const { rows } = await conn.execute(
-			`SELECT EMPL_CODE, EMP_PIC_PATH FROM ${EMPLOYEE_PATH_TABLE} WHERE EMPL_CODE IN (${placeholders})`,
-			batch,
+	// Oracle caps each IN list at 1000 expressions, so UNION multiple IN
+	// clauses into one statement to keep the read to a single round trip.
+	for (
+		let start = 0;
+		start < empCodes.length;
+		start += ORACLE_READ_BATCH_SIZE * MAX_IN_CLAUSES_PER_STATEMENT
+	) {
+		const codes = empCodes.slice(
+			start,
+			start + ORACLE_READ_BATCH_SIZE * MAX_IN_CLAUSES_PER_STATEMENT,
 		);
+
+		const statements: string[] = [];
+		let bindIndex = 1;
+		for (let i = 0; i < codes.length; i += ORACLE_READ_BATCH_SIZE) {
+			const batch = codes.slice(i, i + ORACLE_READ_BATCH_SIZE);
+			const placeholders = batch.map(() => `:${bindIndex++}`).join(",");
+			statements.push(
+				`SELECT EMPL_CODE, EMP_PIC_PATH FROM ${EMPLOYEE_PATH_TABLE} WHERE EMPL_CODE IN (${placeholders})`,
+			);
+		}
+
+		const { rows } = await conn.execute(statements.join(" UNION ALL "), codes);
 		for (const row of (rows ?? []) as [string, string | null][]) {
 			result.set(row[0], row[1] || null);
 		}
@@ -71,27 +114,42 @@ async function fetchEmpPicPaths(
 
 export const syncPhotosRouter = router({
 	list: protectedProcedure
-		.input(z.object({ q: z.string().max(100).default("") }))
-		.query(async ({ ctx, input }): Promise<SyncPhotoEmployee[]> => {
+		.input(
+			z.object({
+				q: z.string().max(100).default(""),
+				page: z.coerce.number().int().min(1).default(1),
+				pageSize: z.coerce.number().int().min(10).max(100).default(30),
+			}),
+		)
+		.query(async ({ ctx, input }): Promise<SyncPhotoListResult> => {
 			const search = input.q.trim();
+
+			const fromClause = `FROM mes.employees e
+				LEFT JOIN mes.resources r ON e.id = r.uid AND r.model = 'employee' AND r.attr = 'photo'`;
 
 			let whereClause = "WHERE e.emp_id IS NOT NULL AND e.deleted_at IS NULL";
 			const params: string[] = [];
 
 			if (search) {
 				whereClause +=
-					" AND (e.emp_id LIKE ? OR e.emp_code LIKE ? OR e.name LIKE ?)";
-				params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+					" AND (e.emp_id LIKE ? OR e.emp_code LIKE ? OR e.name LIKE ? OR e.department LIKE ?)";
+				params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
 			}
 
-			const [rows] = await ctx.db.mes.execute<EmployeePhotoRow[]>(
+			const [countRows] = await ctx.db.mes.query<CountRow[]>(
+				`SELECT COUNT(*) AS total ${fromClause} ${whereClause}`,
+				params,
+			);
+			const total = Number(countRows[0]?.total ?? 0);
+
+			const [rows] = await ctx.db.mes.query<EmployeePhotoRow[]>(
 				`SELECT e.id, e.emp_id, e.emp_code, e.name, e.department,
 					r.filename, ${PHOTO_URL_EXPR} AS image_url
-				 FROM mes.employees e
-				 LEFT JOIN mes.resources r ON e.id = r.uid AND r.model = 'employee' AND r.attr = 'photo'
+				 ${fromClause}
 				 ${whereClause}
-				 ORDER BY e.emp_id ASC`,
-				params,
+				 ORDER BY e.emp_id ASC
+				 LIMIT ? OFFSET ?`,
+				[...params, input.pageSize, (input.page - 1) * input.pageSize],
 			);
 
 			const employees = rows as EmployeePhotoRow[];
@@ -117,34 +175,37 @@ export const syncPhotosRouter = router({
 				}
 			}
 
-			return employees.map((emp) => {
-				const empCode = emp.emp_code;
-				const imageUrl = emp.image_url || "";
-				const oraclePath = oracleMap.get(empCode) ?? null;
+			return {
+				total,
+				rows: employees.map((emp) => {
+					const empCode = emp.emp_code;
+					const imageUrl = emp.image_url || "";
+					const oraclePath = oracleMap.get(empCode) ?? null;
 
-				let syncStatus: SyncPhotoEmployee["syncStatus"] = "no_photo";
-				if (imageUrl && oraclePath === imageUrl) syncStatus = "synced";
-				else if (imageUrl && oraclePath) syncStatus = "different";
-				else if (imageUrl) syncStatus = "not_in_oracle";
+					let syncStatus: SyncPhotoEmployee["syncStatus"] = "no_photo";
+					if (imageUrl && oraclePath === imageUrl) syncStatus = "synced";
+					else if (imageUrl && oraclePath) syncStatus = "different";
+					else if (imageUrl) syncStatus = "not_in_oracle";
 
-				return {
-					id: emp.id,
-					empId: emp.emp_id,
-					empCode,
-					name: emp.name,
-					department: emp.department ?? "",
-					imageUrl,
-					oraclePicPath: oraclePath,
-					syncStatus,
-				};
-			});
+					return {
+						id: emp.id,
+						empId: emp.emp_id,
+						empCode,
+						name: emp.name,
+						department: emp.department ?? "",
+						imageUrl,
+						oraclePicPath: oraclePath,
+						syncStatus,
+					};
+				}),
+			};
 		}),
 
 	syncOne: protectedProcedure
 		.input(
 			z.object({
 				empCode: z.string().min(1).max(50),
-				imageUrl: z.string().url(),
+				imageUrl: z.url(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -153,8 +214,9 @@ export const syncPhotosRouter = router({
 
 			try {
 				const result = await conn.execute(
-					`UPDATE ${EMPLOYEE_PATH_TABLE} SET EMP_PIC_PATH = :1 WHERE EMPL_CODE = :2`,
+					UPDATE_PIC_PATH_SQL,
 					[input.imageUrl, input.empCode],
+					{ autoCommit: true },
 				);
 
 				if ((result.rowsAffected ?? 0) === 0) {
@@ -163,8 +225,6 @@ export const syncPhotosRouter = router({
 						message: `No Oracle record found for ${input.empCode}`,
 					});
 				}
-
-				await conn.commit();
 
 				return { empCode: input.empCode, imageUrl: input.imageUrl };
 			} catch (error) {
@@ -184,40 +244,74 @@ export const syncPhotosRouter = router({
 
 	syncAll: protectedProcedure.mutation(
 		async ({ ctx }): Promise<SyncAllResult> => {
-			const [rows] = await ctx.db.mes.execute<SyncAllRow[]>(
-				`SELECT e.emp_code, ${PHOTO_URL_EXPR} AS image_url
-			 FROM mes.employees e
-			 INNER JOIN mes.resources r ON r.uid = e.id AND r.model = 'employee' AND r.attr = 'photo'
-			 WHERE e.emp_id IS NOT NULL AND e.deleted_at IS NULL
-			 ORDER BY e.emp_id ASC`,
-			);
-
-			const employees = rows as SyncAllRow[];
-
-			if (employees.length === 0) {
-				return { total: 0, succeeded: 0, failed: 0, failures: [] };
-			}
-
 			const pool = await ctx.db.mis;
 			const conn = await pool.getConnection();
 			const failures: SyncPhotoFailure[] = [];
+			let total = 0;
 			let succeeded = 0;
+			let skipped = 0;
 
 			try {
-				for (const emp of employees) {
-					try {
-						await conn.execute(
-							`UPDATE ${EMPLOYEE_PATH_TABLE} SET EMP_PIC_PATH = :1 WHERE EMPL_CODE = :2`,
-							[emp.image_url, emp.emp_code],
-						);
-						succeeded++;
-					} catch (error) {
-						failures.push({
-							empCode: emp.emp_code,
-							message: error instanceof Error ? error.message : "Unknown error",
-						});
+				let offset = 0;
+				while (true) {
+					const [rows] = await ctx.db.mes.query<SyncAllRow[]>(
+						`SELECT e.emp_code, ${PHOTO_URL_EXPR} AS image_url
+						 FROM mes.employees e
+						 INNER JOIN mes.resources r ON r.uid = e.id AND r.model = 'employee' AND r.attr = 'photo'
+						 WHERE e.emp_id IS NOT NULL AND e.deleted_at IS NULL
+						 ORDER BY e.emp_id ASC
+						 LIMIT ? OFFSET ?`,
+						[SYNC_BATCH_SIZE, offset],
+					);
+					const employees = rows as SyncAllRow[];
+					if (employees.length === 0) {
+						break;
+					}
+
+					total += employees.length;
+					const oracleMap = await fetchEmpPicPaths(
+						conn,
+						employees.map((e) => e.emp_code),
+					);
+
+					const pending = new Map<string, string>();
+					for (const emp of employees) {
+						if (oracleMap.get(emp.emp_code) !== emp.image_url) {
+							pending.set(emp.emp_code, emp.image_url);
+						}
+					}
+					skipped += employees.length - pending.size;
+
+					const binds = Array.from(pending).flatMap(([empCode, imageUrl]) => [
+						empCode,
+						imageUrl,
+					]);
+					if (binds.length > 0) {
+						try {
+							await conn.execute(buildBulkUpdateSql(pending.size), binds);
+							succeeded += pending.size;
+						} catch {
+							for (const [empCode, imageUrl] of pending) {
+								try {
+									await conn.execute(UPDATE_PIC_PATH_SQL, [imageUrl, empCode]);
+									succeeded++;
+								} catch (error) {
+									failures.push({
+										empCode,
+										message:
+											error instanceof Error ? error.message : "Unknown error",
+									});
+								}
+							}
+						}
+					}
+
+					offset += employees.length;
+					if (employees.length < SYNC_BATCH_SIZE) {
+						break;
 					}
 				}
+
 				await conn.commit();
 			} catch (error) {
 				throw new TRPCError({
@@ -231,7 +325,8 @@ export const syncPhotosRouter = router({
 			}
 
 			return {
-				total: employees.length,
+				total,
+				skipped,
 				succeeded,
 				failed: failures.length,
 				failures,

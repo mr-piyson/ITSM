@@ -1,15 +1,17 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import {
 	AllCommunityModule,
 	ModuleRegistry,
 	type ColDef,
+	type GridApi,
+	type GridReadyEvent,
+	type IDatasource,
+	type PaginationChangedEvent,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 import {
 	AlertTriangle,
 	CheckCircle2,
@@ -19,6 +21,7 @@ import {
 	XCircle,
 } from "lucide-react";
 
+ModuleRegistry.registerModules([AllCommunityModule]);
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,9 +31,14 @@ import { cn } from "@/lib/utils";
 import type { SyncPhotoEmployee } from "@/server/routers/sync-photos";
 
 type SyncPhotosTableProps = {
-	rows: SyncPhotoEmployee[];
+	datasource: IDatasource;
+	pageSize: number;
+	page: number;
+	loading: boolean;
 	syncingId: number | null;
 	onSyncOne: (emp: SyncPhotoEmployee) => void;
+	onPageChange: (page: number) => void;
+	onReady: (api: GridApi<SyncPhotoEmployee>) => void;
 };
 
 const SYNC_STATUS_ICONS: Record<
@@ -68,27 +76,32 @@ function UrlRenderer({ value }: { value: string | null }) {
 	);
 }
 
-function StatusRenderer({ value }: { value: SyncPhotoEmployee["syncStatus"] }) {
-	const Icon = SYNC_STATUS_ICONS[value];
+function StatusRenderer({
+	value,
+}: {
+	value?: SyncPhotoEmployee["syncStatus"] | null;
+}) {
+	const status = value ?? "no_photo";
+	const Icon = SYNC_STATUS_ICONS[status];
 	return (
 		<Badge
 			variant="secondary"
-			className={cn("gap-1", syncStatusBadgeClass(value))}
+			className={cn("gap-1", syncStatusBadgeClass(status))}
 		>
 			<Icon data-icon="inline-start" />
-			{SYNC_STATUS_LABELS[value]}
+			{SYNC_STATUS_LABELS[status]}
 		</Badge>
 	);
 }
 
 type ActionRendererProps = {
-	data: SyncPhotoEmployee;
+	data?: SyncPhotoEmployee;
 	syncingId: number | null;
 	onSyncOne: (emp: SyncPhotoEmployee) => void;
 };
 
 function ActionRenderer({ data, syncingId, onSyncOne }: ActionRendererProps) {
-	if (!data.imageUrl) {
+	if (!data?.imageUrl) {
 		return null;
 	}
 	const isSyncing = syncingId === data.id;
@@ -110,11 +123,17 @@ function ActionRenderer({ data, syncingId, onSyncOne }: ActionRendererProps) {
 }
 
 export function SyncPhotosTable({
-	rows,
+	datasource,
+	pageSize,
+	page,
+	loading,
 	syncingId,
 	onSyncOne,
+	onPageChange,
+	onReady,
 }: SyncPhotosTableProps) {
 	const tableTheme = useTableTheme();
+	const gridApiRef = useRef<GridApi<SyncPhotoEmployee> | null>(null);
 
 	const columnDefs = useMemo<ColDef<SyncPhotoEmployee>[]>(
 		() => [
@@ -122,8 +141,6 @@ export function SyncPhotosTable({
 				headerName: "#",
 				valueGetter: "node.rowIndex + 1",
 				width: 50,
-				sortable: false,
-				filter: false,
 				cellClass: "text-muted-foreground text-xs",
 			},
 			{
@@ -150,8 +167,6 @@ export function SyncPhotosTable({
 				field: "imageUrl",
 				width: 60,
 				cellRenderer: PhotoRenderer,
-				sortable: false,
-				filter: false,
 				headerClass: "text-center",
 				cellClass: "flex items-center justify-center",
 			},
@@ -181,8 +196,6 @@ export function SyncPhotosTable({
 				headerName: "Action",
 				field: "id",
 				width: 80,
-				sortable: false,
-				filter: false,
 				headerClass: "text-center",
 				cellClass: "flex items-center justify-center",
 				cellRenderer: ActionRenderer,
@@ -192,6 +205,48 @@ export function SyncPhotosTable({
 		[syncingId, onSyncOne],
 	);
 
+	const handleGridReady = useCallback(
+		(event: GridReadyEvent<SyncPhotoEmployee>) => {
+			gridApiRef.current = event.api;
+			onReady(event.api);
+		},
+		[onReady],
+	);
+
+	const handlePaginationChanged = useCallback(
+		(event: PaginationChangedEvent<SyncPhotoEmployee>) => {
+			if (!event.newPage) {
+				return;
+			}
+			onPageChange(event.api.paginationGetCurrentPage());
+		},
+		[onPageChange],
+	);
+
+	useEffect(() => {
+		const api = gridApiRef.current;
+		if (!api) {
+			return;
+		}
+		api.setGridOption("loading", true);
+		api.setGridOption("datasource", datasource);
+	}, [datasource]);
+
+	useEffect(() => {
+		gridApiRef.current?.setGridOption("loading", loading);
+	}, [loading]);
+
+	useEffect(() => {
+		const api = gridApiRef.current;
+		if (!api) {
+			return;
+		}
+		const current = api.paginationGetCurrentPage();
+		if (current !== page) {
+			api.paginationGoToPage(page);
+		}
+	}, [page]);
+
 	return (
 		<div
 			className="min-h-0 flex-1 rounded-none border"
@@ -199,15 +254,21 @@ export function SyncPhotosTable({
 		>
 			<AgGridReact
 				theme={tableTheme}
-				rowData={rows}
 				columnDefs={columnDefs}
+				rowModelType="infinite"
+				datasource={datasource}
+				loading={loading}
 				getRowId={(params) => String(params.data.id)}
+				defaultColDef={{ sortable: false }}
 				pagination
-				paginationPageSize={30}
+				paginationPageSize={pageSize}
+				cacheBlockSize={pageSize}
 				headerHeight={36}
 				rowHeight={42}
 				enableCellTextSelection
 				ensureDomOrder
+				onGridReady={handleGridReady}
+				onPaginationChanged={handlePaginationChanged}
 			/>
 		</div>
 	);
