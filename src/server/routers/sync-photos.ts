@@ -103,7 +103,15 @@ async function fetchEmpPicPaths(
 			);
 		}
 
+		const queryStartedAt = performance.now();
 		const { rows } = await conn.execute(statements.join(" UNION ALL "), codes);
+		if (process.env.NODE_ENV === "development") {
+			console.debug("[syncPhotos.list] Oracle path query", {
+				timestamp: new Date().toISOString(),
+				codes: codes.length,
+				elapsedMs: Math.round(performance.now() - queryStartedAt),
+			});
+		}
 		for (const row of (rows ?? []) as [string, string | null][]) {
 			result.set(row[0], row[1] || null);
 		}
@@ -136,32 +144,60 @@ export const syncPhotosRouter = router({
 				params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
 			}
 
-			const [countRows] = await ctx.db.mes.query<CountRow[]>(
-				`SELECT COUNT(*) AS total ${fromClause} ${whereClause}`,
-				params,
-			);
+			const startedAt = performance.now();
+			const countStartedAt = performance.now();
+			const countPromise = ctx.db.mes
+				.query<CountRow[]>(
+					`SELECT COUNT(*) AS total FROM mes.employees e ${whereClause}`,
+					params,
+				)
+				.then((result) => ({
+					result,
+					elapsedMs: Math.round(performance.now() - countStartedAt),
+				}));
+			const pageStartedAt = performance.now();
+			const pagePromise = ctx.db.mes
+				.query<EmployeePhotoRow[]>(
+					`SELECT e.id, e.emp_id, e.emp_code, e.name, e.department,
+						r.filename, ${PHOTO_URL_EXPR} AS image_url
+						${fromClause}
+						${whereClause}
+						ORDER BY e.emp_id ASC
+						LIMIT ? OFFSET ?`,
+					[...params, input.pageSize, (input.page - 1) * input.pageSize],
+				)
+				.then((result) => ({
+					result,
+					elapsedMs: Math.round(performance.now() - pageStartedAt),
+				}));
+			const [
+				{ result: countResult, elapsedMs: countElapsedMs },
+				{ result: pageResult, elapsedMs: pageElapsedMs },
+			] = await Promise.all([countPromise, pagePromise]);
+			const [countRows] = countResult;
 			const total = Number(countRows[0]?.total ?? 0);
-
-			const [rows] = await ctx.db.mes.query<EmployeePhotoRow[]>(
-				`SELECT e.id, e.emp_id, e.emp_code, e.name, e.department,
-					r.filename, ${PHOTO_URL_EXPR} AS image_url
-				 ${fromClause}
-				 ${whereClause}
-				 ORDER BY e.emp_id ASC
-				 LIMIT ? OFFSET ?`,
-				[...params, input.pageSize, (input.page - 1) * input.pageSize],
-			);
-
+			const [rows] = pageResult;
 			const employees = rows as EmployeePhotoRow[];
+			const employeesWithPhotos = employees.filter((emp) => emp.image_url);
 
 			let oracleMap = new Map<string, string | null>();
-			if (employees.length > 0) {
+			let oracleElapsedMs = 0;
+			let oraclePoolElapsedMs = 0;
+			let oracleConnectionElapsedMs = 0;
+			if (employeesWithPhotos.length > 0) {
+				const oracleStartedAt = performance.now();
+				const poolStartedAt = performance.now();
 				const pool = await ctx.db.mis;
+				oraclePoolElapsedMs = Math.round(performance.now() - poolStartedAt);
+				const connectionStartedAt = performance.now();
 				const conn = await pool.getConnection();
+				oracleConnectionElapsedMs = Math.round(
+					performance.now() - connectionStartedAt,
+				);
 				try {
 					oracleMap = await fetchEmpPicPaths(
 						conn,
-						employees.map((e) => e.emp_code),
+						employeesWithPhotos.map((e) => e.emp_code),
 					);
 				} catch (error) {
 					throw new TRPCError({
@@ -173,6 +209,25 @@ export const syncPhotosRouter = router({
 				} finally {
 					await conn.release();
 				}
+				oracleElapsedMs = Math.round(performance.now() - oracleStartedAt);
+			}
+
+			if (process.env.NODE_ENV === "development") {
+				console.debug("[syncPhotos.list] page timing", {
+					page: input.page,
+					pageSize: input.pageSize,
+					search: Boolean(search),
+					rows: employees.length,
+					rowsWithPhotos: employeesWithPhotos.length,
+					total,
+					countElapsedMs,
+					pageElapsedMs,
+					oraclePoolElapsedMs,
+					oracleConnectionElapsedMs,
+					oracleElapsedMs,
+					timestamp: new Date().toISOString(),
+					elapsedMs: Math.round(performance.now() - startedAt),
+				});
 			}
 
 			return {
