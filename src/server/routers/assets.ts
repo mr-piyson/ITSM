@@ -407,7 +407,7 @@ export const assetsRouter = router({
 			}
 
 			const fileName = `asset-${Date.now()}-${randomBytes(6).toString("hex")}.${extension}`;
-			const dir = path.join(process.cwd(), "public", "itemsImages");
+			const dir = path.join(process.cwd(), "ISS", "itemsImages");
 			await mkdir(dir, { recursive: true });
 			await writeFile(path.join(dir, fileName), buffer);
 

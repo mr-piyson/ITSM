@@ -5,6 +5,9 @@ import { NextResponse } from "next/server";
 
 const PRIMARY_DIR = path.join(process.cwd(), "ISS", "itemsImages");
 const FALLBACK_DIR = path.join(process.cwd(), "public", "itemsImages");
+const REMOTE_BASE =
+	(process.env.ISS_IMAGE_URL || "http://172.18.1.137").replace(/\/+$/, "") +
+	"/ISS/itemsImages";
 
 const MIME_TYPES: Record<string, string> = {
 	".jpg": "image/jpeg",
@@ -64,6 +67,24 @@ export async function GET(
 		} catch {
 			// file not found in this directory, try the next one
 		}
+	}
+
+	try {
+		const remote = await fetch(
+			`${REMOTE_BASE}/${encodeURIComponent(name)}`,
+			{ cache: "no-store" },
+		);
+		if (remote.ok) {
+			const data = await remote.arrayBuffer();
+			return new NextResponse(data, {
+				headers: {
+					"Content-Type": type,
+					"Cache-Control": "public, max-age=31536000, immutable",
+				},
+			});
+		}
+	} catch {
+		// remote unavailable, fall through to 404
 	}
 
 	return new NextResponse("Not found", { status: 404 });
