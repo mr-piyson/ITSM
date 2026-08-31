@@ -1,4 +1,5 @@
 import type { RowDataPacket } from "mysql2";
+import type { Pool } from "mysql2/promise";
 import { z } from "zod";
 
 import { ATTENDANCE_RULES } from "@/lib/attendance-rules";
@@ -23,7 +24,7 @@ export type DailyAttendance = {
 	date: string;
 	checkIn: string | null;
 	checkOut: string | null;
-	status: "present" | "late" | "absent" | "weekend";
+	status: "present" | "late" | "absent" | "weekend" | "future";
 	lateMinutes: number;
 	extraMinutes: number;
 	weekend: boolean;
@@ -77,6 +78,25 @@ function buildVlogTableName(year: number, month: number): string {
 	return `hikvision.vlog_${year}${pad(month)}`;
 }
 
+async function safeQueryLogs(
+	db: Pool,
+	tableName: string,
+	personId: number,
+): Promise<Row[]> {
+	try {
+		const [rows] = await db.query<Row[]>(
+			`SELECT person_id, \`datetime\`, time_raw, person_name
+			 FROM ${tableName}
+			 WHERE person_id = ?
+			 ORDER BY \`datetime\` ASC`,
+			[personId],
+		);
+		return rows;
+	} catch {
+		return [];
+	}
+}
+
 export const attendanceRouter = router({
 	employee: protectedProcedure
 		.input(z.object({ empCode: z.coerce.number().int().positive() }))
@@ -114,23 +134,11 @@ export const attendanceRouter = router({
 			const curTable = buildVlogTableName(input.year, input.month);
 
 			const [prevRows, curRows] = await Promise.all([
-				ctx.db.mes.query<Row[]>(
-					`SELECT person_id, \`datetime\`, time_raw, person_name
-					 FROM ${prevTable}
-					 WHERE person_id = ?
-					 ORDER BY \`datetime\` ASC`,
-					[input.personId],
-				),
-				ctx.db.mes.query<Row[]>(
-					`SELECT person_id, \`datetime\`, time_raw, person_name
-					 FROM ${curTable}
-					 WHERE person_id = ?
-					 ORDER BY \`datetime\` ASC`,
-					[input.personId],
-				),
+				safeQueryLogs(ctx.db.mes, prevTable, input.personId),
+				safeQueryLogs(ctx.db.mes, curTable, input.personId),
 			]);
 
-			const allRows = [...prevRows[0], ...curRows[0]];
+			const allRows = [...prevRows, ...curRows];
 			return allRows
 				.map((row) => ({
 					personId: Number(row.person_id),
@@ -162,23 +170,11 @@ export const attendanceRouter = router({
 			const curTable = buildVlogTableName(input.year, input.month);
 
 			const [prevLogRows, curLogRows] = await Promise.all([
-				ctx.db.mes.query<Row[]>(
-					`SELECT person_id, \`datetime\`, time_raw, person_name
-					 FROM ${prevTable}
-					 WHERE person_id = ?
-					 ORDER BY \`datetime\` ASC`,
-					[input.personId],
-				),
-				ctx.db.mes.query<Row[]>(
-					`SELECT person_id, \`datetime\`, time_raw, person_name
-					 FROM ${curTable}
-					 WHERE person_id = ?
-					 ORDER BY \`datetime\` ASC`,
-					[input.personId],
-				),
+				safeQueryLogs(ctx.db.mes, prevTable, input.personId),
+				safeQueryLogs(ctx.db.mes, curTable, input.personId),
 			]);
 
-			const allLogRows = [...prevLogRows[0], ...curLogRows[0]];
+			const allLogRows = [...prevLogRows, ...curLogRows];
 			const logs: AttendanceLog[] = allLogRows
 				.map((row) => ({
 					personId: Number(row.person_id),
@@ -265,7 +261,7 @@ export const attendanceRouter = router({
 						date: dateStr,
 						checkIn: null,
 						checkOut: null,
-						status: "absent",
+						status: "future",
 						lateMinutes: 0,
 						extraMinutes: 0,
 						weekend: false,

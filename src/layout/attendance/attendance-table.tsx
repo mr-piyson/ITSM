@@ -66,6 +66,16 @@ function StatusBadge({ status }: { status: DailyAttendance["status"] }) {
 			</Badge>
 		);
 	}
+	if (status === "future") {
+		return (
+			<Badge
+				variant="secondary"
+				className="bg-blue-50 text-blue-400 dark:bg-blue-950 dark:text-blue-300"
+			>
+				Upcoming
+			</Badge>
+		);
+	}
 	return (
 		<Badge
 			variant="secondary"
