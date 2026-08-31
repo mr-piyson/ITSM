@@ -147,7 +147,7 @@ export function LandingHero() {
 			<div className="max-w-7xl mx-auto">
 				<div className="text-center mb-12">
 					<Badge variant="secondary" className="mb-6">
-						Next-Generation ITSM Platform
+						BFG International
 					</Badge>
 					<h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
 						Transform Your
