@@ -1,4 +1,4 @@
-import type { SyncPhotoEmployee } from "@/server/routers/sync-photos";
+import type { SyncPhotoEmployee } from "@/server/routers/ITSM/sync-photos";
 
 export const SYNC_STATUS_LABELS: Record<
 	SyncPhotoEmployee["syncStatus"],

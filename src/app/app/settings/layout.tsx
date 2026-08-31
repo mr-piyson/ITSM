@@ -1,6 +1,6 @@
 "use client";
 
-import { SettingsSidebar } from "@/layout/settings/settings-sidebar";
+import { SettingsSidebar } from "@/layout/ITSM/settings/settings-sidebar";
 
 export default function SettingsLayout({
 	children,

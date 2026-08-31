@@ -1,4 +1,4 @@
-import { StockPage } from "@/layout/stock/stock-page";
+import { StockPage } from "@/layout/ITSM/stock/stock-page";
 
 export default function Page() {
 	return <StockPage />;

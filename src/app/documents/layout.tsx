@@ -1,4 +1,4 @@
-import { MarketingNavbar } from "@/layout/shell/marketing-navbar";
+import { MarketingNavbar } from "@/layout/ITSM/shell/marketing-navbar";
 
 type RequestsLayoutProps = {
 	children?: React.ReactNode;

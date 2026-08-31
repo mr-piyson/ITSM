@@ -1,4 +1,4 @@
-import { EmployeesPage } from "@/layout/employees/employees-page";
+import { EmployeesPage } from "@/layout/ITSM/employees/employees-page";
 
 export default function Page() {
 	return <EmployeesPage />;

@@ -57,7 +57,7 @@ export async function GET(
 			continue;
 		}
 		try {
-			const data = await readFile(resolved);
+			const data = await readFile(/* turbopackIgnore: true */ resolved);
 			return new NextResponse(data, {
 				headers: {
 					"Content-Type": type,

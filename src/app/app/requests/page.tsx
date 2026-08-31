@@ -1,4 +1,4 @@
-import { RequestsPage } from "@/layout/requests/requests-page";
+import { RequestsPage } from "@/layout/ITSM/requests/requests-page";
 
 export default function Page() {
 	return <RequestsPage />;

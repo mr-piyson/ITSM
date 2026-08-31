@@ -1,4 +1,4 @@
-import { LandingPage } from "@/layout/landing/landing-page";
+import { LandingPage } from "@/layout/ITSM/landing/landing-page";
 
 export default function Page() {
 	return <LandingPage />;

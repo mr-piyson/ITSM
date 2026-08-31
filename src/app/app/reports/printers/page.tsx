@@ -1,4 +1,4 @@
-import { PrintersReport } from "@/layout/reports/printers-report";
+import { PrintersReport } from "@/layout/ITSM/reports/printers-report";
 
 export default function Page() {
 	return <PrintersReport />;

@@ -1,6 +1,6 @@
 "use client";
 
-import { DashboardPage } from "@/layout/dashboard/dashboard-page";
+import { DashboardPage } from "@/layout/ITSM/dashboard/dashboard-page";
 
 export default function Page() {
 	return <DashboardPage />;

@@ -4,7 +4,7 @@ import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 
 import { cn } from "@/lib/utils";
 
-import { RootProviders } from "@/layout/shell/root-providers";
+import { RootProviders } from "@/layout/ITSM/shell/root-providers";
 
 import "./globals.css";
 
