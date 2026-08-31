@@ -2,6 +2,7 @@
 
 import { useForm } from "@tanstack/react-form";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -24,8 +25,6 @@ export const SignInSchema = z.object({
 	email: z.string().min(1, "Email or username is required"),
 	password: z.string().min(6, "Password must be at least 6 characters"),
 });
-
-type SignInValues = z.infer<typeof SignInSchema>;
 
 export function SignInForm() {
 	const router = useRouter();
@@ -136,7 +135,7 @@ export function SignInForm() {
 					</form.Field>
 				</CardContent>
 
-				<CardFooter className="mt-5">
+				<CardFooter className="mt-5 flex flex-col gap-4">
 					<form.Subscribe
 						selector={(state) => [state.canSubmit, state.isSubmitting]}
 					>
@@ -154,6 +153,31 @@ export function SignInForm() {
 							</Button>
 						)}
 					</form.Subscribe>
+
+					{/* Divider */}
+					<div className="flex items-center gap-3">
+						<div className="flex-1 border-t border-muted-foreground/30" />
+						<span className="text-sm text-muted-foreground">or</span>
+						<div className="flex-1 border-t border-muted-foreground/30" />
+					</div>
+
+					{/* Microsoft Login Button */}
+					<Link href="/api/auth/microsoft" className="w-full">
+						<Button variant="outline" className="w-full font-bold">
+							<svg
+								className="mr-2 h-4 w-4"
+								viewBox="0 0 23 23"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<rect x="1" y="1" width="9" height="9" fill="#F25022" />
+								<rect x="13" y="1" width="9" height="9" fill="#7FBA00" />
+								<rect x="1" y="13" width="9" height="9" fill="#00A4EF" />
+								<rect x="13" y="13" width="9" height="9" fill="#FFB900" />
+							</svg>
+							Sign in with Microsoft
+						</Button>
+					</Link>
 				</CardFooter>
 			</form>
 		</Card>
