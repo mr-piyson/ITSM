@@ -30,6 +30,7 @@ export type RouteItem = {
 	title: string;
 	href?: string;
 	icon: LucideIcon; // Component type instead of string
+	description?: string;
 	dev?: boolean;
 	children?: RouteItem[];
 };
@@ -177,19 +178,28 @@ export const routes: {
 	],
 	settings: [
 		{
+			title: "Mail",
+			href: "/app/settings/mail",
+			icon: Mail,
+			description: "SMTP server, sender, recipients and notifications",
+		},
+		{
 			title: "Profile",
 			href: "/app/settings/profile",
 			icon: User,
+			description: "Your personal details and preferences",
 		},
 		{
 			title: "Account",
 			href: "/app/settings/account",
 			icon: CreditCard,
+			description: "Account and billing information",
 		},
 		{
 			title: "Security",
 			href: "/app/settings/security",
 			icon: Lock,
+			description: "Password, sign-in and security options",
 		},
 	],
 	landingPage: [

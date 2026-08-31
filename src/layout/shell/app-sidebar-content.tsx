@@ -43,7 +43,10 @@ export function AppSidebarContent() {
 							<SidebarMenuItem key={title}>
 								<SidebarMenuButton
 									isActive={isActive(href)}
-									className="flex"
+									className={cn(
+										isActive(href) ? "text-foreground bg-primary!" : "",
+										loading === href && !open && !isMobile ? "hidden" : "",
+									)}
 									tooltip={title}
 									size={"lg"}
 									onClick={() => {
@@ -54,23 +57,9 @@ export function AppSidebarContent() {
 										href && router.push(href);
 									}}
 								>
-									<Icon
-										className={cn(
-											"ms-1 size-6 shrink-0",
-											isActive(href) ? "text-primary" : "text-foreground/92",
-											loading === href && !open && !isMobile ? "hidden" : "",
-										)}
-									/>
+									<Icon className={cn("ms-1 size-6 shrink-0")} />
 									<div className="flex items-center justify-between w-full">
-										<span
-											className={cn(
-												" text-base",
-												isActive(href) ? "text-primary" : "text-foreground/92",
-												loading === href && !open && !isMobile ? "hidden" : "",
-											)}
-										>
-											{title}
-										</span>
+										<span className={cn(" text-base")}>{title}</span>
 										{loading === href && (
 											<Loader2 className="mx-2 size-3 animate-spin text-foreground" />
 										)}
