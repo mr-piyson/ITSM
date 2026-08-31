@@ -92,7 +92,6 @@ function DashboardContent({ data }: { data: DashboardData }) {
 				</span>
 			</div>
 
-			<AlertsPanel alerts={alerts} />
 
 			<DistributionCharts
 				assetsByType={data.assetsByType}
@@ -107,6 +106,8 @@ function DashboardContent({ data }: { data: DashboardData }) {
 				recentAssets={data.recentAssets}
 				recentItems={data.recentItems}
 			/>
+
+			<AlertsPanel alerts={alerts} />
 		</div>
 	);
 }

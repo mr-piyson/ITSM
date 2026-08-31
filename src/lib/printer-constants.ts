@@ -5,7 +5,7 @@ export function printerImageUrl(image?: string | null): string | null {
 	if (/^https?:\/\//.test(image)) {
 		return image;
 	}
-	return `/ISS/printersImages/${image}`;
+	return `/ISS/itemsImages/${image}`;
 }
 
 export const PRINTER_ACTION_TYPES = [
