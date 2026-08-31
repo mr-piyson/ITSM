@@ -23,6 +23,7 @@ import {
 	User,
 	UserCheck,
 	Wrench,
+	Zap,
 	type LucideIcon,
 } from "lucide-react";
 
@@ -169,8 +170,8 @@ export const routes: {
 			label: "Settings",
 			items: [
 				{
-					title: "Mail",
-					href: "/app/settings/mail",
+					title: "Settings",
+					href: "/app/settings",
 					icon: Mail,
 				},
 			],
@@ -200,6 +201,12 @@ export const routes: {
 			href: "/app/settings/security",
 			icon: Lock,
 			description: "Password, sign-in and security options",
+		},
+		{
+			title: "Health",
+			href: "/app/settings/health",
+			icon: Zap,
+			description: "Database connection and system status",
 		},
 	],
 	landingPage: [

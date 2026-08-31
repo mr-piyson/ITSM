@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { ChevronsUpDown, LogOut, Moon } from "lucide-react";
+import { ChevronsUpDown, LogOut, Moon, Settings } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { trpc } from "@/trpc/react";
+import Link from "next/link";
 
 function getInitials(name?: string | null, email?: string | null) {
 	const source = name?.trim() || email?.trim() || "";
@@ -96,6 +97,12 @@ export function UserMenu(props: any) {
 						/>
 					</div>
 				</DropdownMenuGroup>
+				<Link href="/app/settings" className="no-underline">
+					<DropdownMenuItem>
+						<Settings />
+						Settings
+					</DropdownMenuItem>
+				</Link>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem onClick={() => signOutMutation.mutate()}>
 					<LogOut />
