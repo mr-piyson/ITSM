@@ -164,16 +164,11 @@ export function SignInForm() {
 					{/* Microsoft Login Button */}
 					<Link href="/api/auth/microsoft" className="w-full">
 						<Button variant="outline" className="w-full font-bold">
-							<svg
-								className="mr-2 h-4 w-4"
-								viewBox="0 0 23 23"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<rect x="1" y="1" width="9" height="9" fill="#F25022" />
-								<rect x="13" y="1" width="9" height="9" fill="#7FBA00" />
-								<rect x="1" y="13" width="9" height="9" fill="#00A4EF" />
-								<rect x="13" y="13" width="9" height="9" fill="#FFB900" />
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23">
+								<path fill="#f35325" d="M1 1h10v10H1z" />
+								<path fill="#81bc06" d="M12 1h10v10H12z" />
+								<path fill="#05a6f0" d="M1 12h10v10H1z" />
+								<path fill="#ffba08" d="M12 12h10v10H12z" />
 							</svg>
 							Sign in with Microsoft
 						</Button>
