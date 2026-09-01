@@ -34,8 +34,8 @@ export const chartsRouter = router({
 		.input(
 			z.object({
 				factory: z.string().default("F2 Rail"),
-				from: z.date().optional().nullable(),
-				to: z.date().optional().nullable(),
+				from: z.coerce.date().optional().nullable(),
+				to: z.coerce.date().optional().nullable(),
 				gate: z.number().int().min(0).default(0),
 				limit: z.number().int().positive().optional(),
 				order: z.enum(["asc", "desc"]).default("desc"),
@@ -204,8 +204,8 @@ export const chartsRouter = router({
 	get_defect_counts_by_type: publicProcedure
 		.input(
 			z.object({
-				from: z.date().optional().nullable(),
-				to: z.date().optional().nullable(),
+				from: z.coerce.date().optional().nullable(),
+				to: z.coerce.date().optional().nullable(),
 				limit: z.number().optional(),
 				gate: z.number().optional().default(0),
 			}),
@@ -278,8 +278,8 @@ export const chartsRouter = router({
 	get_all_stats: publicProcedure
 		.input(
 			z.object({
-				from: z.date().optional().nullable(),
-				to: z.date().optional().nullable(),
+				from: z.coerce.date().optional().nullable(),
+				to: z.coerce.date().optional().nullable(),
 				gate: z.number().int().min(0).default(0),
 			}),
 		)
@@ -382,8 +382,8 @@ export const chartsRouter = router({
 	get_total_defects_per_day: publicProcedure
 		.input(
 			z.object({
-				from: z.date().optional().nullable(),
-				to: z.date().optional().nullable(),
+				from: z.coerce.date().optional().nullable(),
+				to: z.coerce.date().optional().nullable(),
 				gate: z.number().optional(),
 			}),
 		)

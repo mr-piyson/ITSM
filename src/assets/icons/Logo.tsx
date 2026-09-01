@@ -1,10 +1,21 @@
 "use client";
-import { Monitor } from "lucide-react";
+import Image from "next/image";
+import logo from "@/assets/images/logo.png";
 
-export default function AppLogo(props: React.SVGProps<SVGSVGElement>) {
+type AppLogoProps = React.ComponentPropsWithoutRef<"div"> & {
+	size?: number;
+};
+
+export default function AppLogo(props: AppLogoProps) {
 	return (
-		<div className="!min-w-10 h-10 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
-			<Monitor className="w-6 h-6 text-primary-foreground" />
+		<div className="rounded-lg flex items-center justify-center">
+			<Image
+				src={logo}
+				width={100}
+				height={100}
+				alt="MES Software"
+				className="w-full h-full object-contain"
+			/>
 		</div>
 	);
 }

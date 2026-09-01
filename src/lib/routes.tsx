@@ -234,12 +234,12 @@ export const routes: {
 		{
 			title: "Tools",
 			icon: Wrench,
-			href: "downloads/keyboard Tester.exe",
+			href: "downloads/keyboard-tester.exe",
 			children: [
 				{
 					title: "Keyboard Tester Tool",
 					icon: Keyboard,
-					href: "downloads/keyboard Tester.exe",
+					href: "downloads/keyboard-tester.exe",
 				},
 				{
 					title: "Mouse Tester Tool",

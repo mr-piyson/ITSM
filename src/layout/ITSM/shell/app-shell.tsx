@@ -53,7 +53,7 @@ export default function AppShell(props: AppShellProps) {
 
 export function AppSidebar({ ...props }: any) {
 	return (
-		<Sidebar collapsible="icon" {...props}>
+		<Sidebar collapsible="offcanvas" {...props}>
 			<SidebarHeader>
 				<TeamSwitcher />
 			</SidebarHeader>

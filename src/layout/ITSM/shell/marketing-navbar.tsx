@@ -28,6 +28,8 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { type RouteItem, routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import AppLogo from "@/assets/icons/Logo";
 
 export function MarketingNavbar({ hideSignIn }: { hideSignIn?: boolean }) {
 	const [isScrolled, setIsScrolled] = React.useState(false);
@@ -50,8 +52,8 @@ export function MarketingNavbar({ hideSignIn }: { hideSignIn?: boolean }) {
 					<div className="flex justify-between items-center h-16">
 						<div className="flex items-center">
 							<div className="shrink-0 flex items-center">
-								<div className="w-10 h-10 bg-linear-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
-									<Monitor className="w-6 h-6 text-primary-foreground" />
+								<div className="w-10 h-10 rounded-lg flex items-center justify-center">
+									<AppLogo />
 								</div>
 								<span className="ml-3 text-xl font-bold text-foreground">
 									ITSM
