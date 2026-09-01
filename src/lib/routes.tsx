@@ -22,6 +22,7 @@ import {
 	Store,
 	User,
 	UserCheck,
+	Users,
 	Wrench,
 	Zap,
 	type LucideIcon,
@@ -195,6 +196,12 @@ export const routes: {
 			href: "/app/settings/account",
 			icon: CreditCard,
 			description: "Account and billing information",
+		},
+		{
+			title: "Users",
+			href: "/app/settings/users",
+			icon: Users,
+			description: "Manage system users and access",
 		},
 		{
 			title: "Security",

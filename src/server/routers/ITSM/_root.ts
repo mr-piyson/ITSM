@@ -17,6 +17,7 @@ import { serversRouter } from "./servers";
 import { stockRouter } from "./stock";
 import { syncPhotosRouter } from "./sync-photos";
 import { tapesRouter } from "./tapes";
+import { usersRouter } from "./users";
 import { vendorsRouter } from "./vendors";
 
 export const issRouter = {
@@ -39,6 +40,7 @@ export const issRouter = {
 	requests: requestsRouter,
 	reports: reportsRouter,
 	syncPhotos: syncPhotosRouter,
+	users: usersRouter,
 };
 
 export type ISSRouter = typeof issRouter;
