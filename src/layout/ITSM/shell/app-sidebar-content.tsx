@@ -44,7 +44,7 @@ export function AppSidebarContent() {
 								<SidebarMenuButton
 									isActive={isActive(href)}
 									className={cn(
-										isActive(href) ? "text-foreground bg-primary! rounded-sm" : "",
+										isActive(href) ? "text-white! bg-primary! rounded-sm" : "",
 										loading === href && !open && !isMobile ? "hidden" : "",
 									)}
 									tooltip={title}
