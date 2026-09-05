@@ -130,6 +130,32 @@ export const usersRouter = router({
 			return { success: true };
 		}),
 
+	updateProfile: protectedProcedure
+		.input(
+			z.object({
+				username: z.string().trim().min(1).max(50),
+				name: z.string().trim().min(1).max(50),
+				email: z.string().trim().min(1).max(100).email(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const [existing] = await ctx.db.iss.execute<Row[]>(
+				`SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ? LIMIT 1`,
+				[input.username, input.email, ctx.user.id],
+			);
+			if (existing.length > 0) {
+				throw new Error("Username or email already exists");
+			}
+
+			await ctx.db.iss.execute(
+				`UPDATE users SET username = ?, name = ?, email = ?
+				 WHERE id = ?`,
+				[input.username, input.name, input.email, ctx.user.id],
+			);
+
+			return { success: true };
+		}),
+
 	resetPassword: protectedProcedure
 		.input(
 			z.object({
@@ -142,10 +168,10 @@ export const usersRouter = router({
 
 			const hashedPassword = hashPassword(input.password);
 
-			await ctx.db.iss.execute(
-				`UPDATE users SET password = ? WHERE id = ?`,
-				[hashedPassword, input.id],
-			);
+			await ctx.db.iss.execute(`UPDATE users SET password = ? WHERE id = ?`, [
+				hashedPassword,
+				input.id,
+			]);
 
 			return { success: true };
 		}),

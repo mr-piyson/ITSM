@@ -192,12 +192,6 @@ export const routes: {
 			description: "Your personal details and preferences",
 		},
 		{
-			title: "Account",
-			href: "/app/settings/account",
-			icon: CreditCard,
-			description: "Account and billing information",
-		},
-		{
 			title: "Users",
 			href: "/app/settings/users",
 			icon: Users,
