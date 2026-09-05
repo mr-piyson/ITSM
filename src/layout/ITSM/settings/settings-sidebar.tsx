@@ -17,7 +17,10 @@ export function SettingsSidebar() {
 	const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
 	const filtered = useMemo(() => {
-		const items = routes.settings.filter((r) => r.href);
+		const items = routes.settings.filter(
+			(r): r is (typeof routes.settings)[number] & { href: string } =>
+				Boolean(r.href),
+		);
 		if (!query.trim()) return items;
 		const q = query.toLowerCase();
 		return items.filter(
@@ -71,7 +74,7 @@ export function SettingsSidebar() {
 	);
 
 	return (
-		<aside className="flex w-full shrink-0 flex-col border-b bg-muted/30 md:w-64 md:border-r md:border-b-0">
+		<aside className="flex w-full shrink-0 flex-col border-b bg-muted/30 md:sticky md:top-0 md:max-h-[calc(100svh-3rem)] md:w-64 md:border-r md:border-b-0">
 			<div className="border-b p-2">
 				<div className="relative">
 					<SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
