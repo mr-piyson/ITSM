@@ -4,7 +4,6 @@ import {
 	CalendarDays,
 	Camera,
 	ClipboardList,
-	CreditCard,
 	Clock,
 	Database,
 	FileSignature,
