@@ -1,7 +1,5 @@
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 
-import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
-
 import { cn } from "@/lib/utils";
 
 import { RootProviders } from "@/layout/ITSM/shell/root-providers";
@@ -28,7 +26,7 @@ export default function RootLayout(props: any) {
 			className={cn("font-sans", inter.variable)}
 		>
 			<head>
-				<title>ITSM - IT Service Management</title>
+				<title>ITSM</title>
 				<meta
 					name="description"
 					content="Best CRM system for your business to manage transactions"
