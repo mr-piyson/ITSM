@@ -6,101 +6,94 @@ import { useEffect, useRef, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import Logo from "@/assets/icons/Logo";
 
-export function SplashScreen(props: {
+const SPLASH_SHOWN_KEY = "itsm-splash-shown";
+const MAX_LOAD_TIME = 10_000;
+
+interface SplashScreenProps {
 	children: React.ReactNode;
 	minimumLoadingTime?: number;
-}) {
-	const { minimumLoadingTime = 1000 } = props;
-	const [loading, setLoading] = useState(true);
+}
+
+export function SplashScreen({
+	children,
+	minimumLoadingTime = 1000,
+}: SplashScreenProps) {
+	const [visible, setVisible] = useState(true);
 	const [progress, setProgress] = useState(0);
-	const initialResourceCount = useRef(0);
-	const resourcesLoaded = useRef(0);
-	const rafId = useRef<number | null>(null);
-	const startTime = useRef<number>(Date.now());
+	const startTime = useRef(0);
 
 	useEffect(() => {
-		// Set the start time only once on mount
-		if (startTime.current === null) {
-			startTime.current = Date.now();
+		if (typeof window === "undefined") return;
+
+		if (sessionStorage.getItem(SPLASH_SHOWN_KEY)) {
+			setVisible(false);
+			return;
 		}
-	}, []);
 
-	useEffect(() => {
-		let timeout: NodeJS.Timeout;
+		let rafId = 0;
+		let finished = false;
 
-		// Get initial count of resources that need to be loaded
-		initialResourceCount.current =
-			performance.getEntriesByType("resource").length;
+		startTime.current = performance.now();
 
-		// Function to calculate and update progress
-		const updateProgress = () => {
-			// Get current resources
-			const resources = performance.getEntriesByType("resource");
+		const finish = () => {
+			if (finished) return;
+			finished = true;
+			sessionStorage.setItem(SPLASH_SHOWN_KEY, "true");
+			setProgress(100);
+			setVisible(false);
+		};
 
-			// Count completed resources (those with a non-zero duration)
-			const completedResources = resources.filter(
-				(resource) => resource.duration > 0,
-			).length;
-			resourcesLoaded.current = completedResources;
+		// Never leave the user stuck behind the splash screen
+		const safetyTimeout = setTimeout(finish, MAX_LOAD_TIME);
 
-			// Calculate progress percentage
-			// We add 1 to account for the HTML document itself
-			const totalResources =
-				Math.max(initialResourceCount.current, resources.length) + 1;
-			let calculatedProgress = Math.min(
-				100,
-				Math.round((completedResources / totalResources) * 100),
-			);
-
-			// Ensure progress never goes backwards and always reaches 100
-			const elapsedTime = Date.now() - startTime.current;
+		const tick = () => {
+			const elapsed = performance.now() - startTime.current;
 			const timeProgress = Math.min(
 				100,
-				(elapsedTime / minimumLoadingTime) * 100,
+				(elapsed / minimumLoadingTime) * 100,
 			);
 
-			// Use the higher of the two progress values to ensure smooth progression
-			calculatedProgress = Math.max(calculatedProgress, progress, timeProgress);
+			// Real resource load progress (entries are marked done once they
+			// have a duration, otherwise they're still in flight)
+			const resources = performance.getEntriesByType("resource");
+			const completed = resources.filter(
+				(resource) => resource.duration > 0,
+			).length;
+			const resourceProgress = Math.min(
+				100,
+				(completed / Math.max(resources.length, 1)) * 100,
+			);
 
-			// Update progress state
-			setProgress(Math.floor(calculatedProgress));
+			// Never go backwards, drive the bar with the slower signal
+			setProgress((prev) =>
+				Math.max(prev, Math.floor(Math.max(timeProgress, resourceProgress))),
+			);
 
-			// Continue updating until we reach 100%
-			if (calculatedProgress < 100 && loading) {
-				rafId.current = requestAnimationFrame(updateProgress);
-			} else if (calculatedProgress >= 100 && loading) {
-				// When progress reaches 100%, wait for minimum loading time before hiding splash screen
-				timeout = setTimeout(
-					() => {
-						setLoading(false);
-					},
-					Math.max(0, minimumLoadingTime - elapsedTime),
-				);
+			// Hide only when BOTH the animation finished and the page really
+			// loaded, so the splash is never cut short by a fast load (or
+			// removed before the whole app is ready).
+			const pageLoaded = document.readyState === "complete";
+
+			if (pageLoaded && elapsed >= minimumLoadingTime) {
+				finish();
+				return;
 			}
+
+			rafId = requestAnimationFrame(tick);
 		};
 
-		// Start tracking progress
-		rafId.current = requestAnimationFrame(updateProgress);
-
-		// Track when the page is fully loaded
-		const handleLoad = () => {
-			// Force progress to 100% when load event fires
-			setProgress(100);
-		};
-
-		window.addEventListener("load", handleLoad);
+		rafId = requestAnimationFrame(tick);
 
 		return () => {
-			window.removeEventListener("load", handleLoad);
-			if (timeout) clearTimeout(timeout);
-			if (rafId.current) cancelAnimationFrame(rafId.current);
+			cancelAnimationFrame(rafId);
+			clearTimeout(safetyTimeout);
 		};
 	}, [minimumLoadingTime]);
 
 	return (
 		<>
 			<AnimatePresence mode="wait">
-				{loading ? (
+				{visible ? (
 					<motion.div
 						key="splash"
 						initial={{ opacity: 1 }}
@@ -132,15 +125,14 @@ export function SplashScreen(props: {
 			</AnimatePresence>
 
 			<AnimatePresence>
-				{!loading && (
+				{!visible && (
 					<motion.div
-						key="content"
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ duration: 0.5 }}
 						className="h-full"
 					>
-						{props.children}
+						{children}
 					</motion.div>
 				)}
 			</AnimatePresence>

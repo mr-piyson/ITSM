@@ -15,7 +15,8 @@ export type ContractStatus = {
 };
 
 function toLocalDate(isoDate: string): Date {
-	const [year, month, day] = isoDate.split("-").map(Number);
+	const datePart = isoDate.split("T")[0];
+	const [year, month, day] = datePart.split("-").map(Number);
 	return new Date(year, (month ?? 1) - 1, day ?? 1);
 }
 
