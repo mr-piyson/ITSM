@@ -94,7 +94,8 @@ function DashboardContent({ data }: { data: DashboardData }) {
 
 			<DistributionCharts
 				assetsByType={data.assetsByType}
-				stockByCategory={data.stockByCategory}
+				contractExpiry={data.contractExpiry}
+				expiredContracts={data.expiredContracts}
 				totalAssets={kpis.totalAssets}
 			/>
 
@@ -120,7 +121,8 @@ function DashboardSkeleton() {
 				))}
 			</div>
 			<Skeleton className="h-9" />
-			<div className="grid min-w-0 gap-4 lg:grid-cols-2">
+			<div className="grid min-w-0 gap-4 lg:grid-cols-3">
+				<Skeleton className="h-72" />
 				<Skeleton className="h-72" />
 				<Skeleton className="h-72" />
 			</div>

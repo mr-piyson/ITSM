@@ -62,6 +62,22 @@ export type RecentItem = {
 	stock: number;
 };
 
+export type ContractExpiry = {
+	id: number;
+	productName: string;
+	vendorName: string | null;
+	endDate: string;
+	daysLeft: number;
+};
+
+export type ExpiredContract = {
+	id: number;
+	productName: string;
+	vendorName: string | null;
+	endDate: string;
+	daysExpired: number;
+};
+
 export type DashboardAlert = {
 	id: string;
 	kind: "low_stock" | "contract" | "maintenance" | "warranty";
@@ -81,6 +97,8 @@ export type DashboardData = {
 	recentAssets: RecentAsset[];
 	recentItems: RecentItem[];
 	alerts: DashboardAlert[];
+	contractExpiry: ContractExpiry[];
+	expiredContracts: ExpiredContract[];
 };
 
 function toNumber(value: unknown): number {
@@ -138,6 +156,7 @@ export const dashboardRouter = router({
 				[assetRows],
 				[itemRows],
 				[contractRows],
+				[expiredContractRows],
 				[maintenanceRows],
 				[warrantyRows],
 			] = await Promise.all([
@@ -196,14 +215,26 @@ export const dashboardRouter = router({
 				 LIMIT 10`,
 				),
 				db.execute<Row[]>(
-					`SELECT id, productName, vendorID, startDate, endDate
-				 FROM contracts
-				 WHERE inActive = 0
-				   AND endDate IS NOT NULL
-				   AND endDate >= CURDATE()
-				   AND endDate <= DATE_ADD(CURDATE(), INTERVAL ${CONTRACT_WINDOW_DAYS} DAY)
-				 ORDER BY endDate ASC
+					`SELECT c.id, c.productName, c.vendorID, c.startDate, c.endDate,
+					        v.name AS vendorName
+				 FROM contracts c
+				 LEFT JOIN vendors v ON v.id = c.vendorID
+				 WHERE c.inActive = 0
+				   AND c.endDate IS NOT NULL
+				   AND c.endDate >= CURDATE()
+				 ORDER BY c.endDate ASC
 				 LIMIT 10`,
+				),
+				db.execute<Row[]>(
+					`SELECT c.id, c.productName, c.endDate,
+					        v.name AS vendorName
+				 FROM contracts c
+				 LEFT JOIN vendors v ON v.id = c.vendorID
+				 WHERE c.inActive = 0
+				   AND c.endDate IS NOT NULL
+				   AND c.endDate < CURDATE()
+				 ORDER BY c.endDate DESC
+				 LIMIT 8`,
 				),
 				db.execute<Row[]>(
 					`SELECT serverID, name, serverIP, maintenanceDue
@@ -350,6 +381,28 @@ export const dashboardRouter = router({
 					category: String(row.category ?? ""),
 					stock: toNumber(row.stock),
 				})),
+				contractExpiry: contractRows.map((row) => {
+					const endDate = toDateISO(row.endDate);
+					const days = daysUntil(endDate) ?? 0;
+					return {
+						id: toNumber(row.id),
+						productName: String(row.productName ?? ""),
+						vendorName: toString(row.vendorName),
+						endDate: endDate ?? "",
+						daysLeft: days,
+					};
+				}),
+				expiredContracts: expiredContractRows.map((row) => {
+					const endDate = toDateISO(row.endDate);
+					const days = daysUntil(endDate) ?? 0;
+					return {
+						id: toNumber(row.id),
+						productName: String(row.productName ?? ""),
+						vendorName: toString(row.vendorName),
+						endDate: endDate ?? "",
+						daysExpired: Math.abs(days),
+					};
+				}),
 				alerts,
 			};
 		},
