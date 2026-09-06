@@ -46,9 +46,10 @@ export function AppSidebarContent() {
 									className={cn(
 										isActive(href) ? "text-white! bg-primary! rounded-sm" : "",
 										loading === href && !open && !isMobile ? "hidden" : "",
+										"hover:bg-primary/10 hover:text-white",
 									)}
 									tooltip={title}
-									size={"lg"}
+									size={"sm"}
 									onClick={() => {
 										const match = path.match(/^\/App\/[^/]+/);
 										match && match[0] === href
