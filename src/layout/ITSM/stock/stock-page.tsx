@@ -20,7 +20,7 @@ import { trpc } from "@/trpc/react";
 
 import { StockDetailsDialog } from "./stock-details-dialog";
 import { StockFormDialog } from "./stock-form-dialog";
-import { StockTable } from "./stock-table";
+import { StockGrid } from "./stock-grid";
 
 const FILTER_VALUES = ["all", "in", "out"] as const;
 
@@ -188,7 +188,7 @@ export function StockPage() {
 					</EmptyContent>
 				</Empty>
 			) : (
-				<StockTable
+				<StockGrid
 					items={filtered}
 					onDetails={(item) => setItemID(String(item.id))}
 				/>
