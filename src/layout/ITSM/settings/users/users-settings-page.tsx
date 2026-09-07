@@ -89,7 +89,12 @@ export function UsersSettingsPage() {
 						Manage system users, their details and access.
 					</p>
 				</div>
-				<Button onClick={() => setEditing(null)}>
+				<Button
+					onClick={() => {
+						setEditing(null);
+						setFormOpen(true);
+					}}
+				>
 					<Plus data-icon="inline-start" />
 					Add User
 				</Button>
