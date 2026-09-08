@@ -211,7 +211,7 @@ export function RequestDetailsDialog({
 								</span>
 								{/* eslint-disable-next-line @next/next/no-img-element */}
 								<img
-									src={`/ISS/itemsImages/${request.imagefilePath}`}
+									src={`http://iss.bfginternational.com/ISS/itemsImages/${request.imagefilePath}`}
 									alt={`Request #${request.id} attachment`}
 									className="max-h-64 w-auto border object-contain"
 								/>

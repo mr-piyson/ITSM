@@ -15,7 +15,7 @@ export function employeeImageUrl(image?: string | null): string | null {
 	if (/^https?:\/\//.test(image)) {
 		return image;
 	}
-	return `/ISS/itemsImages/${image}`;
+	return `http://iss.bfginternational.com/ISS/itemsImages/${image}`;
 }
 
 export const LICENSE_LABELS: Record<string, string> = {

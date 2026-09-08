@@ -14,7 +14,7 @@ export function itemImageUrl(image?: string | null): string | null {
 	if (/^https?:\/\//.test(image)) {
 		return image;
 	}
-	return `/ISS/itemsImages/${image}`;
+	return `http://iss.bfginternational.com/ISS/itemsImages/${image}`;
 }
 
 export type StockStatus = "out" | "low" | "ok";

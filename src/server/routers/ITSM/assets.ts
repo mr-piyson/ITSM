@@ -1,6 +1,8 @@
+import { execFile } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
 
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
@@ -104,6 +106,36 @@ const createAssetSchema = z.object({
 	image: z.string().max(200).nullable().optional(),
 	empID: z.number().int().optional(),
 });
+
+const IPV4_REGEX = /^(\d{1,3}\.){3}\d{1,3}$/;
+
+const execFileAsync = promisify(execFile);
+
+type PingResult = {
+	reachable: boolean;
+	latencyMs: number | null;
+};
+
+async function runPing(host: string): Promise<PingResult> {
+	const isWindows = process.platform === "win32";
+	const args = isWindows
+		? ["-n", "1", "-w", "2000", host]
+		: ["-c", "1", "-W", "2", host];
+
+	try {
+		const { stdout } = await execFileAsync("ping", args, {
+			timeout: 5000,
+			windowsHide: true,
+		});
+		const match = /time[=<>]+\s*([\d.]+)/.exec(stdout);
+		return {
+			reachable: true,
+			latencyMs: match ? Number(match[1]) : null,
+		};
+	} catch {
+		return { reachable: false, latencyMs: null };
+	}
+}
 
 function toString(value: unknown): string | null {
 	if (value === null || value === undefined || value === "") {
@@ -413,4 +445,40 @@ export const assetsRouter = router({
 
 			return { image: fileName };
 		}),
+
+	ping: protectedProcedure
+		.input(
+			z.object({
+				targets: z
+					.array(
+						z.object({
+							id: z.string().trim().min(1).max(64),
+							host: z.string().trim().min(1).max(255),
+						}),
+					)
+					.min(1)
+					.max(100),
+			}),
+		)
+		.mutation(
+			async ({
+				input,
+			}): Promise<
+				{ id: string; reachable: boolean; latencyMs: number | null }[]
+			> => {
+				return Promise.all(
+					input.targets.map(async (target) => {
+						if (!IPV4_REGEX.test(target.host)) {
+							return { id: target.id, reachable: false, latencyMs: null };
+						}
+						try {
+							const result = await runPing(target.host);
+							return { id: target.id, ...result };
+						} catch {
+							return { id: target.id, reachable: false, latencyMs: null };
+						}
+					}),
+				);
+			},
+		),
 });
