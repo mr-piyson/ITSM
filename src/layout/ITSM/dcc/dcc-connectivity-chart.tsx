@@ -20,9 +20,10 @@ type DccConnectivityChartProps = {
 
 type ChartPoint = {
 	label: string;
-	dccLatency: number | null;
-	readerLatency: number | null;
-	status: string;
+	dccOnline: number;
+	readerOnline: number;
+	dccLatencyMs: number | null;
+	readerLatencyMs: number | null;
 };
 
 function formatCheckedAt(value: string | null): string {
@@ -45,9 +46,10 @@ export function DccConnectivityChart({ logs }: DccConnectivityChartProps) {
 		.reverse()
 		.map((log) => ({
 			label: formatCheckedAt(log.checkedAt),
-			dccLatency: log.dccPingLatencyMs,
-			readerLatency: log.readerPingLatencyMs,
-			status: log.status,
+			dccOnline: log.dccReachable ? 1 : 0,
+			readerOnline: log.readerReachable ? 1 : 0,
+			dccLatencyMs: log.dccPingLatencyMs,
+			readerLatencyMs: log.readerPingLatencyMs,
 		}));
 
 	if (data.length === 0) {
@@ -69,15 +71,21 @@ export function DccConnectivityChart({ logs }: DccConnectivityChartProps) {
 		return (
 			<div className="rounded-none border bg-background px-3 py-2 text-xs shadow">
 				<p className="font-medium">{point.label || "—"}</p>
-				<p>Status: {point.status}</p>
 				<p>
-					DCC: {point.dccLatency != null ? `${point.dccLatency} ms` : "offline"}
+					DCC (Pi):{" "}
+					<span className={point.dccOnline ? "text-green-600" : "text-red-600"}>
+						{point.dccOnline ? "Online" : "Offline"}
+					</span>
+					{point.dccLatencyMs != null && ` (${point.dccLatencyMs} ms)`}
 				</p>
 				<p>
-					Reader:{" "}
-					{point.readerLatency != null
-						? `${point.readerLatency} ms`
-						: "offline"}
+					Card Reader:{" "}
+					<span
+						className={point.readerOnline ? "text-green-600" : "text-red-600"}
+					>
+						{point.readerOnline ? "Online" : "Offline"}
+					</span>
+					{point.readerLatencyMs != null && ` (${point.readerLatencyMs} ms)`}
 				</p>
 			</div>
 		);
@@ -88,7 +96,7 @@ export function DccConnectivityChart({ logs }: DccConnectivityChartProps) {
 			<ResponsiveContainer width="100%" height="100%">
 				<LineChart
 					data={data}
-					margin={{ top: 4, right: 8, bottom: 0, left: -18 }}
+					margin={{ top: 4, right: 8, bottom: 0, left: -4 }}
 				>
 					<CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
 					<XAxis
@@ -98,9 +106,13 @@ export function DccConnectivityChart({ logs }: DccConnectivityChartProps) {
 						stroke="var(--muted-foreground)"
 					/>
 					<YAxis
+						domain={[0, 1]}
+						ticks={[0, 1]}
+						tickFormatter={(v: number) => (v === 1 ? "Online" : "Offline")}
 						tick={{ fontSize: 10 }}
 						stroke="var(--muted-foreground)"
-						width={40}
+						width={52}
+						tickLine={false}
 					/>
 					<Tooltip content={renderTooltip} />
 					<Legend
@@ -109,23 +121,21 @@ export function DccConnectivityChart({ logs }: DccConnectivityChartProps) {
 						formatter={(value) => <span className="text-xs">{value}</span>}
 					/>
 					<Line
-						type="monotone"
-						dataKey="dccLatency"
+						type="stepAfter"
+						dataKey="dccOnline"
 						stroke="#2563eb"
 						strokeWidth={1.5}
-						dot={false}
+						dot={{ r: 3 }}
 						isAnimationActive={false}
-						connectNulls={false}
 						name="DCC (Pi)"
 					/>
 					<Line
-						type="monotone"
-						dataKey="readerLatency"
+						type="stepAfter"
+						dataKey="readerOnline"
 						stroke="#dc2626"
 						strokeWidth={1.5}
-						dot={false}
+						dot={{ r: 3 }}
 						isAnimationActive={false}
-						connectNulls={false}
 						name="Card Reader"
 					/>
 				</LineChart>

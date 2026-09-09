@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { ExternalLink, Pencil, RadioTower, RefreshCw } from "lucide-react";
 
@@ -28,6 +28,7 @@ type DccsTableProps = {
 
 export function DccsTable({ dccs, onDetails, onEdit }: DccsTableProps) {
 	const checkMutation = trpc.dccs.checkConnectivity.useMutation();
+	const [isCheckingAll, setIsCheckingAll] = useState(false);
 	const utils = trpc.useUtils();
 	const { get, ping, pingMany } = usePing("dccs");
 
@@ -77,6 +78,39 @@ export function DccsTable({ dccs, onDetails, onEdit }: DccsTableProps) {
 		}
 	};
 
+	const handleCheckAll = async () => {
+		if (isCheckingAll || dccs.length === 0) {
+			return;
+		}
+		setIsCheckingAll(true);
+
+		const allTargets = dccs.flatMap((dcc) => {
+			const list: PingTarget[] = [];
+			if (dcc.ipAddress) {
+				list.push({ id: `pi:${dcc.id}`, host: dcc.ipAddress });
+			}
+			if (dcc.cardReaderIp) {
+				list.push({ id: `reader:${dcc.id}`, host: dcc.cardReaderIp });
+			}
+			return list;
+		});
+		if (allTargets.length > 0) {
+			pingMany(allTargets);
+		}
+
+		try {
+			await Promise.all(
+				dccs.map((dcc) =>
+					checkMutation.mutateAsync({ id: dcc.id }).catch(() => {}),
+				),
+			);
+			utils.dccs.list.invalidate();
+			utils.dccs.dashboard.invalidate();
+		} finally {
+			setIsCheckingAll(false);
+		}
+	};
+
 	return (
 		<div className="flex min-h-0 flex-1 flex-col rounded-none border">
 			<div className="flex items-center justify-between gap-2 border-b px-3 py-2">
@@ -97,8 +131,13 @@ export function DccsTable({ dccs, onDetails, onEdit }: DccsTableProps) {
 						</span>
 					)}
 				</span>
-				<Button size="sm" variant="outline" onClick={() => pingMany(targets)}>
-					<RadioTower />
+				<Button
+					size="sm"
+					variant="outline"
+					disabled={isCheckingAll}
+					onClick={() => handleCheckAll()}
+				>
+					<RadioTower className={cn(isCheckingAll && "animate-pulse")} />
 					Ping all
 				</Button>
 			</div>

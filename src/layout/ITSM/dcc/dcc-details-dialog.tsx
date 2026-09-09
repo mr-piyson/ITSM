@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { usePing } from "@/lib/use-ping";
 import type { DccItem } from "@/server/routers/ITSM/dccs";
 import { trpc } from "@/trpc/react";
 
@@ -75,6 +76,7 @@ export function DccDetailsDialog({
 	const deleteMutation = trpc.dccs.delete.useMutation();
 	const checkMutation = trpc.dccs.checkConnectivity.useMutation();
 	const utils = trpc.useUtils();
+	const { pingMany } = usePing("dccs");
 
 	const handleDelete = async () => {
 		if (!dcc) {
@@ -95,9 +97,20 @@ export function DccDetailsDialog({
 		if (!dcc) {
 			return;
 		}
+		const targets: { id: string; host: string }[] = [];
+		if (dcc.ipAddress) {
+			targets.push({ id: `pi:${dcc.id}`, host: dcc.ipAddress });
+		}
+		if (dcc.cardReaderIp) {
+			targets.push({ id: `reader:${dcc.id}`, host: dcc.cardReaderIp });
+		}
+		if (targets.length > 0) {
+			pingMany(targets);
+		}
 		try {
 			const result = await checkMutation.mutateAsync({ id: dcc.id });
-			utils.dccs.byId.invalidate({ id: dcc.id });
+			await utils.dccs.byId.invalidate({ id: dcc.id });
+			await utils.dccs.byId.refetch({ id: dcc.id });
 			utils.dccs.list.invalidate();
 			utils.dccs.dashboard.invalidate();
 			toast.success(
