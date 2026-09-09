@@ -16,6 +16,7 @@ import {
 	Monitor,
 	Mouse,
 	Printer,
+	RadioTower,
 	Server,
 	ShoppingCart,
 	Store,
@@ -98,6 +99,11 @@ export const routes: {
 					title: "Servers",
 					href: "/app/servers",
 					icon: Server,
+				},
+				{
+					title: "DCCs",
+					href: "/app/dccs",
+					icon: RadioTower,
 				},
 				{
 					title: "Backup Tapes",

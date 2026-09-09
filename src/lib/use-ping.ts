@@ -17,7 +17,7 @@ export type PingTarget = {
 	host: string;
 };
 
-export function usePing(router: "servers" | "assets" = "servers") {
+export function usePing(router: "servers" | "assets" | "dccs" = "servers") {
 	const pingMutation = trpc[router].ping.useMutation();
 	const [states, setStates] = useState<Record<string, PingState>>({});
 	const pending = useRef<Set<string>>(new Set());

@@ -5,6 +5,7 @@ import { authRouter } from "./auth";
 import { bookingsRouter } from "./bookings";
 import { contractsRouter } from "./contracts";
 import { dashboardRouter } from "./dashboard";
+import { dccsRouter } from "./dccs";
 import { employeesRouter } from "./employees";
 import { healthRouter } from "./health";
 import { mailSettingsRouter } from "./mail";
@@ -37,6 +38,7 @@ export const issRouter = {
 	contracts: contractsRouter,
 	mail: mailSettingsRouter,
 	dashboard: dashboardRouter,
+	dccs: dccsRouter,
 	requests: requestsRouter,
 	reports: reportsRouter,
 	syncPhotos: syncPhotosRouter,
