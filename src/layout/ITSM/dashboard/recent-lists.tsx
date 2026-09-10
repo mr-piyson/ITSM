@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 
-import { Mail, Monitor, UserCheck, UserPlus, UserX, Users, type LucideIcon } from "lucide-react";
+import {
+	Mail,
+	Monitor,
+	UserCheck,
+	UserPlus,
+	UserX,
+	Users,
+	type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +49,9 @@ function ListCard({
 					{header}
 				</div>
 			</CardHeader>
-			<CardContent className="flex flex-col gap-0.5 p-1">{children}</CardContent>
+			<CardContent className="flex flex-col gap-0.5 p-1">
+				{children}
+			</CardContent>
 		</Card>
 	);
 }
@@ -199,7 +209,7 @@ function EmployeeDetailsDialog({
 									? "Staff"
 									: employee.emplStaffWorkr === "W"
 										? "Worker"
-										: employee.emplStaffWorkr ?? "-"}
+										: (employee.emplStaffWorkr ?? "-")}
 							</Badge>
 						</div>
 						<div className="flex items-center justify-between border-b px-3 py-2">
@@ -214,14 +224,18 @@ function EmployeeDetailsDialog({
 						<div className="flex items-center justify-between px-3 py-2">
 							<span className="text-xs text-muted-foreground">Payroll</span>
 							<Badge
-								variant={employee.emplOnPayroll === "Y" ? "default" : "secondary"}
+								variant={
+									employee.emplOnPayroll === "Y" ? "default" : "secondary"
+								}
 								className={
 									employee.emplOnPayroll === "Y"
 										? "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
 										: ""
 								}
 							>
-								{employee.emplOnPayroll === "Y" ? "In Payroll" : "Not in Payroll"}
+								{employee.emplOnPayroll === "Y"
+									? "In Payroll"
+									: "Not in Payroll"}
 							</Badge>
 						</div>
 					</div>
@@ -243,7 +257,10 @@ function AssetRow({ asset }: { asset: RecentAsset }) {
 				</span>
 			</Link>
 			{asset.type && (
-				<Badge variant="outline" className="shrink-0 px-1.5 py-0 text-[10px] leading-normal">
+				<Badge
+					variant="outline"
+					className="shrink-0 px-1.5 py-0 text-[10px] leading-normal"
+				>
 					{asset.type}
 				</Badge>
 			)}
@@ -271,15 +288,14 @@ export function RecentLists({
 	const [selectedEmpLeft, setSelectedEmpLeft] = useState<RecentEmployee | null>(
 		null,
 	);
-	const [selectedNewJoiner, setSelectedNewJoiner] = useState<RecentEmployee | null>(
-		null,
-	);
+	const [selectedNewJoiner, setSelectedNewJoiner] =
+		useState<RecentEmployee | null>(null);
 
 	return (
 		<div className="grid min-w-0 gap-4 lg:grid-cols-3">
 			<ListCard
 				icon={Users}
-				title="Emp Left"
+				title="Recently Left"
 				header={
 					<Tabs
 						value={employeeType}

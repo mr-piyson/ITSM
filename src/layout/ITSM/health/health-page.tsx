@@ -4,12 +4,7 @@ import { Database, RefreshCw, Server, Zap } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { trpc } from "@/trpc/react";
 
@@ -27,7 +22,13 @@ const DBS: {
 	{ key: "odb", label: "Oracle Database", type: "Oracle", icon: Database },
 ];
 
-function StatusCard({ db, status }: { db: (typeof DBS)[number]; status?: DbStatus }) {
+function StatusCard({
+	db,
+	status,
+}: {
+	db: (typeof DBS)[number];
+	status?: DbStatus;
+}) {
 	const Icon = db.icon;
 
 	return (
@@ -37,7 +38,11 @@ function StatusCard({ db, status }: { db: (typeof DBS)[number]; status?: DbStatu
 					<Icon className="size-4 text-muted-foreground" />
 					{db.label}
 				</CardTitle>
-				<Badge variant={status ? (status.ok ? "secondary" : "destructive") : "outline"}>
+				<Badge
+					variant={
+						status ? (status.ok ? "secondary" : "destructive") : "outline"
+					}
+				>
 					{status ? (status.ok ? "Connected" : "Error") : "Pending"}
 				</Badge>
 			</CardHeader>
@@ -47,9 +52,7 @@ function StatusCard({ db, status }: { db: (typeof DBS)[number]; status?: DbStatu
 						<p className="text-muted-foreground">
 							{db.type} &middot; {status.latency}ms
 						</p>
-						{status.error && (
-							<p className="text-destructive">{status.error}</p>
-						)}
+						{status.error && <p className="text-destructive">{status.error}</p>}
 					</div>
 				) : (
 					<p className="text-muted-foreground">Checking&hellip;</p>
@@ -93,11 +96,7 @@ export function HealthPage() {
 
 			<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
 				{DBS.map((db) => (
-					<StatusCard
-						key={db.key}
-						db={db}
-						status={data?.[db.key]}
-					/>
+					<StatusCard key={db.key} db={db} status={data?.[db.key]} />
 				))}
 			</div>
 

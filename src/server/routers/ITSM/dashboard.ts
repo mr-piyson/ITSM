@@ -381,8 +381,7 @@ export const dashboardRouter = router({
 				newJoinerType: z.enum(["S", "W"]).default("S"),
 			}),
 		)
-		.query(
-		async ({ ctx, input }): Promise<DashboardEmployees> => {
+		.query(async ({ ctx, input }): Promise<DashboardEmployees> => {
 			const oraclePool = await ctx.db.mis;
 			const oracleConn = await oraclePool.getConnection();
 			try {
@@ -421,6 +420,5 @@ export const dashboardRouter = router({
 			} finally {
 				await oracleConn.release();
 			}
-		},
-	),
+		}),
 });

@@ -37,7 +37,10 @@ const formSchema = z.object({
 		.min(1, "Email is required")
 		.email("Enter a valid email")
 		.max(100),
-	password: z.string().min(6, "Password must be at least 6 characters").max(255),
+	password: z
+		.string()
+		.min(6, "Password must be at least 6 characters")
+		.max(255),
 	type: z.string().min(1, "Type is required").max(50),
 });
 
@@ -294,9 +297,7 @@ function UserFormContent({
 					{(field) => (
 						<Select
 							value={field.state.value}
-							onValueChange={(value) =>
-								field.handleChange(value ?? "user")
-							}
+							onValueChange={(value) => field.handleChange(value ?? "user")}
 						>
 							<SelectTrigger className="w-full">
 								<SelectValue />

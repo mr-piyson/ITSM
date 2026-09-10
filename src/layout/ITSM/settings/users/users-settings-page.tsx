@@ -2,7 +2,15 @@
 
 import { useMemo, useState } from "react";
 
-import { Loader2, Lock, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
+import {
+	Loader2,
+	Lock,
+	Pencil,
+	Plus,
+	Search,
+	Trash2,
+	Users,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -84,7 +92,9 @@ export function UsersSettingsPage() {
 		<div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col space-y-4 overflow-auto p-4 md:p-6">
 			<div className="flex flex-wrap items-end justify-between gap-3">
 				<div>
-					<h1 className="text-xl font-semibold tracking-tight">Users Management</h1>
+					<h1 className="text-xl font-semibold tracking-tight">
+						Users Management
+					</h1>
 					<p className="text-xs text-muted-foreground">
 						Manage system users, their details and access.
 					</p>
@@ -196,7 +206,10 @@ export function UsersSettingsPage() {
 				onClose={() => setResetting(null)}
 			/>
 
-			<AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+			<AlertDialog
+				open={!!deleting}
+				onOpenChange={(o) => !o && setDeleting(null)}
+			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete user?</AlertDialogTitle>

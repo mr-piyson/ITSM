@@ -1,3 +1,3 @@
-import { parseAsString } from "nuqs"
+import { parseAsString } from "nuqs";
 
-export const filterParam = parseAsString.withDefault("today")
+export const filterParam = parseAsString.withDefault("today");

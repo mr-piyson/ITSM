@@ -84,8 +84,7 @@ export function ResetPasswordDialog({
 				<DialogHeader>
 					<DialogTitle>Reset Password</DialogTitle>
 					<DialogDescription>
-						Set a new password for{" "}
-						<strong>{user?.name ?? "this user"}</strong>.
+						Set a new password for <strong>{user?.name ?? "this user"}</strong>.
 					</DialogDescription>
 				</DialogHeader>
 				<form

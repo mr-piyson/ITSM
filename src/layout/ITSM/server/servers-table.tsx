@@ -21,10 +21,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import type { PingState, PingTarget } from "@/lib/use-ping";
-import {
-	capitalize,
-	serverStatusBadge,
-} from "@/lib/server-constants";
+import { capitalize, serverStatusBadge } from "@/lib/server-constants";
 import { cn } from "@/lib/utils";
 import type { ServerItem } from "@/server/routers/ITSM/servers";
 
@@ -117,7 +114,7 @@ export function ServersTable({
 	}).length;
 
 	const [expanded, setExpanded] = useState<Record<string, boolean>>(() => ({
-		"__all__": true,
+		__all__: true,
 	}));
 
 	const isExpanded = (key: string) =>
@@ -126,7 +123,7 @@ export function ServersTable({
 	const toggle = (key: string) =>
 		setExpanded((e) => {
 			if (key === "__all__") {
-				return { "__all__": !e["__all__"] };
+				return { __all__: !e["__all__"] };
 			}
 			return { ...e, [key]: !e[key] };
 		});
@@ -144,11 +141,7 @@ export function ServersTable({
 						</span>
 					)}
 				</span>
-				<Button
-					size="sm"
-					variant="outline"
-					onClick={() => pingMany(targets)}
-				>
+				<Button size="sm" variant="outline" onClick={() => pingMany(targets)}>
 					<RadioTower />
 					Ping all
 				</Button>
@@ -208,210 +201,210 @@ export function ServersTable({
 							<TableCell className="flex w-[112px] items-center overflow-hidden px-2" />
 						</TableRow>
 
-					{groups.map((group) => {
-						const hostIP = group.hostIP;
-						const key = (hostIP ?? "").toLowerCase();
-						const open = isExpanded(key);
-						const hasBackup = group.servers.some(
-							(s) => s.backupStatus === "yes",
-						);
-						const needsMaintenance = group.servers.some((s) => {
-							const badge = serverStatusBadge({
-								serverStatus: s.serverStatus,
-								maintenanceDue: s.maintenanceDue,
+						{groups.map((group) => {
+							const hostIP = group.hostIP;
+							const key = (hostIP ?? "").toLowerCase();
+							const open = isExpanded(key);
+							const hasBackup = group.servers.some(
+								(s) => s.backupStatus === "yes",
+							);
+							const needsMaintenance = group.servers.some((s) => {
+								const badge = serverStatusBadge({
+									serverStatus: s.serverStatus,
+									maintenanceDue: s.maintenanceDue,
+								});
+								return badge.label === "Maintenance Required";
 							});
-							return badge.label === "Maintenance Required";
-						});
-						const hostStatus: "active" | "warn" | "none" = needsMaintenance
-							? "warn"
-							: group.servers.some((s) => s.serverStatus === "active")
-								? "active"
-								: "none";
+							const hostStatus: "active" | "warn" | "none" = needsMaintenance
+								? "warn"
+								: group.servers.some((s) => s.serverStatus === "active")
+									? "active"
+									: "none";
 
-						return (
-							<Fragment key={group.hostIP ?? "no-host-ip"}>
-								<TableRow
-									className="flex cursor-pointer bg-secondary/40 hover:bg-secondary/40"
-									onClick={() => toggle(key)}
-								>
-									<TableCell className="flex min-w-0 flex-1 items-center overflow-hidden px-2">
-										<ChevronRight
-											className={cn(
-												"size-4 shrink-0 text-muted-foreground transition-transform",
-												open && "rotate-90",
-											)}
-										/>
-										<Boxes className="size-4 shrink-0 text-primary" />
-										<span className="ml-1 min-w-0">
-											<span className="block truncate font-mono font-medium">
-												{group.hostIP || "No host IP"}
-											</span>
-											{group.host && (
-												<span className="block truncate text-xs text-muted-foreground">
-													{capitalize(group.host)}
+							return (
+								<Fragment key={group.hostIP ?? "no-host-ip"}>
+									<TableRow
+										className="flex cursor-pointer bg-secondary/40 hover:bg-secondary/40"
+										onClick={() => toggle(key)}
+									>
+										<TableCell className="flex min-w-0 flex-1 items-center overflow-hidden px-2">
+											<ChevronRight
+												className={cn(
+													"size-4 shrink-0 text-muted-foreground transition-transform",
+													open && "rotate-90",
+												)}
+											/>
+											<Boxes className="size-4 shrink-0 text-primary" />
+											<span className="ml-1 min-w-0">
+												<span className="block truncate font-mono font-medium">
+													{group.hostIP || "No host IP"}
 												</span>
-											)}
-										</span>
-										<span className="ml-2 shrink-0 text-muted-foreground">
-											({group.servers.length})
-										</span>
-									</TableCell>
-									<TableCell className="flex w-[110px] items-center overflow-hidden px-2 text-muted-foreground">
-										Host
-									</TableCell>
-									<TableCell className="flex w-[120px] items-center overflow-hidden px-2" />
-									<TableCell className="flex w-[160px] items-center overflow-hidden px-2" />
-									<TableCell className="flex w-[150px] items-center overflow-hidden px-2 text-muted-foreground">
-										{hasBackup ? "Yes" : "No"}
-									</TableCell>
-									<TableCell className="flex w-[180px] items-center overflow-hidden px-2">
-										<span
-											className={cn(
-												"inline-flex whitespace-nowrap px-1.5 py-0.5 text-xs font-medium",
-												hostStatus === "warn"
-													? "bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100"
-													: hostStatus === "active"
-														? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-														: "bg-muted text-muted-foreground",
-											)}
-										>
-											{hostStatus === "warn"
-												? "Maintenance Required"
-												: hostStatus === "active"
-													? "Active"
-													: "-"}
-										</span>
-									</TableCell>
-									<TableCell className="flex w-[130px] items-center overflow-hidden px-2">
-										{hostIP ? (
-											<ServerPingBadge state={get(`host:${hostIP}`)} />
-										) : (
-											<span className="text-xs text-muted-foreground">—</span>
-										)}
-									</TableCell>
-									<TableCell className="flex w-[112px] items-center justify-end gap-0.5 overflow-hidden px-2">
-										{hostIP && (
-											<Button
-												variant="ghost"
-												size="icon-sm"
-												title="Ping host"
-												disabled={get(`host:${hostIP}`)?.loading}
-												onClick={(e) => {
-													e.stopPropagation();
-													ping({ id: `host:${hostIP}`, host: hostIP });
-												}}
+												{group.host && (
+													<span className="block truncate text-xs text-muted-foreground">
+														{capitalize(group.host)}
+													</span>
+												)}
+											</span>
+											<span className="ml-2 shrink-0 text-muted-foreground">
+												({group.servers.length})
+											</span>
+										</TableCell>
+										<TableCell className="flex w-[110px] items-center overflow-hidden px-2 text-muted-foreground">
+											Host
+										</TableCell>
+										<TableCell className="flex w-[120px] items-center overflow-hidden px-2" />
+										<TableCell className="flex w-[160px] items-center overflow-hidden px-2" />
+										<TableCell className="flex w-[150px] items-center overflow-hidden px-2 text-muted-foreground">
+											{hasBackup ? "Yes" : "No"}
+										</TableCell>
+										<TableCell className="flex w-[180px] items-center overflow-hidden px-2">
+											<span
+												className={cn(
+													"inline-flex whitespace-nowrap px-1.5 py-0.5 text-xs font-medium",
+													hostStatus === "warn"
+														? "bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100"
+														: hostStatus === "active"
+															? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+															: "bg-muted text-muted-foreground",
+												)}
 											>
-												<RefreshCw
-													className={cn(
-														get(`host:${hostIP}`)?.loading && "animate-spin",
-													)}
-												/>
-											</Button>
-										)}
-									</TableCell>
-								</TableRow>
+												{hostStatus === "warn"
+													? "Maintenance Required"
+													: hostStatus === "active"
+														? "Active"
+														: "-"}
+											</span>
+										</TableCell>
+										<TableCell className="flex w-[130px] items-center overflow-hidden px-2">
+											{hostIP ? (
+												<ServerPingBadge state={get(`host:${hostIP}`)} />
+											) : (
+												<span className="text-xs text-muted-foreground">—</span>
+											)}
+										</TableCell>
+										<TableCell className="flex w-[112px] items-center justify-end gap-0.5 overflow-hidden px-2">
+											{hostIP && (
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													title="Ping host"
+													disabled={get(`host:${hostIP}`)?.loading}
+													onClick={(e) => {
+														e.stopPropagation();
+														ping({ id: `host:${hostIP}`, host: hostIP });
+													}}
+												>
+													<RefreshCw
+														className={cn(
+															get(`host:${hostIP}`)?.loading && "animate-spin",
+														)}
+													/>
+												</Button>
+											)}
+										</TableCell>
+									</TableRow>
 
-{group.servers.map((server) => {
-								const serverIP = server.serverIP;
-								return (
-									open && (
-										<TableRow
-											key={server.id}
-											className="flex cursor-pointer border-t"
-											onClick={() => onDetails(server)}
-										>
-												<TableCell className="flex min-w-0 flex-1 items-center overflow-hidden px-2">
-													<span className="w-4 shrink-0" />
-													<Server className="size-4 shrink-0 text-chart-2" />
-													<span className="ml-2 block min-w-0 truncate font-medium">
-														{server.name || "-"}
-													</span>
-												</TableCell>
-												<TableCell className="flex w-[110px] items-center overflow-hidden px-2">
-													{server.type ? capitalize(server.type) : "-"}
-												</TableCell>
-												<TableCell className="flex w-[120px] items-center overflow-hidden px-2">
-													<span className="block min-w-0 truncate">
-														{server.os || "-"}
-													</span>
-												</TableCell>
-												<TableCell className="flex w-[160px] items-center overflow-hidden px-2 font-mono">
-													<span className="block min-w-0 truncate">
-														{server.serverIP || "-"}
-													</span>
-												</TableCell>
-												<TableCell className="flex w-[150px] items-center overflow-hidden px-2">
-													{server.backupStatus === "yes"
-														? `Yes${server.backupSoftware ? ` — ${server.backupSoftware}` : ""}`
-														: "No"}
-												</TableCell>
-												<TableCell className="flex w-[180px] items-center overflow-hidden px-2">
-													<StatusCell server={server} />
-												</TableCell>
-												<TableCell className="flex w-[130px] items-center overflow-hidden px-2">
-													{serverIP ? (
-														<ServerPingBadge
-															state={get(`server:${server.id}`)}
-														/>
-													) : (
-														<span className="text-xs text-muted-foreground">
-															—
+									{group.servers.map((server) => {
+										const serverIP = server.serverIP;
+										return (
+											open && (
+												<TableRow
+													key={server.id}
+													className="flex cursor-pointer border-t"
+													onClick={() => onDetails(server)}
+												>
+													<TableCell className="flex min-w-0 flex-1 items-center overflow-hidden px-2">
+														<span className="w-4 shrink-0" />
+														<Server className="size-4 shrink-0 text-chart-2" />
+														<span className="ml-2 block min-w-0 truncate font-medium">
+															{server.name || "-"}
 														</span>
-													)}
-												</TableCell>
-												<TableCell className="flex w-[112px] items-center justify-end gap-0.5 overflow-hidden px-2">
-													{serverIP && (
+													</TableCell>
+													<TableCell className="flex w-[110px] items-center overflow-hidden px-2">
+														{server.type ? capitalize(server.type) : "-"}
+													</TableCell>
+													<TableCell className="flex w-[120px] items-center overflow-hidden px-2">
+														<span className="block min-w-0 truncate">
+															{server.os || "-"}
+														</span>
+													</TableCell>
+													<TableCell className="flex w-[160px] items-center overflow-hidden px-2 font-mono">
+														<span className="block min-w-0 truncate">
+															{server.serverIP || "-"}
+														</span>
+													</TableCell>
+													<TableCell className="flex w-[150px] items-center overflow-hidden px-2">
+														{server.backupStatus === "yes"
+															? `Yes${server.backupSoftware ? ` — ${server.backupSoftware}` : ""}`
+															: "No"}
+													</TableCell>
+													<TableCell className="flex w-[180px] items-center overflow-hidden px-2">
+														<StatusCell server={server} />
+													</TableCell>
+													<TableCell className="flex w-[130px] items-center overflow-hidden px-2">
+														{serverIP ? (
+															<ServerPingBadge
+																state={get(`server:${server.id}`)}
+															/>
+														) : (
+															<span className="text-xs text-muted-foreground">
+																—
+															</span>
+														)}
+													</TableCell>
+													<TableCell className="flex w-[112px] items-center justify-end gap-0.5 overflow-hidden px-2">
+														{serverIP && (
+															<Button
+																variant="ghost"
+																size="icon-sm"
+																title="Ping"
+																disabled={get(`server:${server.id}`)?.loading}
+																onClick={(e) => {
+																	e.stopPropagation();
+																	ping({
+																		id: `server:${server.id}`,
+																		host: serverIP,
+																	});
+																}}
+															>
+																<RefreshCw
+																	className={cn(
+																		get(`server:${server.id}`)?.loading &&
+																			"animate-spin",
+																	)}
+																/>
+															</Button>
+														)}
 														<Button
 															variant="ghost"
 															size="icon-sm"
-															title="Ping"
-															disabled={get(`server:${server.id}`)?.loading}
+															title="Details"
 															onClick={(e) => {
 																e.stopPropagation();
-																ping({
-																	id: `server:${server.id}`,
-																	host: serverIP,
-																});
+																onDetails(server);
 															}}
 														>
-															<RefreshCw
-																className={cn(
-																	get(`server:${server.id}`)?.loading &&
-																		"animate-spin",
-																)}
-															/>
+															<ExternalLink />
 														</Button>
-													)}
-													<Button
-														variant="ghost"
-														size="icon-sm"
-														title="Details"
-														onClick={(e) => {
-															e.stopPropagation();
-															onDetails(server);
-														}}
-													>
-														<ExternalLink />
-													</Button>
-													<Button
-														variant="ghost"
-														size="icon-sm"
-														title="Edit"
-														onClick={(e) => {
-															e.stopPropagation();
-															onEdit(server);
-														}}
-													>
-														<Pencil />
-													</Button>
-												</TableCell>
-											</TableRow>
-									)
-								);
-							})}
-							</Fragment>
-						);
-					})}
+														<Button
+															variant="ghost"
+															size="icon-sm"
+															title="Edit"
+															onClick={(e) => {
+																e.stopPropagation();
+																onEdit(server);
+															}}
+														>
+															<Pencil />
+														</Button>
+													</TableCell>
+												</TableRow>
+											)
+										);
+									})}
+								</Fragment>
+							);
+						})}
 					</TableBody>
 				</table>
 			</div>

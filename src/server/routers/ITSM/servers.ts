@@ -509,7 +509,9 @@ export const serversRouter = router({
 		.mutation(
 			async ({
 				input,
-			}): Promise<{ id: string; reachable: boolean; latencyMs: number | null }[]> => {
+			}): Promise<
+				{ id: string; reachable: boolean; latencyMs: number | null }[]
+			> => {
 				return Promise.all(
 					input.targets.map(async (target) => {
 						if (!IPV4_REGEX.test(target.host)) {

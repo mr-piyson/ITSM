@@ -48,10 +48,7 @@ export function SplashScreen({
 
 		const tick = () => {
 			const elapsed = performance.now() - startTime.current;
-			const timeProgress = Math.min(
-				100,
-				(elapsed / minimumLoadingTime) * 100,
-			);
+			const timeProgress = Math.min(100, (elapsed / minimumLoadingTime) * 100);
 
 			// Real resource load progress (entries are marked done once they
 			// have a duration, otherwise they're still in flight)

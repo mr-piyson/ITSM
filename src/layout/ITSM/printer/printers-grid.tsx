@@ -138,7 +138,10 @@ function PrinterCard({
 				</p>
 				{printer.usedBy && (
 					<p className="truncate text-xs text-muted-foreground">
-						Used by <span className="font-medium text-foreground/70">{printer.usedBy}</span>
+						Used by{" "}
+						<span className="font-medium text-foreground/70">
+							{printer.usedBy}
+						</span>
 					</p>
 				)}
 			</div>
