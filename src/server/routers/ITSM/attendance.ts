@@ -7,10 +7,14 @@ import { protectedProcedure, router } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
+const EMPLOYEE_IMAGE_URL =
+	"CONCAT('http://intranet.bfginternational.com:88/storage/employee/', MD5(e.id), '/', r.filename, '.jpg')";
+
 export type AttendanceEmployee = {
 	id: number;
 	empCode: number;
 	name: string;
+	image: string | null;
 };
 
 export type AttendanceLog = {
@@ -98,11 +102,39 @@ async function safeQueryLogs(
 }
 
 export const attendanceRouter = router({
+	employeeSearch: protectedProcedure
+		.input(z.object({ query: z.string().trim().min(2).max(80) }))
+		.query(async ({ ctx, input }): Promise<AttendanceEmployee[]> => {
+			const query = input.query;
+			const [rows] = await ctx.db.mes.execute<Row[]>(
+				`SELECT e.id, e.emp_code, e.name, ${EMPLOYEE_IMAGE_URL} AS image
+				 FROM mes.employees e
+				 LEFT JOIN mes.resources r
+				   ON e.id = r.uid AND r.model = 'employee' AND r.attr = 'photo'
+				 WHERE CAST(e.emp_code AS CHAR) LIKE CONCAT(?, '%')
+				    OR e.name LIKE CONCAT(?, '%')
+				 ORDER BY e.name ASC
+				 LIMIT 10`,
+				[query, query],
+			);
+			return rows.map((row) => ({
+				id: Number(row.id),
+				empCode: Number(row.emp_code),
+				name: String(row.name ?? ""),
+				image: typeof row.image === "string" ? row.image : null,
+			}));
+		}),
+
 	employee: protectedProcedure
 		.input(z.object({ empCode: z.coerce.number().int().positive() }))
 		.query(async ({ ctx, input }): Promise<AttendanceEmployee | null> => {
 			const [rows] = await ctx.db.mes.execute<Row[]>(
-				`SELECT id, emp_code, name FROM mes.employees WHERE emp_code = ? LIMIT 1`,
+				`SELECT e.id, e.emp_code, e.name, ${EMPLOYEE_IMAGE_URL} AS image
+				 FROM mes.employees e
+				 LEFT JOIN mes.resources r
+				   ON e.id = r.uid AND r.model = 'employee' AND r.attr = 'photo'
+				 WHERE e.emp_code = ?
+				 LIMIT 1`,
 				[input.empCode],
 			);
 			if (rows.length === 0) {
@@ -113,6 +145,7 @@ export const attendanceRouter = router({
 				id: Number(row.id),
 				empCode: Number(row.emp_code),
 				name: String(row.name ?? ""),
+				image: typeof row.image === "string" ? row.image : null,
 			};
 		}),
 
@@ -188,7 +221,12 @@ export const attendanceRouter = router({
 				});
 
 			const [empRows] = await ctx.db.mes.execute<Row[]>(
-				`SELECT id, emp_code, name FROM mes.employees WHERE emp_code = ? LIMIT 1`,
+				`SELECT e.id, e.emp_code, e.name, ${EMPLOYEE_IMAGE_URL} AS image
+				 FROM mes.employees e
+				 LEFT JOIN mes.resources r
+				   ON e.id = r.uid AND r.model = 'employee' AND r.attr = 'photo'
+				 WHERE e.emp_code = ?
+				 LIMIT 1`,
 				[input.personId],
 			);
 			const employee: AttendanceEmployee | null =
@@ -197,6 +235,8 @@ export const attendanceRouter = router({
 							id: Number(empRows[0].id),
 							empCode: Number(empRows[0].emp_code),
 							name: String(empRows[0].name ?? ""),
+							image:
+								typeof empRows[0].image === "string" ? empRows[0].image : null,
 						}
 					: null;
 

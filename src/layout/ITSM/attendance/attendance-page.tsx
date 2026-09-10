@@ -1,11 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { CalendarDays, Clock, Loader2, Search, UserCheck } from "lucide-react";
+import { CalendarDays, Clock, Loader2, UserCheck } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { EmployeeRow as SharedEmployeeRow } from "@/components/employee-row";
+import {
+	Combobox,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxInput,
+	ComboboxItem,
+	ComboboxList,
+} from "@/components/ui/combobox";
 import {
 	Select,
 	SelectContent,
@@ -14,6 +21,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { trpc } from "@/trpc/react";
+import type { AttendanceEmployee } from "@/server/routers/ITSM/attendance";
 
 import { AttendanceTable } from "./attendance-table";
 
@@ -49,10 +57,30 @@ function formatMinutes(minutes: number): string {
 
 export function AttendancePage() {
 	const now = new Date();
-	const [empCodeInput, setEmpCodeInput] = useState("");
+	const [employeeSearch, setEmployeeSearch] = useState("");
+	const [searchTerm, setSearchTerm] = useState("");
+	const [selectedEmployee, setSelectedEmployee] =
+		useState<AttendanceEmployee | null>(null);
 	const [empCode, setEmpCode] = useState<number | null>(null);
 	const [month, setMonth] = useState(now.getMonth() + 1);
 	const [year, setYear] = useState(now.getFullYear());
+
+	useEffect(() => {
+		const timer = window.setTimeout(() => {
+			setSearchTerm(employeeSearch.trim());
+		}, 250);
+		return () => window.clearTimeout(timer);
+	}, [employeeSearch]);
+
+	const { data: employeeOptions, isFetching: employeeSearchPending } =
+		trpc.attendance.employeeSearch.useQuery(
+			{ query: searchTerm },
+			{
+				enabled: searchTerm.length >= 2,
+				staleTime: 30_000,
+				gcTime: 5 * 60_000,
+			},
+		);
 
 	const { data: employee, isPending: employeePending } =
 		trpc.attendance.employee.useQuery(
@@ -76,16 +104,11 @@ export function AttendancePage() {
 		return summary.totalLateMinutes - summary.totalExtraMinutes;
 	}, [summary]);
 
-	const handleSearch = () => {
-		const parsed = Number.parseInt(empCodeInput, 10);
-		if (!Number.isNaN(parsed) && parsed > 0) {
-			setEmpCode(parsed);
-		}
-	};
-
-	const handleKeyDown = (e: React.KeyboardEvent) => {
-		if (e.key === "Enter") {
-			handleSearch();
+	const handleEmployeeChange = (employee: AttendanceEmployee | null) => {
+		setSelectedEmployee(employee);
+		setEmpCode(employee?.empCode ?? null);
+		if (employee) {
+			setEmployeeSearch(`${employee.name} ${employee.empCode}`);
 		}
 	};
 
@@ -122,28 +145,53 @@ export function AttendancePage() {
 				</div>
 
 				<div className="flex flex-wrap items-end gap-3">
-					<div className="flex items-center overflow-hidden rounded-none border bg-background px-2.5 transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/50">
-						<Search
-							data-icon="inline-start"
-							className="size-4 shrink-0 text-muted-foreground"
+					<Combobox
+						value={selectedEmployee}
+						onValueChange={handleEmployeeChange}
+						items={employeeOptions ?? []}
+						itemToStringLabel={(employee) =>
+							`${employee.name} ${employee.empCode}`
+						}
+					>
+						<ComboboxInput
+							value={employeeSearch}
+							placeholder="Search employee..."
+							className="w-72"
+							showClear
+							onChange={(event) => {
+								setEmployeeSearch(event.target.value);
+								if (
+									selectedEmployee &&
+									event.target.value !==
+										`${selectedEmployee.name} ${selectedEmployee.empCode}`
+								) {
+									handleEmployeeChange(null);
+								}
+							}}
 						/>
-						<Input
-							type="number"
-							value={empCodeInput}
-							onChange={(e) => setEmpCodeInput(e.target.value)}
-							onKeyDown={handleKeyDown}
-							placeholder="Employee ID…"
-							className="h-8 w-40 border-0 pl-0 shadow-none focus-visible:ring-0"
-						/>
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							onClick={handleSearch}
-							disabled={!empCodeInput}
-						>
-							<Search className="size-4" />
-						</Button>
-					</div>
+						<ComboboxContent>
+							<ComboboxEmpty>
+								{employeeSearchPending ? "Searching..." : "No employee found."}
+							</ComboboxEmpty>
+							<ComboboxList>
+								{(employee: AttendanceEmployee) => (
+									<ComboboxItem
+										key={employee.id}
+										value={employee}
+										className="py-2"
+									>
+										<SharedEmployeeRow
+											employee={{
+												code: employee.empCode,
+												name: employee.name,
+												image: employee.image,
+											}}
+										/>
+									</ComboboxItem>
+								)}
+							</ComboboxList>
+						</ComboboxContent>
+					</Combobox>
 
 					<div className="flex items-center gap-2">
 						<Select
