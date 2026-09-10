@@ -99,9 +99,20 @@ export function AttendancePage() {
 		return Array.from({ length: 5 }, (_, i) => current - i);
 	}, []);
 
-	const safeSide = useMemo(() => {
-		if (!summary) return 0;
-		return summary.totalLateMinutes - summary.totalExtraMinutes;
+	const balance = useMemo(() => {
+		if (!summary) {
+			return { type: "extra" as const, minutes: 0 };
+		}
+		if (summary.totalLateMinutes > summary.totalExtraMinutes) {
+			return {
+				type: "late" as const,
+				minutes: summary.totalLateMinutes - summary.totalExtraMinutes,
+			};
+		}
+		return {
+			type: "extra" as const,
+			minutes: summary.totalExtraMinutes - summary.totalLateMinutes,
+		};
 	}, [summary]);
 
 	const handleEmployeeChange = (employee: AttendanceEmployee | null) => {
@@ -294,15 +305,13 @@ export function AttendancePage() {
 						<div className="flex items-center gap-2 rounded-none border p-2.5">
 							<Clock className="size-4 text-muted-foreground" />
 							<div>
-								<p className="text-[10px] text-muted-foreground">Safe Side</p>
+								<p className="text-[10px] text-muted-foreground">
+									{balance.type === "late" ? "Late Balance" : "Extra Balance"}
+								</p>
 								<p
-									className={`text-lg font-bold leading-tight ${
-										safeSide <= 0
-											? "text-emerald-600 dark:text-emerald-400"
-											: "text-red-600 dark:text-red-400"
-									}`}
+									className={`text-lg font-bold leading-tight ${balance.type === "late" ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}
 								>
-									{formatMinutes(safeSide <= 0 ? 0 : safeSide)}
+									{formatMinutes(balance.minutes)}
 								</p>
 							</div>
 						</div>

@@ -250,39 +250,6 @@ export function RecentLists({
 	return (
 		<div className="grid min-w-0 gap-4 lg:grid-cols-3">
 			<ListCard
-				icon={Users}
-				title="Recently Left"
-				header={
-					<Tabs
-						value={employeeType}
-						onValueChange={(v) => onEmployeeTypeChange(v as "S" | "W")}
-					>
-						<TabsList variant="line" className="h-7">
-							<TabsTrigger value="S" className="text-[11px] px-2">
-								Staff
-							</TabsTrigger>
-							<TabsTrigger value="W" className="text-[11px] px-2">
-								Worker
-							</TabsTrigger>
-						</TabsList>
-					</Tabs>
-				}
-			>
-				{empLeft.length === 0 ? (
-					<EmptyRow />
-				) : (
-					<ul>
-						{empLeft.map((emp, idx) => (
-							<EmployeeRow
-								key={`${emp.emplCode}-${idx}`}
-								employee={emp}
-								onClick={() => setSelectedEmpLeft(emp)}
-							/>
-						))}
-					</ul>
-				)}
-			</ListCard>
-			<ListCard
 				icon={UserPlus}
 				title="New Joiners"
 				header={
@@ -315,6 +282,40 @@ export function RecentLists({
 					</ul>
 				)}
 			</ListCard>
+			<ListCard
+				icon={Users}
+				title="Recently Left"
+				header={
+					<Tabs
+						value={employeeType}
+						onValueChange={(v) => onEmployeeTypeChange(v as "S" | "W")}
+					>
+						<TabsList variant="line" className="h-7">
+							<TabsTrigger value="S" className="text-[11px] px-2">
+								Staff
+							</TabsTrigger>
+							<TabsTrigger value="W" className="text-[11px] px-2">
+								Worker
+							</TabsTrigger>
+						</TabsList>
+					</Tabs>
+				}
+			>
+				{empLeft.length === 0 ? (
+					<EmptyRow />
+				) : (
+					<ul>
+						{empLeft.map((emp, idx) => (
+							<EmployeeRow
+								key={`${emp.emplCode}-${idx}`}
+								employee={emp}
+								onClick={() => setSelectedEmpLeft(emp)}
+							/>
+						))}
+					</ul>
+				)}
+			</ListCard>
+
 			<ListCard icon={Monitor} title="Latest assets">
 				{recentAssets.length === 0 ? (
 					<EmptyRow />
