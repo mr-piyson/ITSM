@@ -211,6 +211,67 @@ export const dccsRouter = router({
 			return rows.map(toDccLog);
 		}),
 
+	listWithRecentLogs: protectedProcedure
+		.input(
+			z
+				.object({
+					limit: z.coerce.number().int().min(1).max(200).default(50),
+				})
+				.optional(),
+		)
+		.query(
+			async ({
+				ctx,
+				input,
+			}): Promise<(DccItem & { recentLogs: DccLogItem[] })[]> => {
+				const logLimit = input?.limit ?? 50;
+
+				const [dccRows] = await ctx.db.iss.execute<Row[]>(
+					`SELECT ${DCC_SELECT}
+					 FROM dccs
+					 WHERE inActive = 0
+					 ORDER BY dcc_code ASC`,
+				);
+
+				if (dccRows.length === 0) {
+					return [];
+				}
+
+				const dccs = dccRows.map(toDcc);
+				const ids = dccs.map((d) => d.id);
+
+				const [logRows] = await ctx.db.iss.execute<Row[]>(
+					`SELECT ranked.*
+					 FROM (
+						SELECT l.*,
+						       ROW_NUMBER() OVER (PARTITION BY l.dcc_id ORDER BY l.checked_at DESC, l.id DESC) AS rn
+						FROM dcc_connectivity_logs l
+						WHERE l.dcc_id IN (${ids.map(() => "?").join(",")})
+					 ) ranked
+					 WHERE ranked.rn <= ?
+					 ORDER BY ranked.dcc_id, ranked.checked_at DESC, ranked.id DESC`,
+					[...ids, logLimit],
+				);
+
+				const logsByDcc = new Map<number, DccLogItem[]>();
+				for (const logRow of logRows) {
+					const log = toDccLog(logRow);
+					const dccId = Number(logRow.dcc_id);
+					const arr = logsByDcc.get(dccId);
+					if (arr) {
+						arr.push(log);
+					} else {
+						logsByDcc.set(dccId, [log]);
+					}
+				}
+
+				return dccs.map((dcc) => ({
+					...dcc,
+					recentLogs: (logsByDcc.get(dcc.id) ?? []).slice(0, logLimit),
+				}));
+			},
+		),
+
 	dashboard: protectedProcedure.query(
 		async ({ ctx }): Promise<DccDashboard> => {
 			const [rows] = await ctx.db.iss.execute<Row[]>(
@@ -398,6 +459,74 @@ export const dccsRouter = router({
 				return { success: true, status };
 			},
 		),
+
+	checkAllConnectivity: protectedProcedure.mutation(
+		async ({ ctx }): Promise<{ checked: number }> => {
+			const [dccRows] = await ctx.db.iss.execute<Row[]>(
+				`SELECT id, ip_address, card_reader_ip
+				 FROM dccs
+				 WHERE inActive = 0`,
+			);
+
+			if (dccRows.length === 0) {
+				return { checked: 0 };
+			}
+
+			const { runPing } = await import("@/lib/dcc-connectivity");
+
+			const results = await Promise.all(
+				dccRows.map(async (row) => {
+					const id = Number(row.id);
+					const [piPing, readerPing] = await Promise.all([
+						row.ip_address
+							? runPing(String(row.ip_address))
+							: { reachable: false, latencyMs: null },
+						row.card_reader_ip
+							? runPing(String(row.card_reader_ip))
+							: { reachable: false, latencyMs: null },
+					]);
+					const status: "connected" | "disconnected" =
+						piPing.reachable && readerPing.reachable
+							? "connected"
+							: "disconnected";
+					return { id, status, piPing, readerPing };
+				}),
+			);
+
+			if (results.length > 0) {
+				const logValues = results.map(() => `(?, ?, ?, ?, ?, ?, ?)`).join(", ");
+				const logParams = results.flatMap((r) => [
+					r.id,
+					r.status,
+					r.piPing.reachable ? 1 : 0,
+					r.piPing.latencyMs,
+					r.readerPing.reachable ? 1 : 0,
+					r.readerPing.latencyMs,
+					ctx.user.id,
+				]);
+				await ctx.db.iss.execute(
+					`INSERT INTO dcc_connectivity_logs
+					 (dcc_id, status, dcc_reachable, dcc_ping_latency_ms,
+					  reader_reachable, reader_ping_latency_ms, \`user\`)
+					 VALUES ${logValues}`,
+					logParams,
+				);
+
+				const caseClauses = results
+					.map((r) => `WHEN id = ${r.id} THEN '${r.status}'`)
+					.join(" ");
+				const ids = results.map((r) => r.id);
+				await ctx.db.iss.execute(
+					`UPDATE dccs
+					 SET last_checked_at = NOW(),
+					     last_status = CASE ${caseClauses} END
+					 WHERE id IN (${ids.join(",")})`,
+				);
+			}
+
+			return { checked: results.length };
+		},
+	),
 
 	ping: protectedProcedure
 		.input(
