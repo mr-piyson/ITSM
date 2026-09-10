@@ -1,17 +1,7 @@
 "use client";
 
-import {
-	Activity,
-	Pause,
-	Play,
-	RefreshCw,
-	RadioTower,
-	Wifi,
-	WifiOff,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { RadioTower } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Empty,
@@ -21,13 +11,9 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
-import { trpc } from "@/trpc/react";
+import type { DccItem, DccLogItem } from "@/server/routers/ITSM/dccs";
 
-const INTERVAL_OPTIONS = [
-	{ label: "15s", value: 15_000 },
-	{ label: "30s", value: 30_000 },
-	{ label: "60s", value: 60_000 },
-] as const;
+type DccWithLogs = DccItem & { recentLogs: DccLogItem[] };
 
 function formatTime(value: string | null): string {
 	if (!value) return "—";
@@ -43,13 +29,7 @@ function formatTime(value: string | null): string {
 function DccMiniChart({
 	logs,
 }: {
-	logs: {
-		dccReachable: boolean;
-		readerReachable: boolean;
-		dccPingLatencyMs: number | null;
-		readerPingLatencyMs: number | null;
-		checkedAt: string | null;
-	}[];
+	logs: DccLogItem[];
 }) {
 	const reversed = logs.slice().reverse();
 
@@ -63,16 +43,8 @@ function DccMiniChart({
 
 	const points = reversed.map((log, i) => ({
 		i,
-		time: log.checkedAt
-			? new Date(log.checkedAt).toLocaleTimeString([], {
-					hour: "2-digit",
-					minute: "2-digit",
-				})
-			: "",
 		pi: log.dccReachable ? 1 : 0,
 		reader: log.readerReachable ? 1 : 0,
-		piLatency: log.dccPingLatencyMs,
-		readerLatency: log.readerPingLatencyMs,
 	}));
 
 	const chartH = 60;
@@ -115,32 +87,20 @@ function DccMiniChart({
 
 function DccRealtimeCard({
 	dcc,
+	onClick,
 }: {
-	dcc: {
-		id: number;
-		name: string;
-		dccCode: string | null;
-		ipAddress: string | null;
-		cardReaderIp: string | null;
-		lastStatus: "connected" | "disconnected" | null;
-		lastCheckedAt: string | null;
-		recentLogs: {
-			dccReachable: boolean;
-			readerReachable: boolean;
-			dccPingLatencyMs: number | null;
-			readerPingLatencyMs: number | null;
-			checkedAt: string | null;
-		}[];
-	};
+	dcc: DccWithLogs;
+	onClick?: () => void;
 }) {
 	const isOnline = dcc.lastStatus === "connected";
 
 	return (
 		<Card
 			className={cn(
-				"overflow-hidden transition-colors",
+				"cursor-pointer overflow-hidden transition-colors hover:bg-accent/50",
 				isOnline === false && "border-red-200 dark:border-red-900",
 			)}
+			onClick={onClick}
 		>
 			<CardHeader className="space-y-2 p-3">
 				<div className="flex items-start justify-between gap-2">
@@ -213,215 +173,48 @@ function DccRealtimeCard({
 	);
 }
 
-export function DccRealtimeDashboard() {
-	const utils = trpc.useUtils();
-	const { data: dccs = [], isPending } = trpc.dccs.listWithRecentLogs.useQuery({
-		limit: 50,
-	});
-	const checkAllMutation = trpc.dccs.checkAllConnectivity.useMutation();
+export function DccRealtimeGrid({
+	dccs,
+	isPending,
+	onCardClick,
+}: {
+	dccs: DccWithLogs[];
+	isPending: boolean;
+	onCardClick?: (dcc: DccWithLogs) => void;
+}) {
+	if (isPending) {
+		return (
+			<div className="flex h-48 items-center justify-center">
+				<RadioTower className="size-6 animate-pulse text-muted-foreground" />
+			</div>
+		);
+	}
 
-	const [pollingEnabled, setPollingEnabled] = useState(true);
-	const [intervalMs, setIntervalMs] = useState(15_000);
-	const [countdown, setCountdown] = useState(15);
-	const [lastChecked, setLastChecked] = useState<Date | null>(null);
-	const [isChecking, setIsChecking] = useState(false);
-
-	const pollingRef = useRef(pollingEnabled);
-	const intervalMsRef = useRef(intervalMs);
-	const isCheckingRef = useRef(isChecking);
-	pollingRef.current = pollingEnabled;
-	intervalMsRef.current = intervalMs;
-	isCheckingRef.current = isChecking;
-
-	useEffect(() => {
-		const id = setInterval(() => {
-			if (!pollingRef.current) return;
-			setCountdown((prev) =>
-				prev <= 1 ? intervalMsRef.current / 1000 : prev - 1,
-			);
-		}, 1000);
-		return () => clearInterval(id);
-	}, []);
-
-	useEffect(() => {
-		const id = setInterval(async () => {
-			if (!pollingRef.current || isCheckingRef.current) return;
-			isCheckingRef.current = true;
-			setIsChecking(true);
-			try {
-				await checkAllMutation.mutateAsync();
-				await utils.dccs.listWithRecentLogs.invalidate();
-				await utils.dccs.dashboard.invalidate();
-				setLastChecked(new Date());
-			} catch {
-				// silent
-			} finally {
-				isCheckingRef.current = false;
-				setIsChecking(false);
-				setCountdown(intervalMsRef.current / 1000);
-			}
-		}, intervalMs);
-		return () => clearInterval(id);
-	}, [intervalMs, checkAllMutation, utils]);
-
-	useEffect(() => {
-		(async () => {
-			isCheckingRef.current = true;
-			setIsChecking(true);
-			try {
-				await checkAllMutation.mutateAsync();
-				await utils.dccs.listWithRecentLogs.invalidate();
-				await utils.dccs.dashboard.invalidate();
-				setLastChecked(new Date());
-			} catch {
-				// silent
-			} finally {
-				isCheckingRef.current = false;
-				setIsChecking(false);
-				setCountdown(intervalMsRef.current / 1000);
-			}
-		})();
-	}, []);
-
-	const connectedCount = dccs.filter(
-		(d) => d.lastStatus === "connected",
-	).length;
-	const disconnectedCount = dccs.filter(
-		(d) => d.lastStatus === "disconnected",
-	).length;
-	const uncheckedCount = dccs.filter((d) => d.lastStatus === null).length;
+	if (dccs.length === 0) {
+		return (
+			<Empty className="border">
+				<EmptyHeader>
+					<EmptyMedia variant="icon">
+						<RadioTower />
+					</EmptyMedia>
+					<EmptyTitle>No DCCs found</EmptyTitle>
+					<EmptyDescription>
+						Add DCC stations to start monitoring connectivity.
+					</EmptyDescription>
+				</EmptyHeader>
+			</Empty>
+		);
+	}
 
 	return (
-		<div className="flex h-full min-h-0 flex-col overflow-hidden">
-			<div className="shrink-0 space-y-3 border-b p-4 md:p-6">
-				<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-					<div>
-						<h1 className="text-xl font-semibold tracking-tight">
-							DCC Realtime
-						</h1>
-						<p className="text-xs text-muted-foreground">
-							Live connectivity monitoring for all DCCs
-						</p>
-					</div>
-					<div className="flex flex-wrap items-center gap-2">
-						<div className="flex items-center gap-1 rounded-none border">
-							{INTERVAL_OPTIONS.map((opt) => (
-								<Button
-									key={opt.value}
-									size="sm"
-									variant={intervalMs === opt.value ? "default" : "ghost"}
-									className="h-7 rounded-none px-2 text-xs"
-									onClick={() => setIntervalMs(opt.value)}
-								>
-									{opt.label}
-								</Button>
-							))}
-						</div>
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={() => setPollingEnabled(!pollingEnabled)}
-							className="h-7 gap-1 text-xs"
-						>
-							{pollingEnabled ? (
-								<Pause className="size-3" />
-							) : (
-								<Play className="size-3" />
-							)}
-							{pollingEnabled ? "Pause" : "Resume"}
-						</Button>
-						<Button
-							size="sm"
-							variant="outline"
-							disabled={isChecking}
-							onClick={async () => {
-								if (isCheckingRef.current) return;
-								isCheckingRef.current = true;
-								setIsChecking(true);
-								try {
-									await checkAllMutation.mutateAsync();
-									await utils.dccs.listWithRecentLogs.invalidate();
-									await utils.dccs.dashboard.invalidate();
-									setLastChecked(new Date());
-								} catch {
-									// silent
-								} finally {
-									isCheckingRef.current = false;
-									setIsChecking(false);
-									setCountdown(intervalMsRef.current / 1000);
-								}
-							}}
-							className="h-7 gap-1 text-xs"
-						>
-							<RefreshCw
-								className={cn("size-3", isChecking && "animate-spin")}
-							/>
-							Check now
-						</Button>
-					</div>
-				</div>
-
-				<div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-					<div className="flex items-center gap-1.5">
-						<RadioTower className="size-3.5" />
-						<span>{dccs.length} DCCs</span>
-					</div>
-					<div className="flex items-center gap-1.5 text-green-600">
-						<Wifi className="size-3.5" />
-						<span>{connectedCount} online</span>
-					</div>
-					<div className="flex items-center gap-1.5 text-red-600">
-						<WifiOff className="size-3.5" />
-						<span>{disconnectedCount} offline</span>
-					</div>
-					{uncheckedCount > 0 && (
-						<div className="flex items-center gap-1.5">
-							<Activity className="size-3.5" />
-							<span>{uncheckedCount} unchecked</span>
-						</div>
-					)}
-					{lastChecked && (
-						<span className="ml-auto hidden whitespace-nowrap sm:inline">
-							Last check: {lastChecked.toLocaleTimeString()}
-							{pollingEnabled && <> · Next in {countdown}s</>}
-						</span>
-					)}
-				</div>
-				{lastChecked && (
-					<div className="flex items-center text-xs text-muted-foreground sm:hidden">
-						<span>
-							Last check: {lastChecked.toLocaleTimeString()}
-							{pollingEnabled && <> · Next in {countdown}s</>}
-						</span>
-					</div>
-				)}
-			</div>
-
-			<div className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
-				{isPending ? (
-					<div className="flex h-48 items-center justify-center">
-						<RefreshCw className="size-6 animate-spin text-muted-foreground" />
-					</div>
-				) : dccs.length === 0 ? (
-					<Empty className="border">
-						<EmptyHeader>
-							<EmptyMedia variant="icon">
-								<RadioTower />
-							</EmptyMedia>
-							<EmptyTitle>No DCCs found</EmptyTitle>
-							<EmptyDescription>
-								Add DCC stations to start monitoring connectivity.
-							</EmptyDescription>
-						</EmptyHeader>
-					</Empty>
-				) : (
-					<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-						{dccs.map((dcc) => (
-							<DccRealtimeCard key={dcc.id} dcc={dcc} />
-						))}
-					</div>
-				)}
-			</div>
+		<div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:p-6">
+			{dccs.map((dcc) => (
+				<DccRealtimeCard
+					key={dcc.id}
+					dcc={dcc}
+					onClick={() => onCardClick?.(dcc)}
+				/>
+			))}
 		</div>
 	);
 }

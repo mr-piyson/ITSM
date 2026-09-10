@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { ExternalLink, Pencil, RadioTower, RefreshCw } from "lucide-react";
 
@@ -28,7 +28,6 @@ type DccsTableProps = {
 
 export function DccsTable({ dccs, onDetails, onEdit }: DccsTableProps) {
 	const checkMutation = trpc.dccs.checkConnectivity.useMutation();
-	const [isCheckingAll, setIsCheckingAll] = useState(false);
 	const utils = trpc.useUtils();
 	const { get, ping, pingMany } = usePing("dccs");
 
@@ -52,6 +51,15 @@ export function DccsTable({ dccs, onDetails, onEdit }: DccsTableProps) {
 		});
 	}, [dccs]);
 
+	const pingManyRef = useRef(pingMany);
+	pingManyRef.current = pingMany;
+
+	useEffect(() => {
+		if (targets.length > 0) {
+			pingManyRef.current(targets);
+		}
+	}, [targets]);
+
 	const offlineCount = targets.filter((target) => {
 		const state = get(target.id);
 		return state && !state.loading && state.status === "inactive";
@@ -70,44 +78,11 @@ export function DccsTable({ dccs, onDetails, onEdit }: DccsTableProps) {
 		}
 		try {
 			await checkMutation.mutateAsync({ id: dcc.id });
-			utils.dccs.list.invalidate();
+			utils.dccs.listWithRecentLogs.invalidate();
 			utils.dccs.dashboard.invalidate();
 			utils.dccs.byId.invalidate({ id: dcc.id });
 		} catch {
 			// status reflected on next refetch
-		}
-	};
-
-	const handleCheckAll = async () => {
-		if (isCheckingAll || dccs.length === 0) {
-			return;
-		}
-		setIsCheckingAll(true);
-
-		const allTargets = dccs.flatMap((dcc) => {
-			const list: PingTarget[] = [];
-			if (dcc.ipAddress) {
-				list.push({ id: `pi:${dcc.id}`, host: dcc.ipAddress });
-			}
-			if (dcc.cardReaderIp) {
-				list.push({ id: `reader:${dcc.id}`, host: dcc.cardReaderIp });
-			}
-			return list;
-		});
-		if (allTargets.length > 0) {
-			pingMany(allTargets);
-		}
-
-		try {
-			await Promise.all(
-				dccs.map((dcc) =>
-					checkMutation.mutateAsync({ id: dcc.id }).catch(() => {}),
-				),
-			);
-			utils.dccs.list.invalidate();
-			utils.dccs.dashboard.invalidate();
-		} finally {
-			setIsCheckingAll(false);
 		}
 	};
 
@@ -131,15 +106,10 @@ export function DccsTable({ dccs, onDetails, onEdit }: DccsTableProps) {
 						</span>
 					)}
 				</span>
-				<Button
-					size="sm"
-					variant="outline"
-					disabled={isCheckingAll}
-					onClick={() => handleCheckAll()}
-				>
-					<RadioTower className={cn(isCheckingAll && "animate-pulse")} />
-					Ping all
-				</Button>
+				<span className="flex items-center gap-1 text-xs text-muted-foreground">
+					<RadioTower className="size-3.5" />
+					Auto-refreshing
+				</span>
 			</div>
 			<div className="min-h-0 flex-1 overflow-auto">
 				<table className="w-full min-w-[1080px] caption-bottom text-xs">

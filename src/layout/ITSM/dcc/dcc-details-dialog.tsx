@@ -152,7 +152,7 @@ export function DccDetailsDialog({
 			const result = await checkMutation.mutateAsync({ id: dcc.id });
 			await utils.dccs.byId.invalidate({ id: dcc.id });
 			await utils.dccs.byId.refetch({ id: dcc.id });
-			utils.dccs.list.invalidate();
+			utils.dccs.listWithRecentLogs.invalidate();
 			utils.dccs.dashboard.invalidate();
 			toast.success(
 				result.status === "connected"

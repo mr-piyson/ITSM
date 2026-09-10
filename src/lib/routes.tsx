@@ -1,5 +1,4 @@
 import {
-	Activity,
 	BarChart3,
 	Boxes,
 	CalendarDays,
@@ -105,11 +104,6 @@ export const routes: {
 					title: "DCCs",
 					href: "/app/dccs",
 					icon: RadioTower,
-				},
-				{
-					title: "DCC Realtime",
-					href: "/app/dccs/realtime",
-					icon: Activity,
 				},
 				{
 					title: "Backup Tapes",

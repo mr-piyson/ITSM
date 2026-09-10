@@ -1,11 +1,14 @@
 "use client";
 
 import {
+	Activity,
 	Loader2,
 	Plus,
 	RadioTower,
 	Search,
 	Siren,
+	Table2,
+	LayoutGrid,
 	Wifi,
 	WifiOff,
 } from "lucide-react";
@@ -34,7 +37,9 @@ import { trpc } from "@/trpc/react";
 
 import { DccDetailsDialog } from "./dcc-details-dialog";
 import { DccFormDialog } from "./dcc-form-dialog";
+import { DccRealtimeGrid } from "./dcc-realtime-dashboard";
 import { DccsTable } from "./dccs-table";
+import { useDccRealtime, PollingControls } from "./use-dcc-realtime";
 
 function StatCard({
 	label,
@@ -61,15 +66,31 @@ function StatCard({
 }
 
 export function DccsPage() {
-	const utils = trpc.useUtils();
-	const { data: dccs = [], isPending } = trpc.dccs.list.useQuery();
-	const { data: dashboard } = trpc.dccs.dashboard.useQuery();
+	const {
+		dccs,
+		dashboard,
+		isPending,
+		pollingEnabled,
+		setPollingEnabled,
+		intervalMs,
+		setIntervalMs,
+		countdown,
+		lastChecked,
+		isChecking,
+		checkNow,
+		invalidate,
+	} = useDccRealtime();
 
 	const [query, setQuery] = useQueryState("q", {
 		defaultValue: "",
 		history: "replace",
 	});
 	const [dccID, setDccID] = useQueryState("id", parseAsString);
+	const [view, setView] = useQueryState("view", {
+		defaultValue: "table",
+		history: "replace",
+	});
+	const activeView = view === "realtime" ? "realtime" : "table";
 
 	const [formOpen, setFormOpen] = useState(false);
 	const [editingDcc, setEditingDcc] = useState<DccItem | null>(null);
@@ -111,16 +132,14 @@ export function DccsPage() {
 	const handleFormSuccess = () => {
 		setFormOpen(false);
 		setEditingDcc(null);
-		utils.dccs.list.invalidate();
-		utils.dccs.dashboard.invalidate();
+		invalidate();
 	};
 
 	const closeDetails = () => setDccID(null, { history: "replace" });
 
 	const handleDeleted = () => {
 		closeDetails();
-		utils.dccs.list.invalidate();
-		utils.dccs.dashboard.invalidate();
+		invalidate();
 	};
 
 	return (
@@ -135,6 +154,26 @@ export function DccsPage() {
 						</p>
 					</div>
 					<div className="flex items-center gap-2">
+						<div className="flex items-center border">
+							<Button
+								size="sm"
+								variant={activeView === "table" ? "default" : "ghost"}
+								className="h-8 rounded-none px-2.5 text-xs"
+								onClick={() => setView("table")}
+							>
+								<Table2 className="size-3.5" />
+								Table
+							</Button>
+							<Button
+								size="sm"
+								variant={activeView === "realtime" ? "default" : "ghost"}
+								className="h-8 rounded-none px-2.5 text-xs"
+								onClick={() => setView("realtime")}
+							>
+								<LayoutGrid className="size-3.5" />
+								Realtime
+							</Button>
+						</div>
 						<Button onClick={openAdd} size="default">
 							<Plus data-icon="inline-start" />
 							Add DCC
@@ -168,55 +207,79 @@ export function DccsPage() {
 					/>
 				</div>
 
-				<div className="relative w-full max-w-lg">
-					<Search
-						data-icon="inline-start"
-						className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-					/>
-					<Input
-						type="search"
-						value={query}
-						onChange={(e) => setQuery(e.target.value)}
-						placeholder="Search by name, code, IP…"
-						className="h-9 pl-8"
-					/>
-				</div>
+				{/* Polling controls */}
+				<PollingControls
+					pollingEnabled={pollingEnabled}
+					setPollingEnabled={setPollingEnabled}
+					intervalMs={intervalMs}
+					setIntervalMs={setIntervalMs}
+					countdown={countdown}
+					lastChecked={lastChecked}
+					isChecking={isChecking}
+					checkNow={checkNow}
+				/>
+
+				{activeView === "table" && (
+					<div className="relative w-full max-w-lg">
+						<Search
+							data-icon="inline-start"
+							className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+						/>
+						<Input
+							type="search"
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
+							placeholder="Search by name, code, IP…"
+							className="h-9 pl-8"
+						/>
+					</div>
+				)}
 			</div>
 
-			{isPending ? (
-				<div className="flex flex-1 items-center justify-center">
-					<Loader2 className="size-6 animate-spin text-muted-foreground" />
-				</div>
-			) : filtered.length === 0 ? (
-				<Empty className="flex-1 border">
-					<EmptyHeader>
-						<EmptyMedia variant="icon">
-							<RadioTower />
-						</EmptyMedia>
-						<EmptyTitle>
-							{dccs.length === 0 ? "No DCCs yet" : "No DCCs found"}
-						</EmptyTitle>
-						<EmptyDescription>
-							{dccs.length === 0
-								? "Add your first DCC station to begin monitoring connectivity."
-								: "Try adjusting your search."}
-						</EmptyDescription>
-					</EmptyHeader>
-					<EmptyContent>
-						{dccs.length === 0 && (
-							<Button size="sm" onClick={openAdd}>
-								<Plus data-icon="inline-start" />
-								Add the first DCC
-							</Button>
-						)}
-					</EmptyContent>
-				</Empty>
+			{activeView === "table" ? (
+				isPending ? (
+					<div className="flex flex-1 items-center justify-center">
+						<Loader2 className="size-6 animate-spin text-muted-foreground" />
+					</div>
+				) : filtered.length === 0 ? (
+					<Empty className="flex-1 border">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<RadioTower />
+							</EmptyMedia>
+							<EmptyTitle>
+								{dccs.length === 0 ? "No DCCs yet" : "No DCCs found"}
+							</EmptyTitle>
+							<EmptyDescription>
+								{dccs.length === 0
+									? "Add your first DCC station to begin monitoring connectivity."
+									: "Try adjusting your search."}
+							</EmptyDescription>
+						</EmptyHeader>
+						<EmptyContent>
+							{dccs.length === 0 && (
+								<Button size="sm" onClick={openAdd}>
+									<Plus data-icon="inline-start" />
+									Add the first DCC
+								</Button>
+							)}
+						</EmptyContent>
+					</Empty>
+				) : (
+					<DccsTable
+						dccs={filtered}
+						onDetails={(dcc) => setDccID(String(dcc.id))}
+						onEdit={openEdit}
+					/>
+				)
 			) : (
-				<DccsTable
-					dccs={filtered}
-					onDetails={(dcc) => setDccID(String(dcc.id))}
-					onEdit={openEdit}
-				/>
+				<div className="min-h-0 flex-1 overflow-y-auto">
+					<DccRealtimeGrid
+						dccs={dccs}
+						isPending={isPending}
+						onCardClick={(dcc) => setDccID(String(dcc.id))}
+					/>
+				</div>
 			)}
 
 			<DccFormDialog

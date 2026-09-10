@@ -1,5 +1,14 @@
-import { DccRealtimeDashboard } from "@/layout/ITSM/dcc/dcc-realtime-dashboard";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Page() {
-	return <DccRealtimeDashboard />;
+	const router = useRouter();
+
+	useEffect(() => {
+		router.replace("/app/dccs?view=realtime");
+	}, [router]);
+
+	return null;
 }
