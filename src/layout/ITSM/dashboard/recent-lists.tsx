@@ -1,27 +1,15 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
-import { Boxes, History, Monitor, type LucideIcon } from "lucide-react";
+import { Boxes, Monitor, Users, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type {
 	RecentAsset,
+	RecentEmployee,
 	RecentItem,
-	RecentLog,
 } from "@/server/routers/ITSM/dashboard";
-
-function relativeTime(date: string): string {
-	if (!date) {
-		return "";
-	}
-	const parsed = new Date(date);
-	if (Number.isNaN(parsed.getTime())) {
-		return "";
-	}
-	return formatDistanceToNow(parsed, { addSuffix: true });
-}
 
 function ListCard({
 	icon: Icon,
@@ -40,7 +28,7 @@ function ListCard({
 					{title}
 				</CardTitle>
 			</CardHeader>
-			<CardContent className="flex flex-col gap-1.5">{children}</CardContent>
+			<CardContent className="flex flex-col gap-0.5 p-1">{children}</CardContent>
 		</Card>
 	);
 }
@@ -53,48 +41,108 @@ function EmptyRow() {
 	);
 }
 
-function LogRow({ log }: { log: RecentLog }) {
+function EmployeeRow({ employee }: { employee: RecentEmployee }) {
+	const initials = (employee.emplPname ?? employee.emplCode)
+		.split(" ")
+		.map((w) => w[0])
+		.join("")
+		.slice(0, 2)
+		.toUpperCase();
+
 	return (
-		<li className="flex flex-col gap-0.5 border-b border-border/60 py-1.5 last:border-0">
-			<div className="flex items-center justify-between gap-2">
-				<span className="truncate font-medium">{log.node}</span>
-				<time className="shrink-0 text-[11px] text-muted-foreground">
-					{relativeTime(log.date)}
-				</time>
+		<li className="group flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50">
+			<div className="relative size-9 shrink-0">
+				{employee.empPicPath ? (
+					<img
+						src={employee.empPicPath}
+						alt={employee.emplPname ?? ""}
+						className="size-9 rounded-full object-cover ring-2 ring-border"
+					/>
+				) : (
+					<div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-xs font-semibold text-primary ring-2 ring-border">
+						{initials}
+					</div>
+				)}
+				<span
+					className={`absolute bottom-0 right-0 size-2.5 rounded-full ring-2 ring-card ${employee.emplOnPayroll === "Y" ? "bg-emerald-500" : "bg-muted-foreground/40"}`}
+				/>
 			</div>
-			<p className="truncate text-xs text-muted-foreground">
-				{log.user ?? "System"} · {log.action} #{log.nodeID}
-			</p>
+			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
+				<div className="flex items-center gap-2">
+					<span className="truncate text-sm font-medium leading-none">
+						{employee.emplPname ?? employee.emplCode}
+					</span>
+					{employee.emplOnPayroll === "Y" && (
+						<Badge
+							variant="default"
+							className="shrink-0 bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400 px-1.5 py-0 text-[10px] leading-normal"
+						>
+							Payroll
+						</Badge>
+					)}
+				</div>
+				<div className="flex items-center gap-1.5">
+					{employee.emplStaffWorkr === "S" ? (
+						<Badge
+							variant="outline"
+							className="shrink-0 px-1.5 py-0 text-[10px] leading-normal"
+						>
+							Staff
+						</Badge>
+					) : employee.emplStaffWorkr === "W" ? (
+						<Badge
+							variant="outline"
+							className="shrink-0 px-1.5 py-0 text-[10px] leading-normal"
+						>
+							Worker
+						</Badge>
+					) : null}
+					{employee.emailId && (
+						<span className="truncate text-[11px] text-muted-foreground">
+							{employee.emailId}
+						</span>
+					)}
+				</div>
+			</div>
 		</li>
 	);
 }
 
 function AssetRow({ asset }: { asset: RecentAsset }) {
 	return (
-		<li className="flex items-center justify-between gap-2 border-b border-border/60 py-1.5 last:border-0">
-			<Link href="/app/assets" className="flex min-w-0 flex-1 flex-col">
-				<span className="truncate font-medium">
+		<li className="group flex items-center justify-between gap-2 rounded-md px-2 py-2 transition-colors hover:bg-muted/50">
+			<Link href="/app/assets" className="flex min-w-0 flex-1 flex-col gap-0.5">
+				<span className="truncate text-sm font-medium leading-none">
 					{asset.deviceName ?? asset.code}
 				</span>
 				<span className="truncate font-mono text-[11px] text-muted-foreground">
 					{asset.code}
 				</span>
 			</Link>
-			{asset.type && <Badge variant="outline">{asset.type}</Badge>}
+			{asset.type && (
+				<Badge variant="outline" className="shrink-0 px-1.5 py-0 text-[10px] leading-normal">
+					{asset.type}
+				</Badge>
+			)}
 		</li>
 	);
 }
 
 function ItemRow({ item }: { item: RecentItem }) {
 	return (
-		<li className="flex items-center justify-between gap-2 border-b border-border/60 py-1.5 last:border-0">
-			<Link href="/app/stock" className="flex min-w-0 flex-1 flex-col">
-				<span className="truncate font-medium">{item.name}</span>
-				<span className="truncate text-xs text-muted-foreground">
+		<li className="group flex items-center justify-between gap-2 rounded-md px-2 py-2 transition-colors hover:bg-muted/50">
+			<Link href="/app/stock" className="flex min-w-0 flex-1 flex-col gap-0.5">
+				<span className="truncate text-sm font-medium leading-none">
+					{item.name}
+				</span>
+				<span className="truncate text-[11px] text-muted-foreground">
 					{item.category}
 				</span>
 			</Link>
-			<Badge variant={item.stock === 0 ? "destructive" : "outline"}>
+			<Badge
+				variant={item.stock === 0 ? "destructive" : "outline"}
+				className="shrink-0 px-1.5 py-0 text-[10px] leading-normal"
+			>
 				{item.stock}
 			</Badge>
 		</li>
@@ -102,23 +150,23 @@ function ItemRow({ item }: { item: RecentItem }) {
 }
 
 export function RecentLists({
-	recentLogs,
+	recentEmployees,
 	recentAssets,
 	recentItems,
 }: {
-	recentLogs: RecentLog[];
+	recentEmployees: RecentEmployee[];
 	recentAssets: RecentAsset[];
 	recentItems: RecentItem[];
 }) {
 	return (
 		<div className="grid min-w-0 gap-4 lg:grid-cols-3">
-			<ListCard icon={History} title="Latest logs">
-				{recentLogs.length === 0 ? (
+			<ListCard icon={Users} title="Latest Employees Update">
+				{recentEmployees.length === 0 ? (
 					<EmptyRow />
 				) : (
 					<ul>
-						{recentLogs.map((log) => (
-							<LogRow key={log.id} log={log} />
+						{recentEmployees.map((emp, idx) => (
+							<EmployeeRow key={`${emp.emplCode}-${idx}`} employee={emp} />
 						))}
 					</ul>
 				)}

@@ -20,7 +20,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { usePing, type PingTarget } from "@/lib/use-ping";
+import type { PingState, PingTarget } from "@/lib/use-ping";
 import {
 	capitalize,
 	serverStatusBadge,
@@ -34,6 +34,9 @@ type ServersTableProps = {
 	servers: ServerItem[];
 	onDetails: (server: ServerItem) => void;
 	onEdit: (server: ServerItem) => void;
+	get: (id: string) => PingState | undefined;
+	ping: (target: PingTarget) => Promise<void>;
+	pingMany: (targets: PingTarget[]) => Promise<void>;
 };
 
 type HostGroup = {
@@ -83,9 +86,11 @@ export function ServersTable({
 	servers,
 	onDetails,
 	onEdit,
+	get,
+	ping,
+	pingMany,
 }: ServersTableProps) {
 	const groups = useMemo(() => groupByHostIP(servers), [servers]);
-	const { get, ping, pingMany } = usePing();
 
 	const targets = useMemo<PingTarget[]>(() => {
 		const list: PingTarget[] = [];

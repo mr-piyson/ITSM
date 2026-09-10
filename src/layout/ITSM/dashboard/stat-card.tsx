@@ -22,7 +22,7 @@ export function StatCard({
 	iconClassName,
 }: StatCardProps) {
 	const inner = (
-		<Card className="h-full min-w-0">
+		<Card className="h-full min-w-0 py-1">
 			<CardContent className="flex items-center justify-between gap-3">
 				<div className="flex min-w-0 flex-col gap-0.5">
 					<span className="truncate text-xs text-muted-foreground">

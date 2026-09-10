@@ -40,13 +40,13 @@ export type LowStockItem = {
 	stock: number;
 };
 
-export type RecentLog = {
-	id: number;
-	date: string;
-	user: string | null;
-	action: string;
-	node: string;
-	nodeID: number;
+export type RecentEmployee = {
+	emplCode: string;
+	emplPname: string | null;
+	emplStaffWorkr: string | null;
+	emailId: string | null;
+	emplOnPayroll: string | null;
+	empPicPath: string | null;
 };
 
 export type RecentAsset = {
@@ -93,7 +93,7 @@ export type DashboardData = {
 	assetsByType: AssetTypeCount[];
 	stockByCategory: StockCategory[];
 	lowStock: LowStockItem[];
-	recentLogs: RecentLog[];
+	recentEmployees: RecentEmployee[];
 	recentAssets: RecentAsset[];
 	recentItems: RecentItem[];
 	alerts: DashboardAlert[];
@@ -152,7 +152,6 @@ export const dashboardRouter = router({
 				[typeRows],
 				[categoryRows],
 				[lowStockRows],
-				[logRows],
 				[assetRows],
 				[itemRows],
 				[contractRows],
@@ -192,13 +191,6 @@ export const dashboardRouter = router({
 				 ORDER BY stock ASC, id DESC
 				 LIMIT 8`,
 					[LOW_STOCK_THRESHOLD],
-				),
-				db.execute<Row[]>(
-					`SELECT l.id, l.date, u.name AS user, l.action, l.node, l.nodeID
-				 FROM changes_logs l
-				 LEFT JOIN users u ON u.id = l.userID
-				 ORDER BY l.date DESC
-				 LIMIT 10`,
 				),
 				db.execute<Row[]>(
 					`SELECT code, deviceName, type
@@ -254,6 +246,29 @@ export const dashboardRouter = router({
 				 LIMIT 10`,
 				),
 			]);
+
+			let recentEmployees: RecentEmployee[] = [];
+			const oraclePool = await ctx.db.mis;
+			const oracleConn = await oraclePool.getConnection();
+			try {
+				const result = await oracleConn.execute(
+					`SELECT tem.EMPL_CODE, tem.EMPL_PNAME, tem.EMPL_STAFF_WORKR, tem.EMAIL_ID, tem.EMPL_ON_PAYROLL, tem.EMP_PIC_PATH
+					 FROM T633_EMPL_MASTER tem
+					 WHERE tem.T627_DESGN_CODE != 'VISIT' AND tem.EMPL_CODE NOT LIKE '%-0%'
+					 ORDER BY tem.UPDATED_ON DESC`,
+				);
+				const rows = (result.rows ?? []) as unknown[][];
+				recentEmployees = rows.slice(0, 8).map((row) => ({
+					emplCode: String(row[0] ?? ""),
+					emplPname: toString(row[1]),
+					emplStaffWorkr: toString(row[2]),
+					emailId: toString(row[3]),
+					emplOnPayroll: toString(row[4]),
+					empPicPath: toString(row[5]),
+				}));
+			} finally {
+				await oracleConn.release();
+			}
 
 			const kpi = kpiRows[0] ?? {};
 
@@ -362,14 +377,7 @@ export const dashboardRouter = router({
 					category: String(row.category ?? ""),
 					stock: toNumber(row.stock),
 				})),
-				recentLogs: logRows.map((row) => ({
-					id: toNumber(row.id),
-					date: toDateISO(row.date) ?? "",
-					user: toString(row.user),
-					action: String(row.action ?? ""),
-					node: String(row.node ?? ""),
-					nodeID: toNumber(row.nodeID),
-				})),
+				recentEmployees,
 				recentAssets: assetRows.map((row) => ({
 					code: String(row.code ?? ""),
 					deviceName: toString(row.deviceName),

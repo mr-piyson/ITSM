@@ -16,7 +16,6 @@ import { trpc } from "@/trpc/react";
 
 import { AlertsPanel } from "./alerts-panel";
 import { DistributionCharts } from "./distribution-charts";
-import { QuickActions } from "./quick-actions";
 import { RecentLists } from "./recent-lists";
 import { StatCard } from "./stat-card";
 
@@ -25,13 +24,6 @@ export function DashboardPage() {
 
 	return (
 		<div className="flex h-full min-h-0 flex-col gap-4 p-4 md:p-6">
-			<div>
-				<h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
-				<p className="text-xs text-muted-foreground">
-					IT service management overview
-				</p>
-			</div>
-
 			{isPending ? (
 				<DashboardSkeleton />
 			) : data ? (
@@ -98,11 +90,8 @@ function DashboardContent({ data }: { data: DashboardData }) {
 				expiredContracts={data.expiredContracts}
 				totalAssets={kpis.totalAssets}
 			/>
-
-			<QuickActions />
-
 			<RecentLists
-				recentLogs={data.recentLogs}
+				recentEmployees={data.recentEmployees}
 				recentAssets={data.recentAssets}
 				recentItems={data.recentItems}
 			/>

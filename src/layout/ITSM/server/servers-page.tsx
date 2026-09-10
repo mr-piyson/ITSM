@@ -9,7 +9,7 @@ import {
 	Table2,
 } from "lucide-react";
 import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { usePing, type PingTarget } from "@/lib/use-ping";
 import type { ServerItem } from "@/server/routers/ITSM/servers";
 import { trpc } from "@/trpc/react";
 
@@ -36,6 +37,33 @@ const VIEW_VALUES = ["table", "grid"] as const;
 export function ServersPage() {
 	const utils = trpc.useUtils();
 	const { data: servers = [], isPending } = trpc.servers.list.useQuery();
+	const { get, ping, pingMany } = usePing();
+
+	const pingTargets = useMemo<PingTarget[]>(() => {
+		const targets: PingTarget[] = [];
+		const seenHostIPs = new Set<string>();
+		for (const server of servers) {
+			const hostIP = server.hostIP?.trim();
+			if (hostIP && !seenHostIPs.has(hostIP)) {
+				seenHostIPs.add(hostIP);
+				targets.push({ id: `host:${hostIP}`, host: hostIP });
+			}
+			const serverIP = server.serverIP?.trim();
+			if (serverIP) {
+				targets.push({ id: `server:${server.id}`, host: serverIP });
+			}
+		}
+		return targets;
+	}, [servers]);
+
+	const hasPingedRef = useMemo(() => ({ current: false }), []);
+
+	useEffect(() => {
+		if (!isPending && servers.length > 0 && !hasPingedRef.current) {
+			hasPingedRef.current = true;
+			pingMany(pingTargets);
+		}
+	}, [isPending, servers.length, pingTargets, pingMany, hasPingedRef]);
 
 	const [query, setQuery] = useQueryState("q", {
 		defaultValue: "",
@@ -203,6 +231,9 @@ export function ServersPage() {
 					servers={filtered}
 					onDetails={(server) => setServerID(String(server.id))}
 					onEdit={openEdit}
+					get={get}
+					ping={ping}
+					pingMany={pingMany}
 				/>
 			) : (
 				<ServersGrid
