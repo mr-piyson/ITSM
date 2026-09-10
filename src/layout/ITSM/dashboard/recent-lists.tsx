@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
 	RecentAsset,
 	RecentEmployee,
@@ -14,19 +15,24 @@ import type {
 function ListCard({
 	icon: Icon,
 	title,
+	header,
 	children,
 }: {
 	icon: LucideIcon;
 	title: string;
+	header?: React.ReactNode;
 	children: React.ReactNode;
 }) {
 	return (
 		<Card className="min-w-0">
 			<CardHeader>
-				<CardTitle className="flex items-center gap-1.5">
-					<Icon className="size-4 text-muted-foreground" />
-					{title}
-				</CardTitle>
+				<div className="flex items-center justify-between">
+					<CardTitle className="flex items-center gap-1.5">
+						<Icon className="size-4 text-muted-foreground" />
+						{title}
+					</CardTitle>
+					{header}
+				</div>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-0.5 p-1">{children}</CardContent>
 		</Card>
@@ -153,14 +159,36 @@ export function RecentLists({
 	recentEmployees,
 	recentAssets,
 	recentItems,
+	employeeType,
+	onEmployeeTypeChange,
 }: {
 	recentEmployees: RecentEmployee[];
 	recentAssets: RecentAsset[];
 	recentItems: RecentItem[];
+	employeeType: "S" | "W";
+	onEmployeeTypeChange: (type: "S" | "W") => void;
 }) {
 	return (
 		<div className="grid min-w-0 gap-4 lg:grid-cols-3">
-			<ListCard icon={Users} title="Latest Employees Update">
+			<ListCard
+				icon={Users}
+				title="Latest Employees Update"
+				header={
+					<Tabs
+						value={employeeType}
+						onValueChange={(v) => onEmployeeTypeChange(v as "S" | "W")}
+					>
+						<TabsList variant="line" className="h-7">
+							<TabsTrigger value="S" className="text-[11px] px-2">
+								Staff
+							</TabsTrigger>
+							<TabsTrigger value="W" className="text-[11px] px-2">
+								Worker
+							</TabsTrigger>
+						</TabsList>
+					</Tabs>
+				}
+			>
 				{recentEmployees.length === 0 ? (
 					<EmptyRow />
 				) : (

@@ -1,5 +1,6 @@
 import type { RowDataPacket } from "mysql2";
 import { differenceInCalendarDays, format, isValid, parseISO } from "date-fns";
+import { z } from "zod";
 
 import { protectedProcedure, router } from "@/server/trpc";
 
@@ -143,8 +144,14 @@ function formatDate(dateIso: string | null): string | null {
 }
 
 export const dashboardRouter = router({
-	overview: protectedProcedure.query(
-		async ({ ctx }): Promise<DashboardData> => {
+	overview: protectedProcedure
+		.input(
+			z.object({
+				employeeType: z.enum(["S", "W"]).default("S"),
+			}),
+		)
+		.query(
+		async ({ ctx, input }): Promise<DashboardData> => {
 			const db = ctx.db.iss;
 
 			const [
@@ -255,7 +262,9 @@ export const dashboardRouter = router({
 					`SELECT tem.EMPL_CODE, tem.EMPL_PNAME, tem.EMPL_STAFF_WORKR, tem.EMAIL_ID, tem.EMPL_ON_PAYROLL, tem.EMP_PIC_PATH
 					 FROM T633_EMPL_MASTER tem
 					 WHERE tem.T627_DESGN_CODE != 'VISIT' AND tem.EMPL_CODE NOT LIKE '%-0%'
+					   AND tem.EMPL_STAFF_WORKR = :1
 					 ORDER BY tem.UPDATED_ON DESC`,
+					[input.employeeType],
 				);
 				const rows = (result.rows ?? []) as unknown[][];
 				recentEmployees = rows.slice(0, 8).map((row) => ({

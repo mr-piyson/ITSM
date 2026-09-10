@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import {
 	Boxes,
 	Monitor,
@@ -20,20 +22,33 @@ import { RecentLists } from "./recent-lists";
 import { StatCard } from "./stat-card";
 
 export function DashboardPage() {
-	const { data, isPending } = trpc.dashboard.overview.useQuery();
+	const [employeeType, setEmployeeType] = useState<"S" | "W">("S");
+	const { data, isPending } = trpc.dashboard.overview.useQuery({ employeeType });
 
 	return (
 		<div className="flex h-full min-h-0 flex-col gap-4 p-4 md:p-6">
 			{isPending ? (
 				<DashboardSkeleton />
 			) : data ? (
-				<DashboardContent data={data} />
+				<DashboardContent
+					data={data}
+					employeeType={employeeType}
+					onEmployeeTypeChange={setEmployeeType}
+				/>
 			) : null}
 		</div>
 	);
 }
 
-function DashboardContent({ data }: { data: DashboardData }) {
+function DashboardContent({
+	data,
+	employeeType,
+	onEmployeeTypeChange,
+}: {
+	data: DashboardData;
+	employeeType: "S" | "W";
+	onEmployeeTypeChange: (type: "S" | "W") => void;
+}) {
 	const { kpis, alerts } = data;
 
 	return (
@@ -94,6 +109,8 @@ function DashboardContent({ data }: { data: DashboardData }) {
 				recentEmployees={data.recentEmployees}
 				recentAssets={data.recentAssets}
 				recentItems={data.recentItems}
+				employeeType={employeeType}
+				onEmployeeTypeChange={onEmployeeTypeChange}
 			/>
 
 			<AlertsPanel alerts={alerts} />
