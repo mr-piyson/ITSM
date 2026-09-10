@@ -56,13 +56,6 @@ export type RecentAsset = {
 	type: string | null;
 };
 
-export type RecentItem = {
-	id: number;
-	name: string;
-	category: string;
-	stock: number;
-};
-
 export type ContractExpiry = {
 	id: number;
 	productName: string;
@@ -89,14 +82,17 @@ export type DashboardAlert = {
 	href?: string;
 };
 
+export type DashboardEmployees = {
+	empLeft: RecentEmployee[];
+	newJoiners: RecentEmployee[];
+};
+
 export type DashboardData = {
 	kpis: DashboardKpis;
 	assetsByType: AssetTypeCount[];
 	stockByCategory: StockCategory[];
 	lowStock: LowStockItem[];
-	recentEmployees: RecentEmployee[];
 	recentAssets: RecentAsset[];
-	recentItems: RecentItem[];
 	alerts: DashboardAlert[];
 	contractExpiry: ContractExpiry[];
 	expiredContracts: ExpiredContract[];
@@ -144,14 +140,8 @@ function formatDate(dateIso: string | null): string | null {
 }
 
 export const dashboardRouter = router({
-	overview: protectedProcedure
-		.input(
-			z.object({
-				employeeType: z.enum(["S", "W"]).default("S"),
-			}),
-		)
-		.query(
-		async ({ ctx, input }): Promise<DashboardData> => {
+	overview: protectedProcedure.query(
+		async ({ ctx }): Promise<DashboardData> => {
 			const db = ctx.db.iss;
 
 			const [
@@ -160,7 +150,6 @@ export const dashboardRouter = router({
 				[categoryRows],
 				[lowStockRows],
 				[assetRows],
-				[itemRows],
 				[contractRows],
 				[expiredContractRows],
 				[maintenanceRows],
@@ -207,13 +196,6 @@ export const dashboardRouter = router({
 				 LIMIT 10`,
 				),
 				db.execute<Row[]>(
-					`SELECT id, name, category, stock
-				 FROM items
-				 WHERE inActive = 0
-				 ORDER BY id DESC
-				 LIMIT 10`,
-				),
-				db.execute<Row[]>(
 					`SELECT c.id, c.productName, c.vendorID, c.startDate, c.endDate,
 					        v.name AS vendorName
 				 FROM contracts c
@@ -253,31 +235,6 @@ export const dashboardRouter = router({
 				 LIMIT 10`,
 				),
 			]);
-
-			let recentEmployees: RecentEmployee[] = [];
-			const oraclePool = await ctx.db.mis;
-			const oracleConn = await oraclePool.getConnection();
-			try {
-				const result = await oracleConn.execute(
-					`SELECT tem.EMPL_CODE, tem.EMPL_PNAME, tem.EMPL_STAFF_WORKR, tem.EMAIL_ID, tem.EMPL_ON_PAYROLL, tem.EMP_PIC_PATH
-					 FROM T633_EMPL_MASTER tem
-					 WHERE tem.T627_DESGN_CODE != 'VISIT' AND tem.EMPL_CODE NOT LIKE '%-0%'
-					   AND tem.EMPL_STAFF_WORKR = :1
-					 ORDER BY tem.UPDATED_ON DESC`,
-					[input.employeeType],
-				);
-				const rows = (result.rows ?? []) as unknown[][];
-				recentEmployees = rows.slice(0, 8).map((row) => ({
-					emplCode: String(row[0] ?? ""),
-					emplPname: toString(row[1]),
-					emplStaffWorkr: toString(row[2]),
-					emailId: toString(row[3]),
-					emplOnPayroll: toString(row[4]),
-					empPicPath: toString(row[5]),
-				}));
-			} finally {
-				await oracleConn.release();
-			}
 
 			const kpi = kpiRows[0] ?? {};
 
@@ -386,17 +343,10 @@ export const dashboardRouter = router({
 					category: String(row.category ?? ""),
 					stock: toNumber(row.stock),
 				})),
-				recentEmployees,
 				recentAssets: assetRows.map((row) => ({
 					code: String(row.code ?? ""),
 					deviceName: toString(row.deviceName),
 					type: toString(row.type),
-				})),
-				recentItems: itemRows.map((row) => ({
-					id: toNumber(row.id),
-					name: String(row.name ?? ""),
-					category: String(row.category ?? ""),
-					stock: toNumber(row.stock),
 				})),
 				contractExpiry: contractRows.map((row) => {
 					const endDate = toDateISO(row.endDate);
@@ -422,6 +372,55 @@ export const dashboardRouter = router({
 				}),
 				alerts,
 			};
+		},
+	),
+	employees: protectedProcedure
+		.input(
+			z.object({
+				employeeType: z.enum(["S", "W"]).default("S"),
+				newJoinerType: z.enum(["S", "W"]).default("S"),
+			}),
+		)
+		.query(
+		async ({ ctx, input }): Promise<DashboardEmployees> => {
+			const oraclePool = await ctx.db.mis;
+			const oracleConn = await oraclePool.getConnection();
+			try {
+				const [empLeftResult, newJoinerResult] = await Promise.all([
+					oracleConn.execute(
+						`SELECT tem.EMPL_CODE, tem.EMPL_PNAME, tem.EMPL_STAFF_WORKR, tem.EMAIL_ID, tem.EMPL_ON_PAYROLL, tem.EMP_PIC_PATH
+						 FROM T633_EMPL_MASTER tem
+						 WHERE tem.T627_DESGN_CODE != 'VISIT' AND tem.EMPL_CODE NOT LIKE '%-0%'
+						   AND tem.EMPL_STAFF_WORKR = :1
+						   AND tem.LEFT_DATE IS NOT NULL
+						 ORDER BY tem.LEFT_DATE DESC`,
+						[input.employeeType],
+					),
+					oracleConn.execute(
+						`SELECT tem.EMPL_CODE, tem.EMPL_PNAME, tem.EMPL_STAFF_WORKR, tem.EMAIL_ID, tem.EMPL_ON_PAYROLL, tem.EMP_PIC_PATH
+						 FROM T633_EMPL_MASTER tem
+						 WHERE tem.T627_DESGN_CODE != 'VISIT' AND tem.EMPL_CODE NOT LIKE '%-0%'
+						   AND tem.EMPL_STAFF_WORKR = :1
+						 ORDER BY tem.JOIN_DATE DESC`,
+						[input.newJoinerType],
+					),
+				]);
+				const mapRows = (result: { rows?: unknown[] }) =>
+					((result.rows ?? []) as unknown[][]).slice(0, 8).map((row) => ({
+						emplCode: String(row[0] ?? ""),
+						emplPname: toString(row[1]),
+						emplStaffWorkr: toString(row[2]),
+						emailId: toString(row[3]),
+						emplOnPayroll: toString(row[4]),
+						empPicPath: toString(row[5]),
+					}));
+				return {
+					empLeft: mapRows(empLeftResult),
+					newJoiners: mapRows(newJoinerResult),
+				};
+			} finally {
+				await oracleConn.release();
+			}
 		},
 	),
 });

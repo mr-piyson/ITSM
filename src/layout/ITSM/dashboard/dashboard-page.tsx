@@ -23,7 +23,12 @@ import { StatCard } from "./stat-card";
 
 export function DashboardPage() {
 	const [employeeType, setEmployeeType] = useState<"S" | "W">("S");
-	const { data, isPending } = trpc.dashboard.overview.useQuery({ employeeType });
+	const [newJoinerType, setNewJoinerType] = useState<"S" | "W">("S");
+	const { data, isPending } = trpc.dashboard.overview.useQuery();
+	const { data: employees } = trpc.dashboard.employees.useQuery({
+		employeeType,
+		newJoinerType,
+	});
 
 	return (
 		<div className="flex h-full min-h-0 flex-col gap-4 p-4 md:p-6">
@@ -32,8 +37,12 @@ export function DashboardPage() {
 			) : data ? (
 				<DashboardContent
 					data={data}
+					empLeft={employees?.empLeft ?? []}
+					newJoiners={employees?.newJoiners ?? []}
 					employeeType={employeeType}
 					onEmployeeTypeChange={setEmployeeType}
+					newJoinerType={newJoinerType}
+					onNewJoinerTypeChange={setNewJoinerType}
 				/>
 			) : null}
 		</div>
@@ -42,12 +51,20 @@ export function DashboardPage() {
 
 function DashboardContent({
 	data,
+	empLeft,
+	newJoiners,
 	employeeType,
 	onEmployeeTypeChange,
+	newJoinerType,
+	onNewJoinerTypeChange,
 }: {
 	data: DashboardData;
+	empLeft: import("@/server/routers/ITSM/dashboard").RecentEmployee[];
+	newJoiners: import("@/server/routers/ITSM/dashboard").RecentEmployee[];
 	employeeType: "S" | "W";
 	onEmployeeTypeChange: (type: "S" | "W") => void;
+	newJoinerType: "S" | "W";
+	onNewJoinerTypeChange: (type: "S" | "W") => void;
 }) {
 	const { kpis, alerts } = data;
 
@@ -106,11 +123,13 @@ function DashboardContent({
 				totalAssets={kpis.totalAssets}
 			/>
 			<RecentLists
-				recentEmployees={data.recentEmployees}
+				empLeft={empLeft}
+				newJoiners={newJoiners}
 				recentAssets={data.recentAssets}
-				recentItems={data.recentItems}
 				employeeType={employeeType}
 				onEmployeeTypeChange={onEmployeeTypeChange}
+				newJoinerType={newJoinerType}
+				onNewJoinerTypeChange={onNewJoinerTypeChange}
 			/>
 
 			<AlertsPanel alerts={alerts} />
