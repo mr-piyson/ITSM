@@ -1,14 +1,7 @@
 "use client";
 
-import {
-	LayoutGrid,
-	Loader2,
-	Plus,
-	Printer,
-	Search,
-	Table2,
-} from "lucide-react";
-import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
+import { Loader2, Plus, Printer, Search } from "lucide-react";
+import { parseAsString, useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -21,7 +14,6 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import type { PrinterItem } from "@/server/routers/ITSM/printers";
 import { trpc } from "@/trpc/react";
 
@@ -29,9 +21,6 @@ import { PrinterActionDialog } from "./printer-action-dialog";
 import { PrinterDetailsDialog } from "./printer-details-dialog";
 import { PrinterFormDialog } from "./printer-form-dialog";
 import { PrintersGrid } from "./printers-grid";
-import { PrintersTable } from "./printers-table";
-
-const VIEW_VALUES = ["table", "grid"] as const;
 
 export function PrintersPage() {
 	const utils = trpc.useUtils();
@@ -41,12 +30,6 @@ export function PrintersPage() {
 		defaultValue: "",
 		history: "replace",
 	});
-	const [view, setView] = useQueryState(
-		"view",
-		parseAsStringEnum([...VIEW_VALUES])
-			.withDefault("table")
-			.withOptions({ history: "replace" }),
-	);
 	const [printerID, setPrinterID] = useQueryState("id", parseAsString);
 
 	const [formOpen, setFormOpen] = useState(false);
@@ -119,40 +102,10 @@ export function PrintersPage() {
 							Printers ({isPending ? "…" : filtered.length})
 						</p>
 					</div>
-					<div className="flex items-center gap-2">
-						<div className="flex items-center overflow-hidden rounded-none border">
-							<button
-								type="button"
-								onClick={() => setView("table")}
-								title="Table view"
-								className={cn(
-									"flex size-8 items-center justify-center border-r transition-colors",
-									view === "table"
-										? "bg-primary text-primary-foreground"
-										: "bg-background text-muted-foreground hover:bg-muted",
-								)}
-							>
-								<Table2 className="size-4" />
-							</button>
-							<button
-								type="button"
-								onClick={() => setView("grid")}
-								title="Grid view"
-								className={cn(
-									"flex size-8 items-center justify-center transition-colors",
-									view === "grid"
-										? "bg-primary text-primary-foreground"
-										: "bg-background text-muted-foreground hover:bg-muted",
-								)}
-							>
-								<LayoutGrid className="size-4" />
-							</button>
-						</div>
-						<Button onClick={openAdd} size="default">
-							<Plus data-icon="inline-start" />
-							Add Printer
-						</Button>
-					</div>
+					<Button onClick={openAdd} size="default">
+						<Plus data-icon="inline-start" />
+						Add Printer
+					</Button>
 				</div>
 
 				<div className="relative w-full max-w-lg">
@@ -198,12 +151,6 @@ export function PrintersPage() {
 						)}
 					</EmptyContent>
 				</Empty>
-			) : view === "table" ? (
-				<PrintersTable
-					printers={filtered}
-					onDetails={(printer) => setPrinterID(String(printer.id))}
-					onEdit={openEdit}
-				/>
 			) : (
 				<PrintersGrid
 					printers={filtered}

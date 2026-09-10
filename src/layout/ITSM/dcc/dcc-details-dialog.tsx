@@ -1,6 +1,8 @@
 "use client";
 
-import { History, Loader2, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import { History, Loader2, Pencil, RefreshCw, Trash2, X } from "lucide-react";
+import { parseAsString, useQueryState } from "nuqs";
+import { useMemo } from "react";
 import { toast } from "sonner";
 
 import {
@@ -77,6 +79,45 @@ export function DccDetailsDialog({
 	const checkMutation = trpc.dccs.checkConnectivity.useMutation();
 	const utils = trpc.useUtils();
 	const { pingMany } = usePing("dccs");
+
+	const [fromDate, setFromDate] = useQueryState("dccFrom", {
+		...parseAsString,
+		history: "replace",
+	});
+	const [toDate, setToDate] = useQueryState("dccTo", {
+		...parseAsString,
+		history: "replace",
+	});
+
+	const filteredLogs = useMemo(() => {
+		if (!detail?.logs) {
+			return [];
+		}
+		let logs = detail.logs;
+		if (fromDate) {
+			const from = new Date(fromDate);
+			if (!Number.isNaN(from.getTime())) {
+				logs = logs.filter((log) => {
+					if (!log.checkedAt) {
+						return false;
+					}
+					return new Date(log.checkedAt) >= from;
+				});
+			}
+		}
+		if (toDate) {
+			const to = new Date(`${toDate}T23:59:59`);
+			if (!Number.isNaN(to.getTime())) {
+				logs = logs.filter((log) => {
+					if (!log.checkedAt) {
+						return false;
+					}
+					return new Date(log.checkedAt) <= to;
+				});
+			}
+		}
+		return logs;
+	}, [detail?.logs, fromDate, toDate]);
 
 	const handleDelete = async () => {
 		if (!dcc) {
@@ -214,21 +255,69 @@ export function DccDetailsDialog({
 						{/* Connectivity logs */}
 						<Separator />
 						<div className="space-y-2">
-							<div className="flex items-center gap-1.5">
-								<History className="size-4 text-muted-foreground" />
-								<h4 className="text-sm font-semibold">
-									Connectivity History ({detail.logs.length})
-								</h4>
+							<div className="flex flex-wrap items-center justify-between gap-2">
+								<div className="flex items-center gap-1.5">
+									<History className="size-4 text-muted-foreground" />
+									<h4 className="text-sm font-semibold">
+										Connectivity History
+										{fromDate || toDate
+											? ` (${filteredLogs.length} of ${detail.logs.length})`
+											: ` (${detail.logs.length})`}
+									</h4>
+								</div>
+								<div className="flex items-center gap-2">
+									<div className="flex items-center gap-1">
+										<span className="text-[10px] text-muted-foreground">
+											From
+										</span>
+										<input
+											type="date"
+											value={fromDate ?? ""}
+											onChange={(e) => setFromDate(e.target.value || null)}
+											className="h-7 rounded-none border bg-background px-1.5 text-[11px]"
+										/>
+									</div>
+									<div className="flex items-center gap-1">
+										<span className="text-[10px] text-muted-foreground">
+											To
+										</span>
+										<input
+											type="date"
+											value={toDate ?? ""}
+											onChange={(e) => setToDate(e.target.value || null)}
+											className="h-7 rounded-none border bg-background px-1.5 text-[11px]"
+										/>
+									</div>
+									{(fromDate || toDate) && (
+										<Button
+											variant="ghost"
+											size="icon-sm"
+											title="Clear date filter"
+											onClick={() => {
+												setFromDate(null);
+												setToDate(null);
+											}}
+										>
+											<X className="size-3" />
+										</Button>
+									)}
+								</div>
 							</div>
-							<DccConnectivityChart logs={detail.logs} />
-							{detail.logs.length === 0 ? (
+							<DccConnectivityChart logs={filteredLogs} />
+							{filteredLogs.length === 0 ? (
 								<p className="text-xs text-muted-foreground">
-									No connectivity checks recorded yet. Press{" "}
-									<strong>Check now</strong> to run the first one.
+									{detail.logs.length === 0
+										? "No connectivity checks recorded yet. Press "
+										: "No logs in the selected date range. "}
+									{detail.logs.length === 0 && (
+										<>
+											<strong>Check now</strong> to run the first one.
+										</>
+									)}
 								</p>
 							) : (
 								<ul className="max-h-64 space-y-1 overflow-y-auto pr-1">
-									{detail.logs.slice(0, 50).map((log) => (
+									{filteredLogs.slice(0, 50).map((log) => (
 										<li
 											key={log.id}
 											className="rounded-none border px-3 py-1.5 text-xs"
