@@ -5,7 +5,7 @@ APP_NAME="itsm"
 SERVICE_NAME="${APP_NAME}.service"
 APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PORT=3000
-NODE_USER="$(whoami)"
+APP_USER="$(whoami)"
 NODE_ENV="production"
 
 RED='\033[0;31m'
@@ -32,10 +32,7 @@ fi
 if ! command -v bun &> /dev/null; then
   error "bun is not installed. Install it first: curl -fsSL https://bun.sh/install | bash"
 fi
-
-if ! command -v node &> /dev/null; then
-  error "node is not installed."
-fi
+BUN_BIN="$(command -v bun)"
 
 if ! command -v git &> /dev/null; then
   error "git is not installed."
@@ -63,11 +60,11 @@ After=network.target
 
 [Service]
 Type=simple
-User=${NODE_USER}
+User=${APP_USER}
 WorkingDirectory=${APP_DIR}
 Environment=NODE_ENV=${NODE_ENV}
 Environment=PORT=${PORT}
-ExecStart=$(which bun) run start
+ExecStart=${BUN_BIN} run start
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
@@ -92,10 +89,10 @@ git reset --hard HEAD
 git pull origin main
 
 log "Installing dependencies..."
-bun install
+"${BUN_BIN}" install
 
 log "Building application..."
-bun run build
+"${BUN_BIN}" run build
 
 # --- Restart service ---
 log "Restarting service..."
