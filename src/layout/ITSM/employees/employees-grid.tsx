@@ -3,11 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ExternalLink, Pencil, Power } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { employeeCategory, employeeImageUrl } from "@/lib/employees-constants";
+import { employeeImageUrl, employeeStaffLabel } from "@/lib/employees-constants";
 import { cn } from "@/lib/utils";
 import type { EmployeeItem } from "@/server/routers/ITSM/employees";
 
@@ -16,17 +14,9 @@ const CARD_HEIGHT = 140;
 
 type EmployeesGridProps = {
 	employees: EmployeeItem[];
-	onDetails: (employee: EmployeeItem) => void;
-	onEdit: (employee: EmployeeItem) => void;
-	onDeactivate: (employee: EmployeeItem) => void;
 };
 
-export function EmployeesGrid({
-	employees,
-	onDetails,
-	onEdit,
-	onDeactivate,
-}: EmployeesGridProps) {
+export function EmployeesGrid({ employees }: EmployeesGridProps) {
 	const parentRef = useRef<HTMLDivElement>(null);
 	const [columns, setColumns] = useState(1);
 
@@ -85,11 +75,8 @@ export function EmployeesGrid({
 							>
 								{rowItems.map((employee) => (
 									<EmployeeCard
-										key={employee.empID}
+										key={employee.emplCode}
 										employee={employee}
-										onDetails={onDetails}
-										onEdit={onEdit}
-										onDeactivate={onDeactivate}
 									/>
 								))}
 							</div>
@@ -101,33 +88,28 @@ export function EmployeesGrid({
 	);
 }
 
-function EmployeeCard({
-	employee,
-	onDetails,
-	onEdit,
-	onDeactivate,
-}: {
-	employee: EmployeeItem;
-	onDetails: (employee: EmployeeItem) => void;
-	onEdit: (employee: EmployeeItem) => void;
-	onDeactivate: (employee: EmployeeItem) => void;
-}) {
-	const imageUrl = employeeImageUrl(employee.image);
-	const category = employeeCategory(employee.empID);
+function EmployeeCard({ employee }: { employee: EmployeeItem }) {
+	const imageUrl = employeeImageUrl(employee.picPath);
+	const label = employeeStaffLabel(employee.staffType);
+	const isLeft = !!employee.leftDate;
 
 	return (
 		<div className="flex h-[120px] flex-col rounded-none border bg-card p-3">
 			<div className="flex items-center gap-3">
 				<Avatar className="size-10">
-					{imageUrl && <AvatarImage src={imageUrl} alt={employee.name} />}
+					{imageUrl && (
+						<AvatarImage src={imageUrl} alt={employee.name ?? ""} />
+					)}
 					<AvatarFallback className="text-base">
-						{employee.name[0]?.toUpperCase()}
+						{employee.name?.[0]?.toUpperCase() ?? "?"}
 					</AvatarFallback>
 				</Avatar>
 				<div className="min-w-0 flex-1">
-					<p className="truncate text-sm font-medium">{employee.name}</p>
+					<p className="truncate text-sm font-medium">
+						{employee.name ?? "-"}
+					</p>
 					<p className="truncate font-mono text-xs text-muted-foreground">
-						{employee.empID}
+						{employee.emplCode}
 					</p>
 					{employee.email && (
 						<p className="truncate text-xs text-muted-foreground">
@@ -135,44 +117,28 @@ function EmployeeCard({
 						</p>
 					)}
 				</div>
-				<span
-					className={cn(
-						"shrink-0 whitespace-nowrap px-1.5 py-0.5 text-xs",
-						category === "Staff"
-							? "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
-							: "bg-muted text-muted-foreground",
-					)}
-				>
-					{category}
-				</span>
-			</div>
-
-			<div className="mt-auto flex justify-end gap-1 border-t pt-1.5">
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					title="Details"
-					onClick={() => onDetails(employee)}
-				>
-					<ExternalLink />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					title="Edit"
-					onClick={() => onEdit(employee)}
-				>
-					<Pencil />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					title="Deactivate"
-					className="text-destructive hover:text-destructive"
-					onClick={() => onDeactivate(employee)}
-				>
-					<Power />
-				</Button>
+				<div className="flex flex-col items-end gap-1">
+					<span
+						className={cn(
+							"shrink-0 whitespace-nowrap px-1.5 py-0.5 text-xs",
+							employee.staffType === "S"
+								? "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
+								: "bg-muted text-muted-foreground",
+						)}
+					>
+						{label}
+					</span>
+					<span
+						className={cn(
+							"shrink-0 whitespace-nowrap px-1.5 py-0.5 text-xs",
+							isLeft
+								? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+								: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+						)}
+					>
+						{isLeft ? "Left" : "Active"}
+					</span>
+				</div>
 			</div>
 		</div>
 	);

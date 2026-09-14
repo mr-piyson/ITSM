@@ -10,10 +10,8 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ExternalLink, Pencil, Power } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
 	TableBody,
 	TableCell,
@@ -21,15 +19,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { employeeCategory, employeeImageUrl } from "@/lib/employees-constants";
+import { employeeImageUrl, employeeStaffLabel } from "@/lib/employees-constants";
 import { cn } from "@/lib/utils";
 import type { EmployeeItem } from "@/server/routers/ITSM/employees";
 
 type EmployeesTableProps = {
 	employees: EmployeeItem[];
-	onDetails: (employee: EmployeeItem) => void;
-	onEdit: (employee: EmployeeItem) => void;
-	onDeactivate: (employee: EmployeeItem) => void;
 };
 
 function cellStyle(getSize: () => number, grow: boolean): CSSProperties {
@@ -40,21 +35,16 @@ function cellStyle(getSize: () => number, grow: boolean): CSSProperties {
 }
 
 function EmployeeAvatar({ employee }: { employee: EmployeeItem }) {
-	const imageUrl = employeeImageUrl(employee.image);
+	const imageUrl = employeeImageUrl(employee.picPath);
 	return (
 		<Avatar>
-			{imageUrl && <AvatarImage src={imageUrl} alt={employee.name} />}
-			<AvatarFallback>{employee.name[0]?.toUpperCase()}</AvatarFallback>
+			{imageUrl && <AvatarImage src={imageUrl} alt={employee.name ?? ""} />}
+			<AvatarFallback>{employee.name?.[0]?.toUpperCase() ?? "?"}</AvatarFallback>
 		</Avatar>
 	);
 }
 
-export function EmployeesTable({
-	employees,
-	onDetails,
-	onEdit,
-	onDeactivate,
-}: EmployeesTableProps) {
+export function EmployeesTable({ employees }: EmployeesTableProps) {
 	const columns = useMemo<ColumnDef<EmployeeItem>[]>(
 		() => [
 			{
@@ -64,7 +54,7 @@ export function EmployeesTable({
 				cell: ({ row }) => <EmployeeAvatar employee={row.original} />,
 			},
 			{
-				accessorKey: "empID",
+				accessorKey: "emplCode",
 				header: "ID",
 				size: 100,
 				cell: ({ getValue }) => (
@@ -77,7 +67,7 @@ export function EmployeesTable({
 				size: 220,
 				cell: ({ getValue }) => (
 					<span className="block min-w-0 truncate font-medium">
-						{String(getValue())}
+						{String(getValue() ?? "-")}
 					</span>
 				),
 			},
@@ -92,60 +82,48 @@ export function EmployeesTable({
 				),
 			},
 			{
-				id: "category",
+				accessorKey: "staffType",
 				header: "Type",
 				size: 110,
-				cell: ({ row }) => {
-					const category = employeeCategory(row.original.empID);
+				cell: ({ getValue }) => {
+					const type = getValue() as "S" | "W";
+					const label = employeeStaffLabel(type);
 					return (
 						<span
 							className={cn(
 								"inline-flex whitespace-nowrap px-1.5 py-0.5 text-xs",
-								category === "Staff"
+								type === "S"
 									? "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
 									: "bg-muted text-muted-foreground",
 							)}
 						>
-							{category}
+							{label}
 						</span>
 					);
 				},
 			},
 			{
-				id: "actions",
-				header: "",
-				cell: ({ row }) => (
-					<div className="flex items-center justify-end gap-1">
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							title="Details"
-							onClick={() => onDetails(row.original)}
+				accessorKey: "leftDate",
+				header: "Status",
+				size: 100,
+				cell: ({ getValue }) => {
+					const left = getValue();
+					return (
+						<span
+							className={cn(
+								"inline-flex whitespace-nowrap px-1.5 py-0.5 text-xs",
+								left
+									? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+									: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+							)}
 						>
-							<ExternalLink />
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							title="Edit"
-							onClick={() => onEdit(row.original)}
-						>
-							<Pencil />
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							title="Deactivate"
-							className="text-destructive hover:text-destructive"
-							onClick={() => onDeactivate(row.original)}
-						>
-							<Power />
-						</Button>
-					</div>
-				),
+							{left ? "Left" : "Active"}
+						</span>
+					);
+				},
 			},
 		],
-		[onDetails, onEdit, onDeactivate],
+		[],
 	);
 
 	const table = useReactTable({
