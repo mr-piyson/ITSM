@@ -11,6 +11,7 @@ import {
 	LayoutGrid,
 	Wifi,
 	WifiOff,
+	X,
 } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
@@ -79,6 +80,10 @@ export function DccsPage() {
 		isChecking,
 		checkNow,
 		invalidate,
+		fromDate,
+		setFromDate,
+		toDate,
+		setToDate,
 	} = useDccRealtime();
 
 	const [query, setQuery] = useQueryState("q", {
@@ -218,6 +223,42 @@ export function DccsPage() {
 					isChecking={isChecking}
 					checkNow={checkNow}
 				/>
+
+				{activeView === "realtime" && (
+					<div className="flex items-center gap-2">
+						<div className="flex items-center gap-1">
+							<span className="text-[10px] text-muted-foreground">From</span>
+							<input
+								type="date"
+								value={fromDate ?? ""}
+								onChange={(e) => setFromDate(e.target.value || null)}
+								className="h-7 rounded-none border bg-background px-1.5 text-[11px]"
+							/>
+						</div>
+						<div className="flex items-center gap-1">
+							<span className="text-[10px] text-muted-foreground">To</span>
+							<input
+								type="date"
+								value={toDate ?? ""}
+								onChange={(e) => setToDate(e.target.value || null)}
+								className="h-7 rounded-none border bg-background px-1.5 text-[11px]"
+							/>
+						</div>
+						{(fromDate || toDate) && (
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								title="Clear date filter"
+								onClick={() => {
+									setFromDate(null);
+									setToDate(null);
+								}}
+							>
+								<X className="size-3" />
+							</Button>
+						)}
+					</div>
+				)}
 
 				{activeView === "table" && (
 					<div className="relative w-full max-w-lg">

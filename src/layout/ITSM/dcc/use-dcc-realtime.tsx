@@ -1,6 +1,7 @@
 "use client";
 
-import { Pause, Play, RefreshCw } from "lucide-react";
+import { Pause, Play, RefreshCw, X } from "lucide-react";
+import { parseAsString, useQueryState } from "nuqs";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,20 @@ export const INTERVAL_OPTIONS = [
 
 export function useDccRealtime() {
 	const utils = trpc.useUtils();
+
+	const [fromDate, setFromDate] = useQueryState("dccFrom", {
+		...parseAsString,
+		history: "replace",
+	});
+	const [toDate, setToDate] = useQueryState("dccTo", {
+		...parseAsString,
+		history: "replace",
+	});
+
 	const { data: dccs = [], isPending } = trpc.dccs.listWithRecentLogs.useQuery({
 		limit: 50,
+		from: fromDate ?? undefined,
+		to: toDate ?? undefined,
 	});
 	const { data: dashboard } = trpc.dccs.dashboard.useQuery();
 	const checkAllMutation = trpc.dccs.checkAllConnectivity.useMutation();
@@ -97,6 +110,10 @@ export function useDccRealtime() {
 		isChecking,
 		checkNow,
 		invalidate,
+		fromDate,
+		setFromDate,
+		toDate,
+		setToDate,
 	};
 }
 

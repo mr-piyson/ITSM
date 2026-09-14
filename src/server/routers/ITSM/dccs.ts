@@ -216,6 +216,8 @@ export const dccsRouter = router({
 			z
 				.object({
 					limit: z.coerce.number().int().min(1).max(200).default(50),
+					from: z.string().optional(),
+					to: z.string().optional(),
 				})
 				.optional(),
 		)
@@ -225,6 +227,7 @@ export const dccsRouter = router({
 				input,
 			}): Promise<(DccItem & { recentLogs: DccLogItem[] })[]> => {
 				const logLimit = input?.limit ?? 50;
+				const hasDateFilter = !!(input?.from || input?.to);
 
 				const [dccRows] = await ctx.db.iss.execute<Row[]>(
 					`SELECT ${DCC_SELECT}
@@ -240,8 +243,34 @@ export const dccsRouter = router({
 				const dccs = dccRows.map(toDcc);
 				const ids = dccs.map((d) => d.id);
 
-				const [logRows] = await ctx.db.iss.execute<Row[]>(
-					`SELECT ranked.*
+				let logSql = "";
+				const logParams: (string | number)[] = [];
+
+				if (hasDateFilter) {
+					const conditions = [`l.dcc_id IN (${ids.map(() => "?").join(",")})`];
+					logParams.push(...ids);
+
+					if (input?.from) {
+						conditions.push("l.checked_at >= ?");
+						logParams.push(`${input.from}T00:00:00`);
+					}
+					if (input?.to) {
+						conditions.push("l.checked_at <= ?");
+						logParams.push(`${input.to}T23:59:59`);
+					}
+
+					logSql = `SELECT ranked.*
+					 FROM (
+						SELECT l.*,
+						       ROW_NUMBER() OVER (PARTITION BY l.dcc_id ORDER BY l.checked_at DESC, l.id DESC) AS rn
+						FROM dcc_connectivity_logs l
+						WHERE ${conditions.join(" AND ")}
+					 ) ranked
+					 WHERE ranked.rn <= ?
+					 ORDER BY ranked.dcc_id, ranked.checked_at DESC, ranked.id DESC`;
+					logParams.push(logLimit);
+				} else {
+					logSql = `SELECT ranked.*
 					 FROM (
 						SELECT l.*,
 						       ROW_NUMBER() OVER (PARTITION BY l.dcc_id ORDER BY l.checked_at DESC, l.id DESC) AS rn
@@ -249,8 +278,13 @@ export const dccsRouter = router({
 						WHERE l.dcc_id IN (${ids.map(() => "?").join(",")})
 					 ) ranked
 					 WHERE ranked.rn <= ?
-					 ORDER BY ranked.dcc_id, ranked.checked_at DESC, ranked.id DESC`,
-					[...ids, logLimit],
+					 ORDER BY ranked.dcc_id, ranked.checked_at DESC, ranked.id DESC`;
+					logParams.push(...ids, logLimit);
+				}
+
+				const [logRows] = await ctx.db.iss.execute<Row[]>(
+					logSql,
+					logParams,
 				);
 
 				const logsByDcc = new Map<number, DccLogItem[]>();
