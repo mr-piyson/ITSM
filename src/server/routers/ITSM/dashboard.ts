@@ -1,8 +1,25 @@
+import { execFile } from "node:child_process";
 import type { RowDataPacket } from "mysql2";
 import { differenceInCalendarDays, format, isValid, parseISO } from "date-fns";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "@/server/trpc";
+
+const UPS_URL = "http://172.18.1.45/Status.htm";
+
+function fetchUpsPage(url: string): Promise<string> {
+	return new Promise((resolve, reject) => {
+		execFile(
+			"curl",
+			["-s", "--connect-timeout", "5", "--max-time", "8", url],
+			{ encoding: "latin1", maxBuffer: 1024 * 1024 },
+			(err, stdout) => {
+				if (err && !stdout) return reject(err);
+				resolve(stdout);
+			},
+		);
+	});
+}
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -413,12 +430,25 @@ export const dashboardRouter = router({
 						emplOnPayroll: toString(row[4]),
 						empPicPath: toString(row[5]),
 					}));
-				return {
-					empLeft: mapRows(empLeftResult),
-					newJoiners: mapRows(newJoinerResult),
-				};
-			} finally {
-				await oracleConn.release();
-			}
-		}),
+			return {
+				empLeft: mapRows(empLeftResult),
+				newJoiners: mapRows(newJoinerResult),
+			};
+		} finally {
+			await oracleConn.release();
+		}
+	}),
+	upsTemperature: protectedProcedure.query(async () => {
+		try {
+			const html = await fetchUpsPage(UPS_URL);
+			const match = html.match(/Temperature<\/td><td[^>]*>([^<]+)/i);
+			if (!match) return { temperature: null as number | null, raw: null as string | null };
+			const text = match[1].replace(/\s+/g, " ").trim();
+			const tempMatch = text.match(/([\d.]+)/);
+			const temperature = tempMatch ? Number.parseFloat(tempMatch[1]) : null;
+			return { temperature, raw: text };
+		} catch {
+			return { temperature: null as number | null, raw: null as string | null };
+		}
+	}),
 });

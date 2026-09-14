@@ -9,6 +9,7 @@ import {
 	Printer,
 	ShoppingCart,
 	Server,
+	Thermometer,
 	Users,
 } from "lucide-react";
 
@@ -29,6 +30,7 @@ export function DashboardPage() {
 		employeeType,
 		newJoinerType,
 	});
+	const { data: upsData } = trpc.dashboard.upsTemperature.useQuery();
 
 	return (
 		<div className="flex h-full min-h-0 flex-col gap-4 p-4 md:p-6">
@@ -43,6 +45,7 @@ export function DashboardPage() {
 					onEmployeeTypeChange={setEmployeeType}
 					newJoinerType={newJoinerType}
 					onNewJoinerTypeChange={setNewJoinerType}
+					upsTemperature={upsData?.temperature ?? null}
 				/>
 			) : null}
 		</div>
@@ -57,6 +60,7 @@ function DashboardContent({
 	onEmployeeTypeChange,
 	newJoinerType,
 	onNewJoinerTypeChange,
+	upsTemperature,
 }: {
 	data: DashboardData;
 	empLeft: import("@/server/routers/ITSM/dashboard").RecentEmployee[];
@@ -65,6 +69,7 @@ function DashboardContent({
 	onEmployeeTypeChange: (type: "S" | "W") => void;
 	newJoinerType: "S" | "W";
 	onNewJoinerTypeChange: (type: "S" | "W") => void;
+	upsTemperature: number | null;
 }) {
 	const { kpis, alerts } = data;
 
@@ -96,7 +101,7 @@ function DashboardContent({
 					href="/app/purchases"
 				/>
 			</div>
-
+			{/*  */}
 			<div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 border-y border-border py-2 text-xs text-muted-foreground">
 				<span className="flex items-center gap-1.5">
 					<Users className="size-3.5" />
@@ -114,6 +119,15 @@ function DashboardContent({
 					<Boxes className="size-3.5" />
 					{kpis.totalItems.toLocaleString()} items
 				</span>
+				<a
+					href="http://172.18.1.45/"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="flex items-center gap-1.5 hover:text-foreground"
+				>
+					<Thermometer className="size-3.5" />
+					{upsTemperature !== null ? `${upsTemperature} °C` : "--"} UPS
+				</a>
 			</div>
 
 			<DistributionCharts
