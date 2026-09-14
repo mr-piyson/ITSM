@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { protectedProcedure, router } from "@/server/trpc";
 
 type Row = unknown[];
@@ -34,6 +36,32 @@ function normalizeOracleEmployee(row: Row): EmployeeItem {
 }
 
 export const employeesRouter = router({
+	byCode: protectedProcedure
+		.input(z.object({ code: z.string().min(1) }))
+		.query(async ({ ctx, input }): Promise<EmployeeItem | null> => {
+			const oraclePool = await ctx.db.mis;
+			const oracleConn = await oraclePool.getConnection();
+			try {
+				const result = await oracleConn.execute(
+					`SELECT tem.EMPL_CODE, tem.EMPL_PNAME, tem.EMPL_STAFF_WORKR,
+					        tem.EMAIL_ID, tem.EMPL_ON_PAYROLL, tem.EMP_PIC_PATH,
+					        tem.CREATED_ON, tem.LEFT_DATE
+					 FROM T633_EMPL_MASTER tem
+					 WHERE tem.EMPL_CODE = :1
+					   AND tem.T627_DESGN_CODE != 'VISIT'
+					   AND tem.EMPL_CODE NOT LIKE '%-0%'`,
+					[input.code],
+				);
+				const rows = (result.rows ?? []) as Row[];
+				if (rows.length === 0) {
+					return null;
+				}
+				return normalizeOracleEmployee(rows[0]);
+			} finally {
+				await oracleConn.release();
+			}
+		}),
+
 	list: protectedProcedure.query(async ({ ctx }): Promise<EmployeeItem[]> => {
 		const oraclePool = await ctx.db.mis;
 		const oracleConn = await oraclePool.getConnection();

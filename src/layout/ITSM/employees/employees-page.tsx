@@ -1,14 +1,14 @@
 "use client";
 
 import { LayoutGrid, Loader2, Search, Table2 } from "lucide-react";
-import { parseAsInteger, parseAsStringEnum, useQueryState } from "nuqs";
+import { parseAsStringEnum, useQueryState } from "nuqs";
+import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import type { EmployeeItem } from "@/server/routers/ITSM/employees";
 import { trpc } from "@/trpc/react";
 
 import { EmployeesGrid } from "./employees-grid";
@@ -20,6 +20,7 @@ const TAB_VALUES = ["all", "staff", "worker"] as const;
 type Tab = (typeof TAB_VALUES)[number];
 
 export function EmployeesPage() {
+	const router = useRouter();
 	const { data: employees = [], isPending } = trpc.employees.list.useQuery();
 
 	const [query, setQuery] = useQueryState("q", {
@@ -38,7 +39,6 @@ export function EmployeesPage() {
 			.withDefault("all")
 			.withOptions({ history: "replace" }),
 	);
-	const [empID, setEmpID] = useQueryState("emp", parseAsInteger);
 
 	const staffCount = useMemo(
 		() => employees.filter((e) => e.staffType === "S").length,
@@ -68,6 +68,10 @@ export function EmployeesPage() {
 			);
 		});
 	}, [employees, query, tab]);
+
+	const handleView = (emplCode: string) => {
+		router.push(`/app/employees/${encodeURIComponent(emplCode)}`);
+	};
 
 	return (
 		<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
@@ -147,7 +151,7 @@ export function EmployeesPage() {
 					<p className="text-sm text-muted-foreground">No employees found</p>
 				</div>
 			) : view === "table" ? (
-				<EmployeesTable employees={filtered} />
+				<EmployeesTable employees={filtered} onView={handleView} />
 			) : (
 				<EmployeesGrid employees={filtered} />
 			)}

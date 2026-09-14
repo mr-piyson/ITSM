@@ -1,223 +1,232 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import type { CSSProperties } from "react";
-
+import { useMemo } from "react";
+import { AgGridReact } from "ag-grid-react";
 import {
-	type ColumnDef,
-	flexRender,
-	getCoreRowModel,
-	useReactTable,
-} from "@tanstack/react-table";
-import { useVirtualizer } from "@tanstack/react-virtual";
+	AllCommunityModule,
+	ModuleRegistry,
+	type ColDef,
+	type ICellRendererParams,
+} from "ag-grid-community";
+import { Eye } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { employeeImageUrl, employeeStaffLabel } from "@/lib/employees-constants";
-import { cn } from "@/lib/utils";
+import { useTableTheme } from "@/hooks/use-table-theme";
 import type { EmployeeItem } from "@/server/routers/ITSM/employees";
+
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 type EmployeesTableProps = {
 	employees: EmployeeItem[];
+	onView: (emplCode: string) => void;
 };
 
-function cellStyle(getSize: () => number, grow: boolean): CSSProperties {
-	if (grow) {
-		return { flex: 1, minWidth: 0 };
-	}
-	return { width: getSize(), flexShrink: 0 };
+function StaffTypeRenderer(params: ICellRendererParams<EmployeeItem>) {
+	const type = params.data?.staffType;
+	if (!type) return null;
+	const label = employeeStaffLabel(type);
+	return (
+		<span
+			className={
+				type === "S"
+					? "inline-flex whitespace-nowrap rounded-none px-1.5 py-0.5 text-xs bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
+					: "inline-flex whitespace-nowrap rounded-none px-1.5 py-0.5 text-xs bg-muted text-muted-foreground"
+			}
+		>
+			{label}
+		</span>
+	);
 }
 
-function EmployeeAvatar({ employee }: { employee: EmployeeItem }) {
-	const imageUrl = employeeImageUrl(employee.picPath);
+function StatusRenderer(params: ICellRendererParams<EmployeeItem>) {
+	const left = params.data?.leftDate;
 	return (
-		<Avatar>
-			{imageUrl && <AvatarImage src={imageUrl} alt={employee.name ?? ""} />}
-			<AvatarFallback>{employee.name?.[0]?.toUpperCase() ?? "?"}</AvatarFallback>
+		<span
+			className={
+				left
+					? "inline-flex whitespace-nowrap rounded-none px-1.5 py-0.5 text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+					: "inline-flex whitespace-nowrap rounded-none px-1.5 py-0.5 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+			}
+		>
+			{left ? "Left" : "Active"}
+		</span>
+	);
+}
+
+function PayrollRenderer(params: ICellRendererParams<EmployeeItem>) {
+	const val = params.data?.onPayroll;
+	if (!val) return <span className="text-muted-foreground">-</span>;
+	return (
+		<span
+			className={
+				val === "Y"
+					? "text-green-700 dark:text-green-400"
+					: "text-muted-foreground"
+			}
+		>
+			{val === "Y" ? "Yes" : "No"}
+		</span>
+	);
+}
+
+function AvatarRenderer(params: ICellRendererParams<EmployeeItem>) {
+	const data = params.data;
+	if (!data) return null;
+	const imageUrl = employeeImageUrl(data.picPath);
+	return (
+		<Avatar className="size-8">
+			{imageUrl && <AvatarImage src={imageUrl} alt={data.name ?? ""} />}
+			<AvatarFallback className="text-xs">
+				{data.name?.[0]?.toUpperCase() ?? "?"}
+			</AvatarFallback>
 		</Avatar>
 	);
 }
 
-export function EmployeesTable({ employees }: EmployeesTableProps) {
-	const columns = useMemo<ColumnDef<EmployeeItem>[]>(
+export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
+	const tableTheme = useTableTheme();
+
+	const columnDefs = useMemo<ColDef<EmployeeItem>[]>(
 		() => [
 			{
-				id: "avatar",
-				header: "",
-				size: 44,
-				cell: ({ row }) => <EmployeeAvatar employee={row.original} />,
+				headerName: "",
+				field: "picPath",
+				width: 52,
+				sortable: false,
+				filter: false,
+				cellRenderer: AvatarRenderer,
 			},
 			{
-				accessorKey: "emplCode",
-				header: "ID",
-				size: 100,
-				cell: ({ getValue }) => (
-					<span className="font-medium font-mono">{String(getValue())}</span>
-				),
+				headerName: "Code",
+				field: "emplCode",
+				width: 100,
+				cellClass: "font-mono text-xs",
+				sortable: true,
+				filter: true,
 			},
 			{
-				accessorKey: "name",
-				header: "Name",
-				size: 220,
-				cell: ({ getValue }) => (
-					<span className="block min-w-0 truncate font-medium">
-						{String(getValue() ?? "-")}
-					</span>
-				),
+				headerName: "Name",
+				field: "name",
+				width: 220,
+				sortable: true,
+				filter: true,
+				valueFormatter: (params) => params.value ?? "-",
 			},
 			{
-				accessorKey: "email",
-				header: "Email",
-				size: 220,
-				cell: ({ getValue }) => (
-					<span className="block min-w-0 truncate text-muted-foreground">
-						{String(getValue() ?? "-")}
-					</span>
-				),
+				headerName: "Email",
+				field: "email",
+				width: 260,
+				sortable: true,
+				filter: true,
+				valueFormatter: (params) => params.value ?? "-",
 			},
 			{
-				accessorKey: "staffType",
-				header: "Type",
-				size: 110,
-				cell: ({ getValue }) => {
-					const type = getValue() as "S" | "W";
-					const label = employeeStaffLabel(type);
-					return (
-						<span
-							className={cn(
-								"inline-flex whitespace-nowrap px-1.5 py-0.5 text-xs",
-								type === "S"
-									? "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
-									: "bg-muted text-muted-foreground",
-							)}
-						>
-							{label}
-						</span>
-					);
+				headerName: "Type",
+				field: "staffType",
+				width: 110,
+				sortable: true,
+				filter: true,
+				cellRenderer: StaffTypeRenderer,
+			},
+			{
+				headerName: "On Payroll",
+				field: "onPayroll",
+				width: 110,
+				sortable: true,
+				filter: true,
+				cellRenderer: PayrollRenderer,
+			},
+			{
+				headerName: "Status",
+				field: "leftDate",
+				width: 100,
+				sortable: true,
+				filter: true,
+				cellRenderer: StatusRenderer,
+			},
+			{
+				headerName: "Created On",
+				field: "createdOn",
+				width: 160,
+				sortable: true,
+				filter: true,
+				cellClass: "font-mono text-xs",
+				valueFormatter: (params) => {
+					if (!params.value) return "-";
+					try {
+						return new Date(params.value).toLocaleDateString("en-GB", {
+							day: "2-digit",
+							month: "short",
+							year: "numeric",
+						});
+					} catch {
+						return params.value;
+					}
 				},
 			},
 			{
-				accessorKey: "leftDate",
-				header: "Status",
-				size: 100,
-				cell: ({ getValue }) => {
-					const left = getValue();
+				headerName: "Left Date",
+				field: "leftDate",
+				width: 160,
+				sortable: true,
+				filter: true,
+				cellClass: "font-mono text-xs",
+				valueFormatter: (params) => {
+					if (!params.value) return "-";
+					try {
+						return new Date(params.value).toLocaleDateString("en-GB", {
+							day: "2-digit",
+							month: "short",
+							year: "numeric",
+						});
+					} catch {
+						return params.value;
+					}
+				},
+			},
+			{
+				headerName: "",
+				field: "emplCode",
+				width: 80,
+				sortable: false,
+				filter: false,
+				cellRenderer: (params: ICellRendererParams<EmployeeItem>) => {
+					if (!params.data) return null;
 					return (
-						<span
-							className={cn(
-								"inline-flex whitespace-nowrap px-1.5 py-0.5 text-xs",
-								left
-									? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
-									: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-							)}
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							title="View details"
+							onClick={() => onView(params.data!.emplCode)}
 						>
-							{left ? "Left" : "Active"}
-						</span>
+							<Eye />
+						</Button>
 					);
 				},
 			},
 		],
-		[],
+		[onView],
 	);
-
-	const table = useReactTable({
-		data: employees,
-		columns,
-		getCoreRowModel: getCoreRowModel(),
-	});
-
-	const parentRef = useRef<HTMLDivElement>(null);
-	const rows = table.getRowModel().rows;
-	const rowVirtualizer = useVirtualizer({
-		count: rows.length,
-		getScrollElement: () => parentRef.current,
-		estimateSize: () => 52,
-		overscan: 10,
-	});
 
 	return (
 		<div
-			ref={parentRef}
-			className="flex-1 min-h-0 overflow-auto rounded-none border"
+			className="ag-theme-alpine flex-1 min-h-0 rounded-none border"
+			style={{ height: "100%" }}
 		>
-			<table className="w-full min-w-[760px] caption-bottom text-xs">
-				<TableHeader className="sticky top-0 z-10">
-					{table.getHeaderGroups().map((headerGroup) => (
-						<TableRow
-							key={headerGroup.id}
-							className="flex w-full bg-muted hover:bg-muted"
-							style={{ alignItems: "center" }}
-						>
-							{headerGroup.headers.map((header) => (
-								<TableHead
-									key={header.id}
-									className="flex items-center overflow-hidden border-r px-2 text-xs font-semibold last:border-r-0"
-									style={cellStyle(
-										() => header.getSize(),
-										headerGroup.headers[headerGroup.headers.length - 1].id ===
-											header.id,
-									)}
-								>
-									{header.isPlaceholder
-										? null
-										: flexRender(
-												header.column.columnDef.header,
-												header.getContext(),
-											)}
-								</TableHead>
-							))}
-						</TableRow>
-					))}
-				</TableHeader>
-				<TableBody
-					style={{
-						height: `${rowVirtualizer.getTotalSize()}px`,
-						position: "relative",
-						display: "block",
-					}}
-				>
-					{rowVirtualizer.getVirtualItems().map((virtualRow) => {
-						const row = rows[virtualRow.index];
-						return (
-							<TableRow
-								key={row.id}
-								data-index={virtualRow.index}
-								ref={rowVirtualizer.measureElement}
-								className="flex"
-								style={{
-									position: "absolute",
-									top: 0,
-									left: 0,
-									width: "100%",
-									transform: `translateY(${virtualRow.start}px)`,
-									height: `${virtualRow.size}px`,
-									alignItems: "center",
-								}}
-							>
-								{row.getVisibleCells().map((cell) => (
-									<TableCell
-										key={cell.id}
-										className="flex items-center overflow-hidden border-r px-2 last:border-r-0"
-										style={cellStyle(
-											cell.column.getSize,
-											row.getVisibleCells()[row.getVisibleCells().length - 1]
-												.id === cell.id,
-										)}
-									>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</TableCell>
-								))}
-							</TableRow>
-						);
-					})}
-				</TableBody>
-			</table>
+			<AgGridReact
+				theme={tableTheme}
+				rowData={employees}
+				columnDefs={columnDefs}
+				getRowId={(params) => params.data.emplCode}
+				headerHeight={36}
+				rowHeight={40}
+				suppressRowHoverHighlight={false}
+				defaultColDef={{
+					resizable: true,
+				}}
+			/>
 		</div>
 	);
 }
