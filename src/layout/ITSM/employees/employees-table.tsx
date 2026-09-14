@@ -112,6 +112,7 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			{
 				headerName: "Name",
 				field: "name",
+				cellClass: "font-mono text-sm",
 				flex: 1,
 				minWidth: 200,
 				sortable: true,
@@ -121,6 +122,7 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			{
 				headerName: "Email",
 				field: "email",
+				cellClass: "font-mono text-sm",
 				width: 280,
 				sortable: true,
 				filter: true,
@@ -149,26 +151,6 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 				sortable: true,
 				filter: true,
 				cellRenderer: StatusRenderer,
-			},
-			{
-				headerName: "Created On",
-				field: "createdOn",
-				width: 170,
-				sortable: true,
-				filter: true,
-				cellClass: "font-mono text-sm",
-				valueFormatter: (params) => {
-					if (!params.value) return "-";
-					try {
-						return new Date(params.value).toLocaleDateString("en-GB", {
-							day: "2-digit",
-							month: "short",
-							year: "numeric",
-						});
-					} catch {
-						return params.value;
-					}
-				},
 			},
 			{
 				headerName: "Left Date",
