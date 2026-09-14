@@ -134,9 +134,7 @@ export function EmployeesPage() {
 						<TabsList>
 							<TabsTrigger value="all">All</TabsTrigger>
 							<TabsTrigger value="staff">Staff ({staffCount})</TabsTrigger>
-							<TabsTrigger value="worker">
-								Worker ({workerCount})
-							</TabsTrigger>
+							<TabsTrigger value="worker">Worker ({workerCount})</TabsTrigger>
 						</TabsList>
 					</Tabs>
 				</div>

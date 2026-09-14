@@ -12,7 +12,10 @@ import { Eye } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { employeeImageUrl, employeeStaffLabel } from "@/lib/employees-constants";
+import {
+	employeeImageUrl,
+	employeeStaffLabel,
+} from "@/lib/employees-constants";
 import { useTableTheme } from "@/hooks/use-table-theme";
 import type { EmployeeItem } from "@/server/routers/ITSM/employees";
 
@@ -31,8 +34,8 @@ function StaffTypeRenderer(params: ICellRendererParams<EmployeeItem>) {
 		<span
 			className={
 				type === "S"
-					? "inline-flex whitespace-nowrap rounded-none px-1.5 py-0.5 text-xs bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
-					: "inline-flex whitespace-nowrap rounded-none px-1.5 py-0.5 text-xs bg-muted text-muted-foreground"
+					? "inline-flex whitespace-nowrap rounded-none px-2 py-0.5 text-sm font-medium bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
+					: "inline-flex whitespace-nowrap rounded-none px-2 py-0.5 text-sm font-medium bg-muted text-muted-foreground"
 			}
 		>
 			{label}
@@ -46,8 +49,8 @@ function StatusRenderer(params: ICellRendererParams<EmployeeItem>) {
 		<span
 			className={
 				left
-					? "inline-flex whitespace-nowrap rounded-none px-1.5 py-0.5 text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
-					: "inline-flex whitespace-nowrap rounded-none px-1.5 py-0.5 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+					? "inline-flex whitespace-nowrap rounded-none px-2 py-0.5 text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+					: "inline-flex whitespace-nowrap rounded-none px-2 py-0.5 text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
 			}
 		>
 			{left ? "Left" : "Active"}
@@ -57,13 +60,13 @@ function StatusRenderer(params: ICellRendererParams<EmployeeItem>) {
 
 function PayrollRenderer(params: ICellRendererParams<EmployeeItem>) {
 	const val = params.data?.onPayroll;
-	if (!val) return <span className="text-muted-foreground">-</span>;
+	if (!val) return <span className="text-muted-foreground text-sm">-</span>;
 	return (
 		<span
 			className={
 				val === "Y"
-					? "text-green-700 dark:text-green-400"
-					: "text-muted-foreground"
+					? "text-sm font-medium text-green-700 dark:text-green-400"
+					: "text-sm text-muted-foreground"
 			}
 		>
 			{val === "Y" ? "Yes" : "No"}
@@ -76,9 +79,9 @@ function AvatarRenderer(params: ICellRendererParams<EmployeeItem>) {
 	if (!data) return null;
 	const imageUrl = employeeImageUrl(data.picPath);
 	return (
-		<Avatar className="size-8">
+		<Avatar className="size-11">
 			{imageUrl && <AvatarImage src={imageUrl} alt={data.name ?? ""} />}
-			<AvatarFallback className="text-xs">
+			<AvatarFallback className="text-sm font-medium">
 				{data.name?.[0]?.toUpperCase() ?? "?"}
 			</AvatarFallback>
 		</Avatar>
@@ -93,7 +96,7 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			{
 				headerName: "",
 				field: "picPath",
-				width: 52,
+				width: 64,
 				sortable: false,
 				filter: false,
 				cellRenderer: AvatarRenderer,
@@ -101,15 +104,16 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			{
 				headerName: "Code",
 				field: "emplCode",
-				width: 100,
-				cellClass: "font-mono text-xs",
+				width: 120,
+				cellClass: "font-mono text-sm",
 				sortable: true,
 				filter: true,
 			},
 			{
 				headerName: "Name",
 				field: "name",
-				width: 220,
+				flex: 1,
+				minWidth: 200,
 				sortable: true,
 				filter: true,
 				valueFormatter: (params) => params.value ?? "-",
@@ -117,7 +121,7 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			{
 				headerName: "Email",
 				field: "email",
-				width: 260,
+				width: 280,
 				sortable: true,
 				filter: true,
 				valueFormatter: (params) => params.value ?? "-",
@@ -125,7 +129,7 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			{
 				headerName: "Type",
 				field: "staffType",
-				width: 110,
+				width: 120,
 				sortable: true,
 				filter: true,
 				cellRenderer: StaffTypeRenderer,
@@ -133,7 +137,7 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			{
 				headerName: "On Payroll",
 				field: "onPayroll",
-				width: 110,
+				width: 130,
 				sortable: true,
 				filter: true,
 				cellRenderer: PayrollRenderer,
@@ -141,7 +145,7 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			{
 				headerName: "Status",
 				field: "leftDate",
-				width: 100,
+				width: 120,
 				sortable: true,
 				filter: true,
 				cellRenderer: StatusRenderer,
@@ -149,10 +153,10 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			{
 				headerName: "Created On",
 				field: "createdOn",
-				width: 160,
+				width: 170,
 				sortable: true,
 				filter: true,
-				cellClass: "font-mono text-xs",
+				cellClass: "font-mono text-sm",
 				valueFormatter: (params) => {
 					if (!params.value) return "-";
 					try {
@@ -169,10 +173,10 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			{
 				headerName: "Left Date",
 				field: "leftDate",
-				width: 160,
+				width: 170,
 				sortable: true,
 				filter: true,
-				cellClass: "font-mono text-xs",
+				cellClass: "font-mono text-sm",
 				valueFormatter: (params) => {
 					if (!params.value) return "-";
 					try {
@@ -220,8 +224,8 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 				rowData={employees}
 				columnDefs={columnDefs}
 				getRowId={(params) => params.data.emplCode}
-				headerHeight={36}
-				rowHeight={40}
+				headerHeight={44}
+				rowHeight={56}
 				suppressRowHoverHighlight={false}
 				defaultColDef={{
 					resizable: true,
