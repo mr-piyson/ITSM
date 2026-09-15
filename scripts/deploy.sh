@@ -89,7 +89,11 @@ git reset --hard HEAD
 git pull origin main
 
 log "Installing dependencies..."
-"${BUN_BIN}" install
+"${BUN_BIN}" install --frozen-lockfile
+
+log "Cleaning previous build..."
+rm -rf "${APP_DIR}/.next"
+rm -rf "${APP_DIR}/.env.local"
 
 log "Building application..."
 "${BUN_BIN}" run build
