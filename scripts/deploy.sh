@@ -82,6 +82,10 @@ else
 fi
 echo ""
 
+# --- Stop service ---
+log "Stopping service..."
+sudo systemctl stop ${SERVICE_NAME} || true
+
 # --- Update application ---
 log "Pulling latest changes..."
 cd "${APP_DIR}"
@@ -98,9 +102,9 @@ rm -rf "${APP_DIR}/.env.local"
 log "Building application..."
 "${BUN_BIN}" run build
 
-# --- Restart service ---
-log "Restarting service..."
-sudo systemctl restart ${SERVICE_NAME}
+# --- Start service ---
+log "Starting service..."
+sudo systemctl start ${SERVICE_NAME}
 
 echo ""
 log "========================================="
