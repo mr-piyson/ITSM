@@ -29,6 +29,7 @@ import {
 	fromParam,
 	gateParam,
 	toParam,
+	toDateString,
 } from "@/layout/MES/charts/inspections/params";
 import { ProjectAnalyticsChart } from "@/layout/MES/charts/inspections/project-analytics-chart";
 import { SummaryCards } from "@/layout/MES/charts/inspections/summary-cards";
@@ -92,6 +93,8 @@ export default function ReportPage() {
 
 	const isRangeSelected = !!appliedFrom && !!appliedTo;
 	const gateNum = gate ? Number(gate) : 0;
+	const fromDate = appliedFrom ? toDateString(appliedFrom) : undefined;
+	const toDate = appliedTo ? toDateString(appliedTo) : undefined;
 
 	const {
 		data: tableData,
@@ -102,8 +105,8 @@ export default function ReportPage() {
 		refetch,
 	} = trpc.mes.inspections.getResults.useQuery(
 		{
-			from: appliedFrom ?? undefined,
-			to: appliedTo ?? undefined,
+			from: fromDate,
+			to: toDate,
 			gate: gateNum || undefined,
 		},
 		{
@@ -113,8 +116,8 @@ export default function ReportPage() {
 
 	const { data: statsData } = trpc.mes.charts.get_all_stats.useQuery(
 		{
-			from: appliedFrom ?? undefined,
-			to: appliedTo ?? undefined,
+			from: fromDate,
+			to: toDate,
 			gate: gateNum || undefined,
 		},
 		{
@@ -125,8 +128,8 @@ export default function ReportPage() {
 	const { data: defectsPerDayData } =
 		trpc.mes.charts.get_total_defects_per_day.useQuery(
 			{
-				from: appliedFrom ?? undefined,
-				to: appliedTo ?? undefined,
+				from: fromDate,
+				to: toDate,
 				gate: gateNum || undefined,
 			},
 			{
@@ -136,8 +139,8 @@ export default function ReportPage() {
 
 	const { data: okNokData } = trpc.mes.charts.get_totals_defects.useQuery(
 		{
-			from: appliedFrom ?? undefined,
-			to: appliedTo ?? undefined,
+			from: fromDate,
+			to: toDate,
 			gate: gateNum || undefined,
 		},
 		{
@@ -147,8 +150,8 @@ export default function ReportPage() {
 
 	const { data: projectData } = trpc.mes.charts.get_totals_defects.useQuery(
 		{
-			from: appliedFrom ?? undefined,
-			to: appliedTo ?? undefined,
+			from: fromDate,
+			to: toDate,
 			groupBy: "project",
 			limit: 6,
 			gate: gateNum || undefined,
@@ -176,8 +179,8 @@ export default function ReportPage() {
 	const { data: defectTypeData } =
 		trpc.mes.charts.get_defect_counts_by_type.useQuery(
 			{
-				from: appliedFrom ?? undefined,
-				to: appliedTo ?? undefined,
+				from: fromDate,
+				to: toDate,
 				limit: 6,
 				gate: gateNum || undefined,
 			},

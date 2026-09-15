@@ -32,7 +32,7 @@ import {
 
 import { downloadCsv } from "@/lib/csv-export";
 
-import { fromParam, gateParam, toParam } from "./params";
+import { fromParam, gateParam, toParam, toDateString } from "./params";
 import { trpc } from "@/trpc/react";
 
 type ProjectData = {
@@ -59,16 +59,16 @@ export function ProjectAnalyticsChart() {
 	const [showLabels, setShowLabels] = useState(true);
 
 	const { data, isLoading } = trpc.mes.charts.get_totals_defects.useQuery({
-		from: appliedFrom,
-		to: appliedTo,
+		from: appliedFrom ? toDateString(appliedFrom) : undefined,
+		to: appliedTo ? toDateString(appliedTo) : undefined,
 		groupBy: "project",
 		limit: 6,
 		gate: Number(gate),
 	});
 
 	const { data: fullData } = trpc.mes.charts.get_totals_defects.useQuery({
-		from: appliedFrom,
-		to: appliedTo,
+		from: appliedFrom ? toDateString(appliedFrom) : undefined,
+		to: appliedTo ? toDateString(appliedTo) : undefined,
 		groupBy: "project",
 		gate: Number(gate),
 	});

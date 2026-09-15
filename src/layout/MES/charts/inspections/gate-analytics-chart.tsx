@@ -9,6 +9,7 @@ import {
 	fromParam,
 	gateParam,
 	toParam,
+	toDateString,
 } from "@/layout/MES/charts/inspections/params";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,8 +55,8 @@ export function GateAnalyticsChart() {
 	const [showLabels, setShowLabels] = useState(true);
 
 	const { data, isLoading } = trpc.mes.charts.get_totals_defects.useQuery({
-		from: appliedFrom,
-		to: appliedTo,
+		from: appliedFrom ? toDateString(appliedFrom) : undefined,
+		to: appliedTo ? toDateString(appliedTo) : undefined,
 		gate: Number(gate),
 		groupBy: "gate",
 	});

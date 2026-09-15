@@ -72,8 +72,8 @@ export const inspectionsRouter = router({
 	getResults: publicProcedure
 		.input(
 			z.object({
-				from: z.coerce.date().optional().nullable(),
-				to: z.coerce.date().optional().nullable(),
+				from: z.string().optional().nullable(),
+				to: z.string().optional().nullable(),
 				gate: z.number().optional(),
 			}),
 		)

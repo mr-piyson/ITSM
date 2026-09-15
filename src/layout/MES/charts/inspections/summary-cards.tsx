@@ -5,6 +5,7 @@ import {
 	fromParam,
 	gateParam,
 	toParam,
+	toDateString,
 } from "@/layout/MES/charts/inspections/params";
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/trpc/react";
@@ -16,8 +17,8 @@ export function SummaryCards() {
 
 	const { data: statsData, isLoading } = trpc.mes.charts.get_all_stats.useQuery(
 		{
-			from: appliedFrom,
-			to: appliedTo,
+			from: appliedFrom ? toDateString(appliedFrom) : undefined,
+			to: appliedTo ? toDateString(appliedTo) : undefined,
 			gate: Number(gate),
 		},
 	);

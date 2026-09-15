@@ -34,8 +34,8 @@ export const chartsRouter = router({
 		.input(
 			z.object({
 				factory: z.string().default("F2 Rail"),
-				from: z.coerce.date().optional().nullable(),
-				to: z.coerce.date().optional().nullable(),
+				from: z.string().optional().nullable(),
+				to: z.string().optional().nullable(),
 				gate: z.number().int().min(0).default(0),
 				limit: z.number().int().positive().optional(),
 				order: z.enum(["asc", "desc"]).default("desc"),
@@ -57,7 +57,7 @@ export const chartsRouter = router({
 				}
 
 				const conditions: string[] = ["ir.factory = ?"];
-				const params: (string | Date | number)[] = [factory];
+				const params: (string | number)[] = [factory];
 
 				if (from) {
 					conditions.push("ir.date >= ?");
@@ -204,8 +204,8 @@ export const chartsRouter = router({
 	get_defect_counts_by_type: publicProcedure
 		.input(
 			z.object({
-				from: z.coerce.date().optional().nullable(),
-				to: z.coerce.date().optional().nullable(),
+				from: z.string().optional().nullable(),
+				to: z.string().optional().nullable(),
 				limit: z.number().optional(),
 				gate: z.number().optional().default(0),
 			}),
@@ -216,7 +216,7 @@ export const chartsRouter = router({
 
 				// --- Build parameterized query ---
 				const conditions: string[] = [];
-				const params: (Date | string | number)[] = [];
+				const params: (string | number)[] = [];
 
 				// Date range — use ir.date to match report page filter
 				if (from) {
@@ -278,8 +278,8 @@ export const chartsRouter = router({
 	get_all_stats: publicProcedure
 		.input(
 			z.object({
-				from: z.coerce.date().optional().nullable(),
-				to: z.coerce.date().optional().nullable(),
+				from: z.string().optional().nullable(),
+				to: z.string().optional().nullable(),
 				gate: z.number().int().min(0).default(0),
 			}),
 		)
@@ -289,7 +289,7 @@ export const chartsRouter = router({
 
 				// --- Build parameterized query ---
 				const conditions: string[] = [];
-				const params: (Date | string | number)[] = [];
+				const params: (string | number)[] = [];
 
 				// Date range — use ir.date (DATE column) to include full day,
 				// matching the report page filter. ir.datetime would exclude
@@ -382,8 +382,8 @@ export const chartsRouter = router({
 	get_total_defects_per_day: publicProcedure
 		.input(
 			z.object({
-				from: z.coerce.date().optional().nullable(),
-				to: z.coerce.date().optional().nullable(),
+				from: z.string().optional().nullable(),
+				to: z.string().optional().nullable(),
 				gate: z.number().optional(),
 			}),
 		)
@@ -393,7 +393,7 @@ export const chartsRouter = router({
 
 				// --- Build parameterized query ---
 				const conditions: string[] = [];
-				const params: (Date | string | number)[] = [];
+				const params: (string | number)[] = [];
 
 				// Date range — use ir.date to match report page filter
 				if (from) {

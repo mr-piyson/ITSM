@@ -16,6 +16,7 @@ import {
 	fromParam,
 	gateParam,
 	toParam,
+	toDateString,
 } from "@/layout/MES/charts/inspections/params";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,16 +54,16 @@ export function DefectTypeChart() {
 
 	const { data, isLoading } =
 		trpc.mes.charts.get_defect_counts_by_type.useQuery({
-			from: appliedFrom,
-			to: appliedTo,
+			from: appliedFrom ? toDateString(appliedFrom) : undefined,
+			to: appliedTo ? toDateString(appliedTo) : undefined,
 			limit: 6,
 			gate: Number(gate),
 		});
 
 	const { data: fullData } = trpc.mes.charts.get_defect_counts_by_type.useQuery(
 		{
-			from: appliedFrom,
-			to: appliedTo,
+			from: appliedFrom ? toDateString(appliedFrom) : undefined,
+			to: appliedTo ? toDateString(appliedTo) : undefined,
 			gate: Number(gate),
 		},
 	);

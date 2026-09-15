@@ -9,6 +9,7 @@ import {
 	fromParam,
 	gateParam,
 	toParam,
+	toDateString,
 } from "@/layout/MES/charts/inspections/params";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,8 +56,8 @@ export function DailyAnalyticsChart() {
 
 	const { data, isLoading } =
 		trpc.mes.charts.get_total_defects_per_day.useQuery({
-			from: appliedFrom,
-			to: appliedTo,
+			from: appliedFrom ? toDateString(appliedFrom) : undefined,
+			to: appliedTo ? toDateString(appliedTo) : undefined,
 			gate: Number(gate),
 		});
 
