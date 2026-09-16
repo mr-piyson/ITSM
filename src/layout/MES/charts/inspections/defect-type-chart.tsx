@@ -15,6 +15,7 @@ import {
 import {
 	fromParam,
 	gateParam,
+	projectParam,
 	toParam,
 	toDateString,
 } from "@/layout/MES/charts/inspections/params";
@@ -50,6 +51,7 @@ export function DefectTypeChart() {
 	const [appliedFrom, setAppliedFrom] = useQueryState("from", fromParam);
 	const [appliedTo, setAppliedTo] = useQueryState("to", toParam);
 	const [gate, setGate] = useQueryState("gate", gateParam);
+	const [selectedProject] = useQueryState("project", projectParam);
 	const [showLabels, setShowLabels] = useState(true);
 
 	const { data, isLoading } =
@@ -58,6 +60,7 @@ export function DefectTypeChart() {
 			to: appliedTo ? toDateString(appliedTo) : undefined,
 			limit: 6,
 			gate: Number(gate),
+			project: selectedProject !== "all" ? selectedProject : undefined,
 		});
 
 	const { data: fullData } = trpc.mes.charts.get_defect_counts_by_type.useQuery(
@@ -65,6 +68,7 @@ export function DefectTypeChart() {
 			from: appliedFrom ? toDateString(appliedFrom) : undefined,
 			to: appliedTo ? toDateString(appliedTo) : undefined,
 			gate: Number(gate),
+			project: selectedProject !== "all" ? selectedProject : undefined,
 		},
 	);
 

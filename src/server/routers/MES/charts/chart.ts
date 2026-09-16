@@ -45,7 +45,8 @@ export const chartsRouter = router({
 		)
 		.query(async ({ input }) => {
 			try {
-				const { factory, from, to, gate, limit, order, groupBy, project } = input;
+				const { factory, from, to, gate, limit, order, groupBy, project } =
+					input;
 
 				// Validate gate
 				if (gate !== 0 && !gateMap[gate]) {
@@ -76,7 +77,7 @@ export const chartsRouter = router({
 				}
 
 				if (project && project !== "all") {
-					conditions.push("u.shortchar01 = ?");
+					conditions.push("u.shortchar06 = ?");
 					params.push(project);
 				}
 
@@ -243,7 +244,7 @@ export const chartsRouter = router({
 				}
 
 				if (project && project !== "all") {
-					conditions.push("u.shortchar01 = ?");
+					conditions.push("u.shortchar06 = ?");
 					params.push(project);
 				}
 
@@ -325,7 +326,7 @@ export const chartsRouter = router({
 				}
 
 				if (project && project !== "all") {
-					conditions.push("u.shortchar01 = ?");
+					conditions.push("u.shortchar06 = ?");
 					params.push(project);
 				}
 
@@ -434,7 +435,7 @@ export const chartsRouter = router({
 				}
 
 				if (project && project !== "all") {
-					conditions.push("u.shortchar01 = ?");
+					conditions.push("u.shortchar06 = ?");
 					params.push(project);
 				}
 

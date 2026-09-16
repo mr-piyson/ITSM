@@ -44,9 +44,7 @@ export const shippingRouter = router({
           c.code as container_id,
           ci.created_at as date,
           c.shipped_by,
-          u.key1 as job_id,
-          u.shortchar01 as epicor_asm_part_no,
-          u.shortchar01 as epicor_part_no
+          u.key1 as job_id
         FROM 
           mes.container_items ci
         INNER JOIN 

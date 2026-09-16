@@ -8,6 +8,7 @@ import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
 import {
 	fromParam,
 	gateParam,
+	projectParam,
 	toParam,
 	toDateString,
 } from "@/layout/MES/charts/inspections/params";
@@ -52,6 +53,7 @@ export function DailyAnalyticsChart() {
 	const [appliedFrom, setAppliedFrom] = useQueryState("from", fromParam);
 	const [appliedTo, setAppliedTo] = useQueryState("to", toParam);
 	const [gate, setGate] = useQueryState("gate", gateParam);
+	const [selectedProject] = useQueryState("project", projectParam);
 	const [showLabels, setShowLabels] = useState(true);
 
 	const { data, isLoading } =
@@ -59,6 +61,7 @@ export function DailyAnalyticsChart() {
 			from: appliedFrom ? toDateString(appliedFrom) : undefined,
 			to: appliedTo ? toDateString(appliedTo) : undefined,
 			gate: Number(gate),
+			project: selectedProject !== "all" ? selectedProject : undefined,
 		});
 
 	const handleExport = useCallback(() => {

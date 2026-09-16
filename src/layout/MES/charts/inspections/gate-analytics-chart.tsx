@@ -8,6 +8,7 @@ import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
 import {
 	fromParam,
 	gateParam,
+	projectParam,
 	toParam,
 	toDateString,
 } from "@/layout/MES/charts/inspections/params";
@@ -52,6 +53,7 @@ export function GateAnalyticsChart() {
 	const [appliedFrom, setAppliedFrom] = useQueryState("from", fromParam);
 	const [appliedTo, setAppliedTo] = useQueryState("to", toParam);
 	const [gate, setGate] = useQueryState("gate", gateParam);
+	const [selectedProject] = useQueryState("project", projectParam);
 	const [showLabels, setShowLabels] = useState(true);
 
 	const { data, isLoading } = trpc.mes.charts.get_totals_defects.useQuery({
@@ -59,6 +61,7 @@ export function GateAnalyticsChart() {
 		to: appliedTo ? toDateString(appliedTo) : undefined,
 		gate: Number(gate),
 		groupBy: "gate",
+		project: selectedProject !== "all" ? selectedProject : undefined,
 	});
 
 	const handleExport = useCallback(() => {

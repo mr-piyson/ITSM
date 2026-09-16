@@ -4,6 +4,7 @@ import { useQueryState } from "nuqs";
 import {
 	fromParam,
 	gateParam,
+	projectParam,
 	toParam,
 	toDateString,
 } from "@/layout/MES/charts/inspections/params";
@@ -14,12 +15,14 @@ export function SummaryCards() {
 	const [appliedFrom, setAppliedFrom] = useQueryState("from", fromParam);
 	const [appliedTo, setAppliedTo] = useQueryState("to", toParam);
 	const [gate, setGate] = useQueryState("gate", gateParam);
+	const [selectedProject] = useQueryState("project", projectParam);
 
 	const { data: statsData, isLoading } = trpc.mes.charts.get_all_stats.useQuery(
 		{
 			from: appliedFrom ? toDateString(appliedFrom) : undefined,
 			to: appliedTo ? toDateString(appliedTo) : undefined,
 			gate: Number(gate),
+			project: selectedProject !== "all" ? selectedProject : undefined,
 		},
 	);
 
