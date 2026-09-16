@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { protectedProcedure, router } from "@/server/trpc";
+import { getAzureUserDetails, type AzureUserDetails } from "@/lib/azure-graph";
 
 type Row = unknown[];
 
@@ -60,6 +61,13 @@ export const employeesRouter = router({
 			} finally {
 				await oracleConn.release();
 			}
+		}),
+
+	azureStatus: protectedProcedure
+		.input(z.object({ email: z.string().min(1) }))
+		.query(async ({ input }): Promise<{ azure: AzureUserDetails | null }> => {
+			const azure = await getAzureUserDetails(input.email);
+			return { azure };
 		}),
 
 	list: protectedProcedure.query(async ({ ctx }): Promise<EmployeeItem[]> => {

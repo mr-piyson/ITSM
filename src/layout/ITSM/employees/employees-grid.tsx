@@ -122,7 +122,7 @@ function EmployeeCard({ employee }: { employee: EmployeeItem }) {
 						</p>
 					)}
 				</div>
-				<div className="mt-auto flex items-center gap-1.5 pt-1">
+				<div className="mt-auto flex flex-wrap items-center justify-center gap-1.5 pt-1">
 					<span
 						className={cn(
 							"shrink-0 whitespace-nowrap px-1.5 py-0.5 text-xs",

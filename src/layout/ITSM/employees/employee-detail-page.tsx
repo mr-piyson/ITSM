@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Mail, BadgeCheck, User } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, BadgeCheck, Building2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -11,6 +11,7 @@ import {
 } from "@/lib/employees-constants";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/react";
+import { useAzureStatus } from "@/hooks/use-azure-status";
 
 type EmployeeDetailPageProps = {
 	code: string;
@@ -31,6 +32,7 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 		{ code },
 		{ enabled: !!code },
 	);
+	const { azure, isLoading: azureLoading } = useAzureStatus(employee?.email ?? null);
 
 	const imageUrl = employee ? employeeImageUrl(employee.picPath) : null;
 
@@ -191,6 +193,81 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 									</div>
 								)}
 							</div>
+						</div>
+
+						<Separator />
+
+						{/* Azure AD Details */}
+						<div className="space-y-3">
+							<div className="flex items-center gap-2">
+								<Building2 className="size-4 text-muted-foreground" />
+								<h3 className="text-sm font-semibold">Azure AD Details</h3>
+							</div>
+							{azureLoading ? (
+								<div className="flex items-center gap-2 rounded-none border p-4">
+									<Loader2 className="size-4 animate-spin text-muted-foreground" />
+									<span className="text-sm text-muted-foreground">
+										Checking Azure AD status...
+									</span>
+								</div>
+							) : !azure ? (
+								<div className="rounded-none border border-dashed p-4 text-center">
+									<p className="text-sm text-muted-foreground">
+										Azure AD data not available for this email
+									</p>
+								</div>
+							) : (
+								<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+									<div className="rounded-none border p-3">
+										<Row
+											label="Account Status"
+											value={
+												azure.accountEnabled === true
+													? "Active"
+													: azure.accountEnabled === false
+														? "Disabled"
+														: "Unknown"
+											}
+										/>
+									</div>
+									<div className="rounded-none border p-3">
+										<Row label="Display Name" value={azure.displayName} />
+									</div>
+									<div className="rounded-none border p-3">
+										<Row label="Job Title" value={azure.jobTitle} />
+									</div>
+									<div className="rounded-none border p-3">
+										<Row label="Department" value={azure.department} />
+									</div>
+									<div className="rounded-none border p-3">
+										<Row label="Office Location" value={azure.officeLocation} />
+									</div>
+									<div className="rounded-none border p-3">
+										<Row label="City" value={azure.city} />
+									</div>
+									<div className="rounded-none border p-3">
+										<Row label="Country" value={azure.country} />
+									</div>
+									<div className="rounded-none border p-3">
+										<Row label="Mail" value={azure.mail} />
+									</div>
+									<div className="rounded-none border p-3">
+										<Row
+											label="User Principal Name"
+											value={azure.userPrincipalName}
+										/>
+									</div>
+									<div className="rounded-none border p-3">
+										<Row label="Usage Location" value={azure.usageLocation} />
+									</div>
+									<div className="rounded-none border p-3">
+										<Row label="Company Name" value={azure.companyName} />
+									</div>
+									<div className="rounded-none border p-3">
+										<Row label="Employee ID" value={azure.employeeId} />
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				)}
