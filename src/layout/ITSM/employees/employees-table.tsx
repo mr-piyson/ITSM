@@ -96,6 +96,7 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 		filter: true,
 		floatingFilter: true, // Enables header filter inputs,
 		resizable: true,
+		editable: true,
 	};
 
 	const columnDefs = useMemo<ColDef<EmployeeItem>[]>(

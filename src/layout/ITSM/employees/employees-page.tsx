@@ -7,7 +7,6 @@ import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/react";
 
@@ -15,9 +14,6 @@ import { EmployeesGrid } from "./employees-grid";
 import { EmployeesTable } from "./employees-table";
 
 const VIEW_VALUES = ["table", "grid"] as const;
-const TAB_VALUES = ["all", "staff", "worker"] as const;
-
-type Tab = (typeof TAB_VALUES)[number];
 
 export function EmployeesPage() {
 	const router = useRouter();
@@ -33,41 +29,18 @@ export function EmployeesPage() {
 			.withDefault("table")
 			.withOptions({ history: "replace" }),
 	);
-	const [tab, setTab] = useQueryState(
-		"tab",
-		parseAsStringEnum([...TAB_VALUES])
-			.withDefault("all")
-			.withOptions({ history: "replace" }),
-	);
-
-	const staffCount = useMemo(
-		() => employees.filter((e) => e.staffType === "S").length,
-		[employees],
-	);
-
-	const workerCount = useMemo(
-		() => employees.filter((e) => e.staffType === "W").length,
-		[employees],
-	);
 
 	const filtered = useMemo(() => {
 		const q = query.trim().toLowerCase();
-		return employees.filter((employee) => {
-			if (tab === "staff" && employee.staffType !== "S") {
-				return false;
-			}
-			if (tab === "worker" && employee.staffType !== "W") {
-				return false;
-			}
-			if (!q) {
-				return true;
-			}
-			return (
+		if (!q) {
+			return employees;
+		}
+		return employees.filter(
+			(employee) =>
 				employee.name?.toLowerCase().includes(q) ||
-				employee.emplCode.toLowerCase().includes(q)
-			);
-		});
-	}, [employees, query, tab]);
+				employee.emplCode.toLowerCase().includes(q),
+		);
+	}, [employees, query]);
 
 	const handleView = (emplCode: string) => {
 		router.push(`/app/employees/${encodeURIComponent(emplCode)}`);
@@ -129,14 +102,6 @@ export function EmployeesPage() {
 							className="h-8 border-0 pl-0 shadow-none focus-visible:ring-0"
 						/>
 					</div>
-
-					<Tabs value={tab} onValueChange={(value) => setTab(value as Tab)}>
-						<TabsList>
-							<TabsTrigger value="all">All</TabsTrigger>
-							<TabsTrigger value="staff">Staff ({staffCount})</TabsTrigger>
-							<TabsTrigger value="worker">Worker ({workerCount})</TabsTrigger>
-						</TabsList>
-					</Tabs>
 				</div>
 			</div>
 
