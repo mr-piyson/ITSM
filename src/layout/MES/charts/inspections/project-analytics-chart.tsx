@@ -32,7 +32,13 @@ import {
 
 import { downloadCsv } from "@/lib/csv-export";
 
-import { fromParam, gateParam, projectParam, toParam, toDateString } from "./params";
+import {
+	fromParam,
+	gateParam,
+	projectParam,
+	toParam,
+	toDateString,
+} from "./params";
 import { trpc } from "@/trpc/react";
 
 type ProjectData = {
@@ -189,11 +195,6 @@ export function ProjectAnalyticsChart() {
 					</ChartContainer>
 				)}
 			</CardContent>
-			<CardFooter className="flex-col items-start gap-2 text-sm">
-				<div className="leading-none text-muted-foreground">
-					Live factory defect metrics aggregated by registered category logs.
-				</div>
-			</CardFooter>
 		</Card>
 	);
 }
