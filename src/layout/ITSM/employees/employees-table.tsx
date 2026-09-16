@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import {
 	AllCommunityModule,
 	ModuleRegistry,
 	type ColDef,
+	type FilterModel,
+	type GridApi,
 	type ICellRendererParams,
 } from "ag-grid-community";
 import { Eye } from "lucide-react";
@@ -24,6 +26,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 type EmployeesTableProps = {
 	employees: EmployeeItem[];
 	onView: (emplCode: string) => void;
+	filterModel: FilterModel | null;
+	onFilterModelChange: (model: FilterModel | null) => void;
 };
 
 function StaffTypeRenderer(params: ICellRendererParams<EmployeeItem>) {
@@ -88,13 +92,19 @@ function AvatarRenderer(params: ICellRendererParams<EmployeeItem>) {
 	);
 }
 
-export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
+export function EmployeesTable({
+	employees,
+	onView,
+	filterModel,
+	onFilterModelChange,
+}: EmployeesTableProps) {
 	const tableTheme = useTableTheme();
+	const gridApiRef = useRef<GridApi | null>(null);
 
 	const defaultColDef: ColDef<EmployeeItem> = {
 		sortable: true,
 		filter: true,
-		floatingFilter: true, // Enables header filter inputs,
+		floatingFilter: true,
 		resizable: true,
 		editable: true,
 	};
@@ -166,14 +176,19 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 			},
 			{
 				headerName: "Status",
+				colId: "status",
 				field: "leftDate",
 				width: 120,
 				sortable: true,
 				filter: true,
 				cellRenderer: StatusRenderer,
+				valueGetter: (params) => {
+					return params.data?.leftDate ? "Left" : "Active";
+				},
 			},
 			{
 				headerName: "Left Date",
+				colId: "leftDate",
 				field: "leftDate",
 				width: 170,
 				sortable: true,
@@ -216,6 +231,15 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 		[onView],
 	);
 
+	useEffect(() => {
+		const api = gridApiRef.current;
+		if (!api) return;
+		const current = api.getFilterModel();
+		if (JSON.stringify(current) !== JSON.stringify(filterModel)) {
+			api.setFilterModel(filterModel);
+		}
+	}, [filterModel]);
+
 	return (
 		<div
 			className="ag-theme-alpine flex-1 min-h-0 rounded-none border"
@@ -230,6 +254,18 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 				rowHeight={56}
 				suppressRowHoverHighlight={false}
 				defaultColDef={defaultColDef}
+				onGridReady={(e) => {
+					gridApiRef.current = e.api;
+					if (filterModel && Object.keys(filterModel).length > 0) {
+						e.api.setFilterModel(filterModel);
+					}
+				}}
+				onFilterChanged={(e) => {
+					const model = e.api.getFilterModel();
+					onFilterModelChange(
+						model && Object.keys(model).length > 0 ? model : null,
+					);
+				}}
 			/>
 		</div>
 	);

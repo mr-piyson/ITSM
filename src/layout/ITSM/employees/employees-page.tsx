@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/react";
+import {
+	filterModelParser,
+	employeeMatchesFilters,
+} from "@/lib/employees-filters";
 
 import { EmployeesGrid } from "./employees-grid";
 import { EmployeesTable } from "./employees-table";
@@ -29,18 +33,23 @@ export function EmployeesPage() {
 			.withDefault("table")
 			.withOptions({ history: "replace" }),
 	);
+	const [filterModel, setFilterModel] = useQueryState(
+		"filters",
+		filterModelParser,
+	);
 
 	const filtered = useMemo(() => {
 		const q = query.trim().toLowerCase();
-		if (!q) {
-			return employees;
+		let list = employees;
+		if (q) {
+			list = list.filter(
+				(employee) =>
+					employee.name?.toLowerCase().includes(q) ||
+					employee.emplCode.toLowerCase().includes(q),
+			);
 		}
-		return employees.filter(
-			(employee) =>
-				employee.name?.toLowerCase().includes(q) ||
-				employee.emplCode.toLowerCase().includes(q),
-		);
-	}, [employees, query]);
+		return list.filter((e) => employeeMatchesFilters(e, filterModel));
+	}, [employees, query, filterModel]);
 
 	const handleView = (emplCode: string) => {
 		router.push(`/app/employees/${encodeURIComponent(emplCode)}`);
@@ -114,7 +123,12 @@ export function EmployeesPage() {
 					<p className="text-sm text-muted-foreground">No employees found</p>
 				</div>
 			) : view === "table" ? (
-				<EmployeesTable employees={filtered} onView={handleView} />
+				<EmployeesTable
+						employees={filtered}
+						onView={handleView}
+						filterModel={filterModel}
+						onFilterModelChange={setFilterModel}
+					/>
 			) : (
 				<EmployeesGrid employees={filtered} />
 			)}
