@@ -35,7 +35,7 @@ function StaffTypeRenderer(params: ICellRendererParams<EmployeeItem>) {
 			className={
 				type === "S"
 					? "inline-flex whitespace-nowrap rounded-none px-2 py-0.5 text-sm font-medium bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-100"
-					: "inline-flex whitespace-nowrap rounded-none px-2 py-0.5 text-sm font-medium bg-muted text-muted-foreground"
+					: "inline-flex whitespace-nowrap rounded-none px-2 py-0.5 text-sm font-medium bg-warning/20 text-warning dark:bg-warning/90 dark:text-warning-foreground"
 			}
 		>
 			{label}
@@ -91,6 +91,13 @@ function AvatarRenderer(params: ICellRendererParams<EmployeeItem>) {
 export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 	const tableTheme = useTableTheme();
 
+	const defaultColDef: ColDef<EmployeeItem> = {
+		sortable: true,
+		filter: true,
+		floatingFilter: true, // Enables header filter inputs,
+		resizable: true,
+	};
+
 	const columnDefs = useMemo<ColDef<EmployeeItem>[]>(
 		() => [
 			{
@@ -135,6 +142,12 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 				sortable: true,
 				filter: true,
 				cellRenderer: StaffTypeRenderer,
+				valueGetter: (params) => {
+					if (params.data?.staffType == "S") {
+						return "Staff";
+					}
+					return "Worker";
+				},
 			},
 			{
 				headerName: "On Payroll",
@@ -143,6 +156,12 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 				sortable: true,
 				filter: true,
 				cellRenderer: PayrollRenderer,
+				valueGetter: (params) => {
+					if (params.data?.onPayroll == "Y") {
+						return "Yes";
+					}
+					return "No";
+				},
 			},
 			{
 				headerName: "Status",
@@ -209,9 +228,7 @@ export function EmployeesTable({ employees, onView }: EmployeesTableProps) {
 				headerHeight={44}
 				rowHeight={56}
 				suppressRowHoverHighlight={false}
-				defaultColDef={{
-					resizable: true,
-				}}
+				defaultColDef={defaultColDef}
 			/>
 		</div>
 	);
