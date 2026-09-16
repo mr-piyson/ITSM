@@ -69,7 +69,7 @@ const gateMap: Record<number, string> = {
 // --- Router Definition ---
 
 export const inspectionsRouter = router({
-	getResults: publicProcedure
+	getProjects: publicProcedure
 		.input(
 			z.object({
 				from: z.string().optional().nullable(),
@@ -80,6 +80,62 @@ export const inspectionsRouter = router({
 		.query(async ({ input }) => {
 			try {
 				const { from, to, gate } = input;
+				const conditions: string[] = [];
+				const values: any[] = [];
+
+				if (from) {
+					conditions.push("ir.date >= ?");
+					values.push(from);
+				}
+				if (to) {
+					conditions.push("ir.date <= ?");
+					values.push(to);
+				}
+				if (gate !== undefined && gate !== 0) {
+					conditions.push("ir.gate = ?");
+					values.push(gate);
+				}
+
+				const query = `
+					SELECT DISTINCT p.project_code, p.project_name
+					FROM quality.inspection_results ir
+					LEFT JOIN label_app.ud31 u ON ir.panel_serial = u.key5
+					LEFT JOIN mes.projects p ON u.shortchar06 = p.project_code
+					WHERE p.project_code IS NOT NULL
+					${conditions.length ? `AND ${conditions.join(" AND ")}` : ""}
+					ORDER BY p.project_name ASC
+				`;
+
+				const [rows] = await db.mes.execute<RowDataPacket[]>(query, values);
+
+				return rows
+					.filter((row) => row.project_code && row.project_code.trim() !== "")
+					.map((row) => ({
+						project_code: row.project_code as string,
+						project_name:
+							(row.project_name as string) || (row.project_code as string),
+					}));
+			} catch (error) {
+				console.error("tRPC Error (getProjects):", error);
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to fetch inspection projects",
+				});
+			}
+		}),
+
+	getResults: publicProcedure
+		.input(
+			z.object({
+				from: z.string().optional().nullable(),
+				to: z.string().optional().nullable(),
+				gate: z.number().optional(),
+				project: z.string().optional(),
+			}),
+		)
+		.query(async ({ input }) => {
+			try {
+				const { from, to, gate, project } = input;
 				const conditions: string[] = [];
 				const values: any[] = [];
 
@@ -95,6 +151,10 @@ export const inspectionsRouter = router({
 				if (gate !== undefined && gate !== 0) {
 					conditions.push("ir.gate = ?");
 					values.push(gate);
+				}
+				if (project && project !== "all") {
+					conditions.push("u.shortchar06 = ?");
+					values.push(project);
 				}
 
 				const whereClause = conditions.length

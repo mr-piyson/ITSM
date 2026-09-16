@@ -40,11 +40,12 @@ export const chartsRouter = router({
 				limit: z.number().int().positive().optional(),
 				order: z.enum(["asc", "desc"]).default("desc"),
 				groupBy: z.enum(["gate", "project"]).default("gate"),
+				project: z.string().optional(),
 			}),
 		)
 		.query(async ({ input }) => {
 			try {
-				const { factory, from, to, gate, limit, order, groupBy } = input;
+				const { factory, from, to, gate, limit, order, groupBy, project } = input;
 
 				// Validate gate
 				if (gate !== 0 && !gateMap[gate]) {
@@ -74,6 +75,11 @@ export const chartsRouter = router({
 					params.push(gate);
 				}
 
+				if (project && project !== "all") {
+					conditions.push("u.shortchar01 = ?");
+					params.push(project);
+				}
+
 				const whereClause = conditions.join(" AND ");
 				const isProjectGroup = groupBy === "project";
 				const orderDirection = order === "asc" ? "ASC" : "DESC";
@@ -92,6 +98,7 @@ export const chartsRouter = router({
             ) AS defect_count,
             COUNT(DISTINCT ir.panel_serial) AS total_panels_inspected
           FROM quality.inspection_results ir
+          LEFT JOIN label_app.ud31 u ON ir.panel_serial = u.key5
           WHERE ${whereClause}
           GROUP BY ir.project
           ORDER BY defect_count ${orderDirection}
@@ -107,6 +114,7 @@ export const chartsRouter = router({
             END AS result_category,
             COUNT(*) AS count
           FROM quality.inspection_results ir
+          LEFT JOIN label_app.ud31 u ON ir.panel_serial = u.key5
           WHERE ${whereClause}
           GROUP BY ir.gate, result_category
           ${limit !== undefined ? "LIMIT ?" : ""}
@@ -208,11 +216,12 @@ export const chartsRouter = router({
 				to: z.string().optional().nullable(),
 				limit: z.number().optional(),
 				gate: z.number().optional().default(0),
+				project: z.string().optional(),
 			}),
 		)
 		.query(async ({ input }) => {
 			try {
-				const { from, to, limit, gate } = input;
+				const { from, to, limit, gate, project } = input;
 
 				// --- Build parameterized query ---
 				const conditions: string[] = [];
@@ -233,6 +242,11 @@ export const chartsRouter = router({
 					params.push(gate);
 				}
 
+				if (project && project !== "all") {
+					conditions.push("u.shortchar01 = ?");
+					params.push(project);
+				}
+
 				// Only append WHERE clause if we actually have date filters passed
 				const whereConditions =
 					conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
@@ -246,6 +260,7 @@ export const chartsRouter = router({
           FROM quality.defects d
           LEFT JOIN quality.defects_list dl ON d.defect_type = dl.id
           LEFT JOIN quality.inspection_results ir ON d.inspection_id = ir.id
+          LEFT JOIN label_app.ud31 u ON ir.panel_serial = u.key5
           ${whereConditions}
           GROUP BY dl.id, dl.defect_type
           ORDER BY defect_count DESC
@@ -281,11 +296,12 @@ export const chartsRouter = router({
 				from: z.string().optional().nullable(),
 				to: z.string().optional().nullable(),
 				gate: z.number().int().min(0).default(0),
+				project: z.string().optional(),
 			}),
 		)
 		.query(async ({ input }) => {
 			try {
-				const { from, to, gate } = input;
+				const { from, to, gate, project } = input;
 
 				// --- Build parameterized query ---
 				const conditions: string[] = [];
@@ -306,6 +322,11 @@ export const chartsRouter = router({
 				if (gate !== 0) {
 					conditions.push("ir.gate = ?");
 					params.push(gate);
+				}
+
+				if (project && project !== "all") {
+					conditions.push("u.shortchar01 = ?");
+					params.push(project);
 				}
 
 				const whereClause =
@@ -331,6 +352,7 @@ export const chartsRouter = router({
               ir.date,
               (SELECT COUNT(*) FROM quality.defects d WHERE d.inspection_id = ir.id) AS defect_count
             FROM quality.inspection_results ir
+            LEFT JOIN label_app.ud31 u ON ir.panel_serial = u.key5
             ${whereClause}
             GROUP BY ir.panel_serial, ir.gate
           ) AS deduped
@@ -385,11 +407,12 @@ export const chartsRouter = router({
 				from: z.string().optional().nullable(),
 				to: z.string().optional().nullable(),
 				gate: z.number().optional(),
+				project: z.string().optional(),
 			}),
 		)
 		.query(async ({ input }) => {
 			try {
-				const { from, to, gate } = input;
+				const { from, to, gate, project } = input;
 
 				// --- Build parameterized query ---
 				const conditions: string[] = [];
@@ -410,6 +433,11 @@ export const chartsRouter = router({
 					params.push(gate);
 				}
 
+				if (project && project !== "all") {
+					conditions.push("u.shortchar01 = ?");
+					params.push(project);
+				}
+
 				// Only append WHERE clause if we actually have date filters passed
 				const whereConditions =
 					conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
@@ -421,6 +449,7 @@ export const chartsRouter = router({
             COUNT(d.id) AS total_defects
           FROM quality.inspection_results ir
           LEFT JOIN quality.defects d ON d.inspection_id = ir.id
+          LEFT JOIN label_app.ud31 u ON ir.panel_serial = u.key5
           ${whereConditions}
           GROUP BY ir.date
           ORDER BY ir.date ASC

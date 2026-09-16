@@ -24,6 +24,9 @@ export const toParam = parseAsLocalDate;
 // gate value is a string, defaulting to "0"
 export const gateParam = parseAsString.withDefault("0");
 
+// project value is a string, defaulting to "all"
+export const projectParam = parseAsString.withDefault("all");
+
 // Convert a Date to a YYYY-MM-DD string using local time components.
 // This avoids timezone drift when Date objects are serialized through tRPC
 // (which uses toISOString() → UTC), causing the date to shift by a day

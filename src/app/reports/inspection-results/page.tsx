@@ -28,6 +28,7 @@ import { GateAnalyticsChart } from "@/layout/MES/charts/inspections/gate-analyti
 import {
 	fromParam,
 	gateParam,
+	projectParam,
 	toParam,
 	toDateString,
 } from "@/layout/MES/charts/inspections/params";
@@ -35,6 +36,14 @@ import { ProjectAnalyticsChart } from "@/layout/MES/charts/inspections/project-a
 import { SummaryCards } from "@/layout/MES/charts/inspections/summary-cards";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import {
+	Combobox,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxInput,
+	ComboboxItem,
+	ComboboxList,
+} from "@/components/ui/combobox";
 import {
 	Dialog,
 	DialogContent,
@@ -78,12 +87,26 @@ const viewParam = parseAsString.withDefault("table");
 
 type ViewMode = "table" | "analytics";
 
+interface ProjectItem {
+	project_code: string;
+	project_name: string;
+}
+
+const ALL_PROJECTS: ProjectItem = {
+	project_code: "all",
+	project_name: "All Projects",
+};
+
 export default function ReportPage() {
 	const theme = useTableTheme();
 
 	const [appliedFrom, setAppliedFrom] = useQueryState<Date>("from", fromParam);
 	const [appliedTo, setAppliedTo] = useQueryState<Date>("to", toParam);
 	const [gate, setGate] = useQueryState("gate", gateParam);
+	const [selectedProject, setSelectedProject] = useQueryState(
+		"project",
+		projectParam,
+	);
 
 	const [activeView, setActiveView] = useQueryState("view", viewParam);
 
@@ -95,6 +118,38 @@ export default function ReportPage() {
 	const gateNum = gate ? Number(gate) : 0;
 	const fromDate = appliedFrom ? toDateString(appliedFrom) : undefined;
 	const toDate = appliedTo ? toDateString(appliedTo) : undefined;
+
+	const { data: fetchedProjects = [] } =
+		trpc.mes.inspections.getProjects.useQuery(
+			{
+				from: fromDate,
+				to: toDate,
+				gate: gateNum || undefined,
+			},
+			{ enabled: isRangeSelected },
+		);
+
+	const allProjectItems = useMemo(
+		() => [ALL_PROJECTS, ...fetchedProjects],
+		[fetchedProjects],
+	);
+
+	const currentProject = useMemo(
+		() =>
+			allProjectItems.find((p) => p.project_code === selectedProject) ??
+			ALL_PROJECTS,
+		[allProjectItems, selectedProject],
+	);
+
+	useEffect(() => {
+		if (
+			selectedProject !== "all" &&
+			fetchedProjects.length > 0 &&
+			!fetchedProjects.some((p) => p.project_code === selectedProject)
+		) {
+			setSelectedProject("all");
+		}
+	}, [selectedProject, fetchedProjects, setSelectedProject]);
 
 	const {
 		data: tableData,
@@ -108,6 +163,7 @@ export default function ReportPage() {
 			from: fromDate,
 			to: toDate,
 			gate: gateNum || undefined,
+			project: selectedProject !== "all" ? selectedProject : undefined,
 		},
 		{
 			enabled: isRangeSelected && activeView === "table",
@@ -119,6 +175,7 @@ export default function ReportPage() {
 			from: fromDate,
 			to: toDate,
 			gate: gateNum || undefined,
+			project: selectedProject !== "all" ? selectedProject : undefined,
 		},
 		{
 			enabled: isRangeSelected && activeView === "analytics",
@@ -131,6 +188,7 @@ export default function ReportPage() {
 				from: fromDate,
 				to: toDate,
 				gate: gateNum || undefined,
+				project: selectedProject !== "all" ? selectedProject : undefined,
 			},
 			{
 				enabled: isRangeSelected && activeView === "analytics",
@@ -142,6 +200,7 @@ export default function ReportPage() {
 			from: fromDate,
 			to: toDate,
 			gate: gateNum || undefined,
+			project: selectedProject !== "all" ? selectedProject : undefined,
 		},
 		{
 			enabled: isRangeSelected && activeView === "analytics",
@@ -155,6 +214,7 @@ export default function ReportPage() {
 			groupBy: "project",
 			limit: 6,
 			gate: gateNum || undefined,
+			project: selectedProject !== "all" ? selectedProject : undefined,
 		},
 		{
 			enabled: isRangeSelected && activeView === "analytics",
@@ -183,6 +243,7 @@ export default function ReportPage() {
 				to: toDate,
 				limit: 6,
 				gate: gateNum || undefined,
+				project: selectedProject !== "all" ? selectedProject : undefined,
 			},
 			{
 				enabled: isRangeSelected && activeView === "analytics",
@@ -444,6 +505,39 @@ export default function ReportPage() {
 						<Search className="mr-1 size-3" />
 						{isFetching ? "..." : "Search"}
 					</Button>
+
+					<Combobox
+						value={currentProject}
+						onValueChange={(val) =>
+							setSelectedProject(val?.project_code ?? "all")
+						}
+						items={allProjectItems}
+						itemToStringLabel={(p: ProjectItem) =>
+							`${p.project_code} ${p.project_name}`
+						}
+					>
+						<ComboboxInput
+							placeholder="Search project..."
+							className="h-8 text-xs w-48"
+						/>
+						<ComboboxContent>
+							<ComboboxEmpty>No project found.</ComboboxEmpty>
+							<ComboboxList>
+								{(p: ProjectItem) => (
+									<ComboboxItem key={p.project_code} value={p}>
+										<span className="flex flex-col">
+											<span className="text-sm font-medium leading-snug">
+												{p.project_name}
+											</span>
+											<span className="text-xs text-muted-foreground">
+												{p.project_code}
+											</span>
+										</span>
+									</ComboboxItem>
+								)}
+							</ComboboxList>
+						</ComboboxContent>
+					</Combobox>
 
 					<Button
 						variant="outline"
