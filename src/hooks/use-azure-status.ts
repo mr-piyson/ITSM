@@ -1,5 +1,4 @@
 import { trpc } from "@/trpc/react";
-import type { AzureUserDetails } from "@/lib/azure-graph";
 
 export function useAzureStatus(email: string | null) {
 	const { data, isPending } = trpc.employees.azureStatus.useQuery(

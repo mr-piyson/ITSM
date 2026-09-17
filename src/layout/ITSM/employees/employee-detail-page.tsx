@@ -1,7 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Mail, BadgeCheck, Building2 } from "lucide-react";
+import {
+	ArrowLeft,
+	Loader2,
+	Mail,
+	BadgeCheck,
+	Building2,
+	Key,
+	Inbox,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -217,56 +225,147 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 									</p>
 								</div>
 							) : (
-								<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-									<div className="rounded-none border p-3">
-										<Row
-											label="Account Status"
-											value={
-												azure.accountEnabled === true
-													? "Active"
-													: azure.accountEnabled === false
-														? "Disabled"
-														: "Unknown"
-											}
-										/>
+								<>
+									{/* User Profile */}
+									<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+										<div className="rounded-none border p-3">
+											<Row
+												label="Account Status"
+												value={
+													azure.accountEnabled === true
+														? "Active"
+														: azure.accountEnabled === false
+															? "Disabled"
+															: "Unknown"
+												}
+											/>
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="Display Name" value={azure.displayName} />
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="Job Title" value={azure.jobTitle} />
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="Department" value={azure.department} />
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="Office Location" value={azure.officeLocation} />
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="City" value={azure.city} />
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="Country" value={azure.country} />
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="Mail" value={azure.mail} />
+										</div>
+										<div className="rounded-none border p-3">
+											<Row
+												label="User Principal Name"
+												value={azure.userPrincipalName}
+											/>
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="Usage Location" value={azure.usageLocation} />
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="Company Name" value={azure.companyName} />
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="Employee ID" value={azure.employeeId} />
+										</div>
+										<div className="rounded-none border p-3">
+											<Row label="User Type" value={azure.userType} />
+										</div>
 									</div>
-									<div className="rounded-none border p-3">
-										<Row label="Display Name" value={azure.displayName} />
+
+									{/* Mailbox Section */}
+									<div className="space-y-3">
+										<div className="flex items-center gap-2">
+											<Inbox className="size-4 text-muted-foreground" />
+											<h4 className="text-sm font-semibold">Mailbox</h4>
+										</div>
+										<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+											<div className="rounded-none border p-3">
+												<Row
+													label="Archive Status"
+													value={
+														azure.mailboxSettings?.archiveStatus
+															? azure.mailboxSettings.archiveStatus === "none"
+																? "Not Archived"
+																: azure.mailboxSettings.archiveStatus
+															: "Not available (on-prem mailbox)"
+													}
+												/>
+											</div>
+											<div className="rounded-none border p-3">
+												<Row
+													label="Shared Mailbox"
+													value={
+														azure.isResourceAccount === true
+															? "Yes"
+															: azure.licenses.length === 0
+																? "Possible (no license assigned)"
+																: "No"
+													}
+												/>
+											</div>
+										</div>
 									</div>
-									<div className="rounded-none border p-3">
-										<Row label="Job Title" value={azure.jobTitle} />
+
+									{/* Licenses Section */}
+									<div className="space-y-3">
+										<div className="flex items-center gap-2">
+											<Key className="size-4 text-muted-foreground" />
+											<h4 className="text-sm font-semibold">
+												Licenses ({azure.licenses.length})
+											</h4>
+										</div>
+										{azure.licenses.length === 0 ? (
+											<div className="rounded-none border border-dashed p-4 text-center">
+												<p className="text-sm text-muted-foreground">
+													No licenses assigned
+												</p>
+											</div>
+										) : (
+											<div className="space-y-3">
+												{azure.licenses.map((license) => (
+													<div
+														key={license.skuId}
+														className="rounded-none border p-3"
+													>
+														<div className="mb-2 flex items-center gap-2">
+															<span className="inline-flex whitespace-nowrap rounded-none bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+																{license.skuPartNumber}
+															</span>
+														</div>
+														{license.servicePlans.length > 0 && (
+															<div className="flex flex-wrap gap-1.5">
+																{license.servicePlans.map((sp) => (
+																	<span
+																		key={sp.servicePlanName}
+																		className={cn(
+																			"inline-flex whitespace-nowrap rounded-none px-1.5 py-0.5 text-xs",
+																			sp.provisioningStatus === "Success"
+																				? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+																				: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+																		)}
+																	>
+																		{sp.servicePlanName}
+																		{sp.provisioningStatus !== "Success" &&
+																			` (${sp.provisioningStatus})`}
+																	</span>
+																))}
+															</div>
+														)}
+													</div>
+												))}
+											</div>
+										)}
 									</div>
-									<div className="rounded-none border p-3">
-										<Row label="Department" value={azure.department} />
-									</div>
-									<div className="rounded-none border p-3">
-										<Row label="Office Location" value={azure.officeLocation} />
-									</div>
-									<div className="rounded-none border p-3">
-										<Row label="City" value={azure.city} />
-									</div>
-									<div className="rounded-none border p-3">
-										<Row label="Country" value={azure.country} />
-									</div>
-									<div className="rounded-none border p-3">
-										<Row label="Mail" value={azure.mail} />
-									</div>
-									<div className="rounded-none border p-3">
-										<Row
-											label="User Principal Name"
-											value={azure.userPrincipalName}
-										/>
-									</div>
-									<div className="rounded-none border p-3">
-										<Row label="Usage Location" value={azure.usageLocation} />
-									</div>
-									<div className="rounded-none border p-3">
-										<Row label="Company Name" value={azure.companyName} />
-									</div>
-									<div className="rounded-none border p-3">
-										<Row label="Employee ID" value={azure.employeeId} />
-									</div>
-								</div>
+								</>
 							)}
 						</div>
 					</div>

@@ -4,6 +4,19 @@ const GRAPH_BASE = "https://graph.microsoft.com/v1.0";
 
 let tokenCache: { token: string; expiresAt: number } | null = null;
 
+export type AzureLicenseDetail = {
+	skuId: string;
+	skuPartNumber: string;
+	servicePlans: {
+		servicePlanName: string;
+		provisioningStatus: string;
+	}[];
+};
+
+export type AzureMailboxSettings = {
+	archiveStatus: string | null;
+};
+
 export type AzureUserDetails = {
 	accountEnabled: boolean | null;
 	displayName: string | null;
@@ -17,6 +30,10 @@ export type AzureUserDetails = {
 	usageLocation: string | null;
 	companyName: string | null;
 	employeeId: string | null;
+	userType: string | null;
+	isResourceAccount: boolean | null;
+	licenses: AzureLicenseDetail[];
+	mailboxSettings: AzureMailboxSettings | null;
 };
 
 export async function getGraphAccessToken(): Promise<string> {
@@ -70,16 +87,33 @@ const SELECT_FIELDS = [
 	"usageLocation",
 	"companyName",
 	"employeeId",
+	"userType",
+	"isResourceAccount",
 ].join(",");
 
-export async function getAzureUserDetails(email: string): Promise<AzureUserDetails | null> {
-	if (!email) return null;
+async function fetchUserDetails(email: string, token: string): Promise<Record<string, unknown> | null> {
+	const response = await fetch(
+		`${GRAPH_BASE}/users/${encodeURIComponent(email)}?$select=${SELECT_FIELDS}`,
+		{
+			headers: {
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "application/json",
+			},
+		},
+	);
 
+	if (!response.ok) {
+		console.error(`[azure-graph] User ${response.status} for ${email}: ${await response.text()}`);
+		return null;
+	}
+
+	return (await response.json()) as Record<string, unknown>;
+}
+
+async function fetchLicenseDetails(email: string, token: string): Promise<AzureLicenseDetail[]> {
 	try {
-		const token = await getGraphAccessToken();
-
 		const response = await fetch(
-			`${GRAPH_BASE}/users/${encodeURIComponent(email)}?$select=${SELECT_FIELDS}`,
+			`${GRAPH_BASE}/users/${encodeURIComponent(email)}/licenseDetails`,
 			{
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -89,27 +123,94 @@ export async function getAzureUserDetails(email: string): Promise<AzureUserDetai
 		);
 
 		if (!response.ok) {
-			console.error(`[azure-graph] ${response.status} for ${email}: ${await response.text()}`);
+			console.error(`[azure-graph] Licenses ${response.status} for ${email}`);
+			return [];
+		}
+
+		const data = (await response.json()) as {
+			value: {
+				skuId: string;
+				skuPartNumber: string;
+				servicePlans: {
+					servicePlanName: string;
+					provisioningStatus: string;
+				}[];
+			}[];
+		};
+
+		return (data.value ?? []).map((l) => ({
+			skuId: l.skuId ?? "",
+			skuPartNumber: l.skuPartNumber ?? "",
+			servicePlans: (l.servicePlans ?? []).map((sp) => ({
+				servicePlanName: sp.servicePlanName ?? "",
+				provisioningStatus: sp.provisioningStatus ?? "",
+			})),
+		}));
+	} catch (err) {
+		console.error(`[azure-graph] Error fetching licenses for ${email}:`, err);
+		return [];
+	}
+}
+
+async function fetchMailboxSettings(email: string, token: string): Promise<AzureMailboxSettings | null> {
+	try {
+		const response = await fetch(
+			`${GRAPH_BASE}/users/${encodeURIComponent(email)}/mailboxSettings`,
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "application/json",
+				},
+			},
+		);
+
+		if (!response.ok) {
 			return null;
 		}
 
 		const data = (await response.json()) as Record<string, unknown>;
 		return {
-			accountEnabled: (data.accountEnabled as boolean) ?? null,
-			displayName: (data.displayName as string) ?? null,
-			jobTitle: (data.jobTitle as string) ?? null,
-			department: (data.department as string) ?? null,
-			officeLocation: (data.officeLocation as string) ?? null,
-			city: (data.city as string) ?? null,
-			country: (data.country as string) ?? null,
-			mail: (data.mail as string) ?? null,
-			userPrincipalName: (data.userPrincipalName as string) ?? null,
-			usageLocation: (data.usageLocation as string) ?? null,
-			companyName: (data.companyName as string) ?? null,
-			employeeId: (data.employeeId as string) ?? null,
+			archiveStatus: (data.archiveStatus as string) ?? null,
+		};
+	} catch {
+		return null;
+	}
+}
+
+export async function getAzureUserDetails(email: string): Promise<AzureUserDetails | null> {
+	if (!email) return null;
+
+	try {
+		const token = await getGraphAccessToken();
+
+		const [userData, licenses, mailboxSettings] = await Promise.all([
+			fetchUserDetails(email, token),
+			fetchLicenseDetails(email, token),
+			fetchMailboxSettings(email, token),
+		]);
+
+		if (!userData) return null;
+
+		return {
+			accountEnabled: (userData.accountEnabled as boolean) ?? null,
+			displayName: (userData.displayName as string) ?? null,
+			jobTitle: (userData.jobTitle as string) ?? null,
+			department: (userData.department as string) ?? null,
+			officeLocation: (userData.officeLocation as string) ?? null,
+			city: (userData.city as string) ?? null,
+			country: (userData.country as string) ?? null,
+			mail: (userData.mail as string) ?? null,
+			userPrincipalName: (userData.userPrincipalName as string) ?? null,
+			usageLocation: (userData.usageLocation as string) ?? null,
+			companyName: (userData.companyName as string) ?? null,
+			employeeId: (userData.employeeId as string) ?? null,
+			userType: (userData.userType as string) ?? null,
+			isResourceAccount: (userData.isResourceAccount as boolean) ?? null,
+			licenses,
+			mailboxSettings,
 		};
 	} catch (err) {
-		console.error(`[azure-graph] Error checking ${email}:`, err);
+		console.error(`[azure-graph] Error fetching details for ${email}:`, err);
 		return null;
 	}
 }

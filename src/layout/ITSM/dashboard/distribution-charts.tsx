@@ -37,46 +37,7 @@ const EXPIRY_CONFIG: ChartConfig = {
 	daysLeft: { label: "Days left", color: "var(--chart-1)" },
 };
 
-const TOOLTIP_TONES = {
-	urgent: "border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400",
-	soon: "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-} as const;
 
-function truncateLabel(value: string): string {
-	return value.length > 16 ? `${value.slice(0, 14)}…` : value;
-}
-
-function ContractTooltip({
-	active,
-	payload,
-}: {
-	active?: boolean;
-	payload?: Array<{ payload?: ContractExpiry }>;
-}) {
-	if (!active || !payload?.length) {
-		return null;
-	}
-
-	const entry = payload[0].payload as ContractExpiry;
-	const label =
-		entry.daysLeft === 0
-			? "Expires today"
-			: `${entry.daysLeft} day${entry.daysLeft === 1 ? "" : "s"} left`;
-
-	return (
-		<div className="grid min-w-32 items-start gap-1.5 rounded-none border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
-			<div className="font-medium">{entry.productName}</div>
-			<Badge
-				variant="outline"
-				className={
-					entry.daysLeft <= 7 ? TOOLTIP_TONES.urgent : TOOLTIP_TONES.soon
-				}
-			>
-				{label}
-			</Badge>
-		</div>
-	);
-}
 
 export function AssetsByTypeCard({
 	data,
@@ -153,9 +114,44 @@ export function AssetsByTypeCard({
 	);
 }
 
-function expiryBarColor(daysLeft: number): string {
-	return daysLeft <= 7 ? "hsl(0, 84%, 60%)" : "hsl(38, 92%, 50%)";
+function truncateLabel(value: string): string {
+	return value.length > 16 ? `${value.slice(0, 14)}…` : value;
 }
+
+function expiryBarColor(daysLeft: number): string {
+	if (daysLeft < 60) return "hsl(0, 84%, 60%)";
+	if (daysLeft < 120) return "hsl(38, 92%, 50%)";
+	return "hsl(142, 76%, 36%)";
+}
+
+function ContractTooltip({
+	active,
+	payload,
+}: {
+	active?: boolean;
+	payload?: Array<{ payload?: ContractExpiry }>;
+}) {
+	if (!active || !payload?.length) return null;
+	const entry = payload[0].payload as ContractExpiry;
+	const label =
+		entry.daysLeft === 0
+			? "Expires today"
+			: `${entry.daysLeft} day${entry.daysLeft === 1 ? "" : "s"} left`;
+	const tone =
+		entry.daysLeft < 60
+			? "border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400"
+			: entry.daysLeft < 120
+				? "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+				: "border-green-500/40 bg-green-500/10 text-green-600 dark:text-green-400";
+	return (
+		<div className="grid min-w-32 items-start gap-1.5 rounded-none border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+			<div className="font-medium">{entry.productName}</div>
+			<Badge variant="outline" className={tone}>{label}</Badge>
+		</div>
+	);
+}
+
+const MAX_DAYS = 365;
 
 export function ActiveContractsCard({
 	expiring,
@@ -190,7 +186,7 @@ export function ActiveContractsCard({
 								tickLine={false}
 								axisLine={false}
 								tickMargin={8}
-								domain={[0, "dataMax + 2"]}
+								domain={[0, MAX_DAYS]}
 							/>
 							<YAxis
 								type="category"
