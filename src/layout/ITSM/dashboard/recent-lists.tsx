@@ -95,7 +95,7 @@ function EmployeeRow({
 								? "Worker"
 								: null,
 					onPayroll: employee.emplOnPayroll === "Y",
-						image: employeeImageUrl(employee.empPicPath),
+						image: employee.empPicPath,
 				}}
 			/>
 		</li>
