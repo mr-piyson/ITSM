@@ -11,7 +11,17 @@ const nextConfig: NextConfig = {
 				pathname: "**",
 			},
 			{
+				protocol: "https",
+				hostname: "iss.bfginternational.com",
+				pathname: "**",
+			},
+			{
 				protocol: "http",
+				hostname: "intranet.bfginternational.com",
+				pathname: "**",
+			},
+			{
+				protocol: "https",
 				hostname: "intranet.bfginternational.com",
 				pathname: "**",
 			},
