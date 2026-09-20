@@ -53,7 +53,7 @@ type CountRow = RowDataPacket & {
 	total: number | string;
 };
 
-const PHOTO_URL_EXPR = `CONCAT('/api/image-proxy?url=http://intranet.bfginternational.com:88/storage/employee/', MD5(e.id), '/', r.filename, '.jpg')`;
+const PHOTO_URL_EXPR = `CONCAT('http://intranet.bfginternational.com:88/storage/employee/', MD5(e.id), '/', r.filename, '.jpg')`;
 
 const EMPLOYEE_PATH_TABLE = "T633_EMPL_MASTER";
 const ORACLE_READ_BATCH_SIZE = 1000;
