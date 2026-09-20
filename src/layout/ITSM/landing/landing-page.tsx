@@ -6,7 +6,6 @@ import { LandingCta } from "./landing-cta";
 import { LandingFeatures } from "./landing-features";
 import { LandingFooter } from "./landing-footer";
 import { LandingHero } from "./landing-hero";
-import { LandingTestimonials } from "./landing-testimonials";
 
 export function LandingPage() {
 	return (
@@ -14,7 +13,6 @@ export function LandingPage() {
 			<MarketingNavbar />
 			<LandingHero />
 			<LandingFeatures />
-			<LandingTestimonials />
 			<LandingCta />
 			<LandingFooter />
 		</div>

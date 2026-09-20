@@ -2,10 +2,12 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import Logo from "@/assets/images/mes.svg";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import Image from "next/image";
 
 const EmblaCarousel = () => {
 	const [currentSlide, setCurrentSlide] = useState(0);
@@ -146,7 +148,11 @@ export function LandingHero() {
 		<section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8">
 			<div className="max-w-7xl mx-auto">
 				<div className="text-center mb-12">
-					<Badge variant="secondary" className="mb-6">
+					<Badge
+						variant="secondary"
+						className="px-2 py-3 mb-6 border-[#3BB7B0]"
+					>
+						<Image src={Logo} alt="BFG International" width={40} height={40} />
 						BFG International
 					</Badge>
 					<h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
