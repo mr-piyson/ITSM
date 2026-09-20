@@ -83,12 +83,14 @@ function AvatarRenderer(params: ICellRendererParams<EmployeeItem>) {
 	if (!data) return null;
 	const imageUrl = employeeImageUrl(data.picPath);
 	return (
-		<Avatar className="size-11">
-			{imageUrl && <AvatarImage src={imageUrl} alt={data.name ?? ""} />}
-			<AvatarFallback className="text-sm font-medium">
-				{data.name?.[0]?.toUpperCase() ?? "?"}
-			</AvatarFallback>
-		</Avatar>
+		<div className="flex justify-center items-center h-full w-full">
+			<Avatar className="size-11">
+				{imageUrl && <AvatarImage src={imageUrl} alt={data.name ?? ""} />}
+				<AvatarFallback className="text-sm font-medium">
+					{data.name?.[0]?.toUpperCase() ?? "?"}
+				</AvatarFallback>
+			</Avatar>
+		</div>
 	);
 }
 
@@ -111,6 +113,28 @@ export function EmployeesTable({
 
 	const columnDefs = useMemo<ColDef<EmployeeItem>[]>(
 		() => [
+			{
+				headerName: "Actions",
+				field: "emplCode",
+				width: 80,
+				sortable: false,
+				filter: false,
+				cellRenderer: (params: ICellRendererParams<EmployeeItem>) => {
+					if (!params.data) return null;
+					return (
+						<div className="flex justify-center items-center w-full h-full">
+							<Button
+								variant="outline"
+								size="icon-sm"
+								title="View details"
+								onClick={() => onView(params.data!.emplCode)}
+							>
+								<Eye />
+							</Button>
+						</div>
+					);
+				},
+			},
 			{
 				headerName: "",
 				field: "picPath",
@@ -205,26 +229,6 @@ export function EmployeesTable({
 					} catch {
 						return params.value;
 					}
-				},
-			},
-			{
-				headerName: "",
-				field: "emplCode",
-				width: 80,
-				sortable: false,
-				filter: false,
-				cellRenderer: (params: ICellRendererParams<EmployeeItem>) => {
-					if (!params.data) return null;
-					return (
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							title="View details"
-							onClick={() => onView(params.data!.emplCode)}
-						>
-							<Eye />
-						</Button>
-					);
 				},
 			},
 		],
