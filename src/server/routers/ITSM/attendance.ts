@@ -8,7 +8,7 @@ import { protectedProcedure, router } from "@/server/trpc";
 type Row = RowDataPacket & Record<string, unknown>;
 
 const EMPLOYEE_IMAGE_URL =
-	"CONCAT('http://intranet.bfginternational.com:88/storage/employee/', MD5(e.id), '/', r.filename, '.jpg')";
+	"CONCAT('/api/image-proxy?url=http://intranet.bfginternational.com:88/storage/employee/', MD5(e.id), '/', r.filename, '.jpg')";
 
 export type AttendanceEmployee = {
 	id: number;

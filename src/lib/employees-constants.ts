@@ -7,7 +7,7 @@ export function employeeImageUrl(image?: string | null): string | null {
 		return null;
 	}
 	if (/^https?:\/\//.test(image)) {
-		return image;
+		return `/api/image-proxy?url=${encodeURIComponent(image)}`;
 	}
-	return `http://iss.bfginternational.com/ISS/itemsImages/${image}`;
+	return `/api/image-proxy?url=${encodeURIComponent(`http://iss.bfginternational.com/ISS/itemsImages/${image}`)}`;
 }

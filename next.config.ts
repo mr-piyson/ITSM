@@ -2,31 +2,26 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
 	serverExternalPackages: ["oracledb"],
-	// add images support
 	images: {
 		remotePatterns: [
 			{
-				protocol: "http",
-				hostname: "iss.bfginternational.com",
-				pathname: "**",
-			},
-			{
 				protocol: "https",
 				hostname: "iss.bfginternational.com",
 				pathname: "**",
 			},
 			{
 				protocol: "http",
-				hostname: "intranet.bfginternational.com",
-				pathname: "**",
-			},
-			{
-				protocol: "https",
 				hostname: "intranet.bfginternational.com",
 				pathname: "**",
 			},
 		],
 	},
+	rewrites: async () => [
+		{
+			source: "/api/image-proxy",
+			destination: "/api/image-proxy",
+		},
+	],
 };
 
 export default nextConfig;
