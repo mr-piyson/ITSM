@@ -18,7 +18,7 @@ function generateCodeChallenge(verifier: string): string {
 }
 
 function getRedirectUri(): string {
-	const appUrl = env.APP_URL || "http://localhost:3000";
+	const appUrl = env.APP_URL;
 	return `${appUrl}/api/auth/microsoft/callback`;
 }
 

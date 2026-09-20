@@ -14,7 +14,7 @@ export const env = createEnv({
 		ERP_DATABASE: z.string().min(1),
 		COOKIE_SECURE: z.enum(["true", "false"]).transform((v) => v === "true"),
 		CRON_SECRET: z.string().min(1).optional(),
-		APP_URL: z.url().optional(),
+		APP_URL: z.url(),
 		AZURE_CLIENT_ID: z.string().min(1),
 		AZURE_CLIENT_SECRET: z.string().min(1),
 		AZURE_TENANT_ID: z.string().min(1),
