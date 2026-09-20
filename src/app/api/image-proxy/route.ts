@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const INTRANET_BASE = process.env.INTRANET_URL || "http://intranet.bfginternational.com:88";
+
 export async function GET(request: NextRequest) {
 	const url = request.nextUrl.searchParams.get("url");
 
@@ -15,13 +17,19 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json({ error: "Forbidden hostname" }, { status: 403 });
 		}
 
-		const response = await fetch(parsed.toString(), {
+		const targetUrl = parsed.hostname === "intranet.bfginternational.com"
+			? `${INTRANET_BASE}${parsed.pathname}`
+			: parsed.toString();
+
+		const response = await fetch(targetUrl, {
+			redirect: "follow",
 			headers: {
-				Authorization: request.headers.get("Authorization") ?? "",
+				"User-Agent": "Mozilla/5.0",
 			},
 		});
 
 		if (!response.ok) {
+			console.error(`Image proxy upstream error: ${response.status} ${targetUrl}`);
 			return NextResponse.json(
 				{ error: `Upstream returned ${response.status}` },
 				{ status: response.status },
@@ -37,7 +45,8 @@ export async function GET(request: NextRequest) {
 				"Cache-Control": "public, max-age=86400, s-maxage=86400",
 			},
 		});
-	} catch {
+	} catch (error) {
+		console.error("Image proxy fetch failed:", error);
 		return NextResponse.json({ error: "Failed to fetch image" }, { status: 502 });
 	}
 }

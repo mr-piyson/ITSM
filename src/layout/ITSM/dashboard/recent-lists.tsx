@@ -15,6 +15,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { EmployeeRow as SharedEmployeeRow } from "@/components/employee-row";
+import { employeeImageUrl } from "@/lib/employees-constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Dialog,
@@ -94,7 +95,7 @@ function EmployeeRow({
 								? "Worker"
 								: null,
 					onPayroll: employee.emplOnPayroll === "Y",
-					image: employee.empPicPath,
+						image: employeeImageUrl(employee.empPicPath),
 				}}
 			/>
 		</li>
@@ -129,7 +130,7 @@ function EmployeeDetailsDialog({
 					<div className="relative">
 						{employee.empPicPath ? (
 							<img
-								src={employee.empPicPath}
+								src={employeeImageUrl(employee.empPicPath) ?? undefined}
 								alt={employee.emplPname ?? ""}
 								className="size-24 rounded-full object-cover ring-4 ring-border"
 							/>

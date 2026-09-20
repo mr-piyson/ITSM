@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { employeeImageUrl } from "@/lib/employees-constants";
 
 export type EmployeeRowData = {
 	code: string | number;
@@ -26,7 +27,7 @@ export function EmployeeRow({ employee }: { employee: EmployeeRowData }) {
 			<div className="relative size-9 shrink-0">
 				{employee.image ? (
 					<img
-						src={employee.image}
+						src={employeeImageUrl(employee.image) ?? undefined}
 						alt={employee.name ?? ""}
 						className="size-9 rounded-full object-cover ring-2 ring-border"
 					/>
