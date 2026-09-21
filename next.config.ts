@@ -16,12 +16,6 @@ const nextConfig: NextConfig = {
 			},
 		],
 	},
-	rewrites: async () => [
-		{
-			source: "/api/image-proxy",
-			destination: "/api/image-proxy",
-		},
-	],
 };
 
 export default nextConfig;

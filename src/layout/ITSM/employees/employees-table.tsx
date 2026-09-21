@@ -12,12 +12,9 @@ import {
 } from "ag-grid-community";
 import { Eye } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmployeeAvatar } from "@/components/employee-avatar";
 import { Button } from "@/components/ui/button";
-import {
-	employeeImageUrl,
-	employeeStaffLabel,
-} from "@/lib/employees-constants";
+import { employeeStaffLabel } from "@/lib/employees-constants";
 import { useTableTheme } from "@/hooks/use-table-theme";
 import type { EmployeeItem } from "@/server/routers/ITSM/employees";
 
@@ -81,15 +78,16 @@ function PayrollRenderer(params: ICellRendererParams<EmployeeItem>) {
 function AvatarRenderer(params: ICellRendererParams<EmployeeItem>) {
 	const data = params.data;
 	if (!data) return null;
-	const imageUrl = employeeImageUrl(data.picPath);
 	return (
 		<div className="flex justify-center items-center h-full w-full">
-			<Avatar className="size-11">
-				{imageUrl && <AvatarImage src={imageUrl} alt={data.name ?? ""} />}
-				<AvatarFallback className="text-sm font-medium">
-					{data.name?.[0]?.toUpperCase() ?? "?"}
-				</AvatarFallback>
-			</Avatar>
+			<EmployeeAvatar
+				image={data.picPath}
+				name={data.name}
+				code={data.emplCode}
+				className="size-11"
+				fallbackClassName="text-sm font-medium"
+				fallback={data.name?.[0]?.toUpperCase() ?? "?"}
+			/>
 		</div>
 	);
 }

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmployeeAvatar } from "@/components/employee-avatar";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -41,7 +42,6 @@ import {
 } from "@/components/ui/select";
 import { BOOKING_PURPOSES, bookingToday } from "@/lib/booking-constants";
 import { assetImageUrl } from "@/lib/assets-constants";
-import { employeeImageUrl } from "@/lib/employees-constants";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/react";
 
@@ -222,19 +222,13 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 					>
 						{selectedEmployee ? (
 							<span className="flex min-w-0 items-center gap-2">
-								<Avatar className="size-5 shrink-0">
-									{employeeImageUrl(selectedEmployee.image) && (
-										<AvatarImage
-											src={
-												employeeImageUrl(selectedEmployee.image) ?? undefined
-											}
-											alt={selectedEmployee.name}
-										/>
-									)}
-									<AvatarFallback className="text-[9px]">
-										{selectedEmployee.name[0]?.toUpperCase()}
-									</AvatarFallback>
-								</Avatar>
+								<EmployeeAvatar
+									image={selectedEmployee.image}
+									name={selectedEmployee.name}
+									className="size-5 shrink-0"
+									fallbackClassName="text-[9px]"
+									fallback={selectedEmployee.name[0]?.toUpperCase()}
+								/>
 								<span className="truncate">
 									{selectedEmployee.name}{" "}
 									<span className="text-muted-foreground">
@@ -268,17 +262,13 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 												setEmpOpen(false);
 											}}
 										>
-											<Avatar className="size-5 shrink-0">
-												{employeeImageUrl(employee.image) && (
-													<AvatarImage
-														src={employeeImageUrl(employee.image) ?? undefined}
-														alt={employee.name}
-													/>
-												)}
-												<AvatarFallback className="text-[9px]">
-													{employee.name[0]?.toUpperCase()}
-												</AvatarFallback>
-											</Avatar>
+											<EmployeeAvatar
+												image={employee.image}
+												name={employee.name}
+												className="size-5 shrink-0"
+												fallbackClassName="text-[9px]"
+												fallback={employee.name[0]?.toUpperCase()}
+											/>
 											<span className="truncate">{employee.name}</span>
 											<span className="ml-auto shrink-0 text-muted-foreground">
 												{employee.empID}

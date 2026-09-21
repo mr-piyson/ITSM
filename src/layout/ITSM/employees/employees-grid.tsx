@@ -5,12 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
-import {
-	employeeImageUrl,
-	employeeStaffLabel,
-} from "@/lib/employees-constants";
+import { EmployeeAvatar } from "@/components/employee-avatar";
+import { employeeStaffLabel } from "@/lib/employees-constants";
 import { cn } from "@/lib/utils";
 import type { EmployeeItem } from "@/server/routers/ITSM/employees";
 
@@ -91,7 +88,6 @@ export function EmployeesGrid({ employees }: EmployeesGridProps) {
 }
 
 function EmployeeCard({ employee }: { employee: EmployeeItem }) {
-	const imageUrl = employeeImageUrl(employee.picPath);
 	const label = employeeStaffLabel(employee.staffType);
 	const isLeft = !!employee.leftDate;
 
@@ -101,12 +97,14 @@ function EmployeeCard({ employee }: { employee: EmployeeItem }) {
 			className="block h-full rounded-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
 			<Card className="h-full items-center px-4 pt-4 pb-3 transition-all hover:shadow-md hover:-translate-y-0.5">
-				<Avatar className="size-24 ring-2 ring-offset-2 ring-primary/20">
-					{imageUrl && <AvatarImage src={imageUrl} alt={employee.name ?? ""} />}
-					<AvatarFallback className="text-2xl">
-						{employee.name?.[0]?.toUpperCase() ?? "?"}
-					</AvatarFallback>
-				</Avatar>
+				<EmployeeAvatar
+					image={employee.picPath}
+					name={employee.name}
+					code={employee.emplCode}
+					className="size-24 ring-2 ring-offset-2 ring-primary/20"
+					fallbackClassName="text-2xl"
+					fallback={employee.name?.[0]?.toUpperCase() ?? "?"}
+				/>
 				<div className="flex w-full min-w-0 flex-col items-center gap-0.5 text-center">
 					<p className="w-full truncate text-sm font-medium">
 						{employee.name ?? "-"}

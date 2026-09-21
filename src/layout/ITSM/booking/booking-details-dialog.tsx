@@ -2,7 +2,7 @@
 
 import { CalendarPlus, CheckCheck } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmployeeAvatar } from "@/components/employee-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,6 @@ import {
 	formatBookingDate,
 	isBookingOverdue,
 } from "@/lib/booking-constants";
-import { employeeImageUrl } from "@/lib/employees-constants";
 import { cn } from "@/lib/utils";
 import type { BookingItem } from "@/server/routers/ITSM/bookings";
 
@@ -57,7 +56,6 @@ export function BookingDetailsDialog({
 	const overdue = booking
 		? isBookingOverdue(booking.status, booking.returnDate)
 		: false;
-	const imageUrl = employeeImageUrl(booking?.employeeImage);
 
 	return (
 		<Dialog open={booking !== null} onOpenChange={onOpenChange}>
@@ -82,14 +80,12 @@ export function BookingDetailsDialog({
 						<div className="space-y-4">
 							{/* Employee */}
 							<div className="flex items-center gap-3">
-								<Avatar className="size-11 shrink-0">
-									{imageUrl && (
-										<AvatarImage src={imageUrl} alt={booking.employeeName} />
-									)}
-									<AvatarFallback>
-										{booking.employeeName[0]?.toUpperCase() ?? "?"}
-									</AvatarFallback>
-								</Avatar>
+								<EmployeeAvatar
+									image={booking.employeeImage}
+									name={booking.employeeName}
+									className="size-11 shrink-0"
+									fallback={booking.employeeName[0]?.toUpperCase() ?? "?"}
+								/>
 								<div className="min-w-0">
 									<p className="truncate font-medium">{booking.employeeName}</p>
 									<p className="text-xs text-muted-foreground">

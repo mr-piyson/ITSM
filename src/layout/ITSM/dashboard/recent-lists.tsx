@@ -14,8 +14,8 @@ import {
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
+import { EmployeeAvatar } from "@/components/employee-avatar";
 import { EmployeeRow as SharedEmployeeRow } from "@/components/employee-row";
-import { employeeImageUrl } from "@/lib/employees-constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Dialog,
@@ -128,17 +128,14 @@ function EmployeeDetailsDialog({
 				</DialogHeader>
 				<div className="flex flex-col items-center gap-4 py-2">
 					<div className="relative">
-						{employee.empPicPath ? (
-							<img
-								src={employeeImageUrl(employee.empPicPath) ?? undefined}
-								alt={employee.emplPname ?? ""}
-								className="size-24 rounded-full object-cover ring-4 ring-border"
-							/>
-						) : (
-							<div className="flex size-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-2xl font-bold text-primary ring-4 ring-border">
-								{initials}
-							</div>
-						)}
+						<EmployeeAvatar
+							image={employee.empPicPath}
+							name={employee.emplPname}
+							code={employee.emplCode}
+							className="size-24 ring-4 ring-border"
+							fallbackClassName="bg-gradient-to-br from-primary/20 to-primary/5 text-2xl font-bold text-primary"
+							fallback={initials}
+						/>
 						<span
 							className={`absolute bottom-1 right-1 size-3.5 rounded-full ring-2 ring-card ${employee.emplOnPayroll === "Y" ? "bg-emerald-500" : "bg-muted-foreground/40"}`}
 						/>

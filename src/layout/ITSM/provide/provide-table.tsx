@@ -12,7 +12,7 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ExternalLink } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmployeeAvatar } from "@/components/employee-avatar";
 import { Button } from "@/components/ui/button";
 import {
 	TableBody,
@@ -21,7 +21,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { employeeImageUrl } from "@/lib/employees-constants";
 import { formatProvideDate } from "@/lib/provide-constants";
 import type { ProvideItem } from "@/server/routers/ITSM/provide";
 
@@ -54,17 +53,15 @@ export function ProvideTable({ provides, onDetails }: ProvideTableProps) {
 				header: "Employee",
 				size: 200,
 				cell: ({ row }) => {
-					const imageUrl = employeeImageUrl(row.original.employeeImage);
 					return (
 						<div className="flex min-w-0 items-center gap-2">
-							<Avatar className="size-7 shrink-0">
-								{imageUrl && (
-									<AvatarImage src={imageUrl} alt={row.original.employeeName} />
-								)}
-								<AvatarFallback className="text-[10px]">
-									{row.original.employeeName[0]?.toUpperCase() ?? "?"}
-								</AvatarFallback>
-							</Avatar>
+							<EmployeeAvatar
+								image={row.original.employeeImage}
+								name={row.original.employeeName}
+								className="size-7 shrink-0"
+								fallbackClassName="text-[10px]"
+								fallback={row.original.employeeName[0]?.toUpperCase() ?? "?"}
+							/>
 							<div className="min-w-0">
 								<p className="truncate font-medium">
 									{row.original.employeeName || "-"}

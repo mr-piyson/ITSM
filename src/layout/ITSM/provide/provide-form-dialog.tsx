@@ -13,7 +13,7 @@ import {
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmployeeAvatar } from "@/components/employee-avatar";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -46,7 +46,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { employeeImageUrl } from "@/lib/employees-constants";
 import { provideToday } from "@/lib/provide-constants";
 import { cn } from "@/lib/utils";
 import type { EmployeeItem } from "@/server/routers/ITSM/assets";
@@ -150,17 +149,13 @@ function EmployeePicker({
 				>
 					{selected ? (
 						<span className="flex min-w-0 items-center gap-2">
-							<Avatar className="size-5 shrink-0">
-								{employeeImageUrl(selected.image) && (
-									<AvatarImage
-										src={employeeImageUrl(selected.image) ?? undefined}
-										alt={selected.name}
-									/>
-								)}
-								<AvatarFallback className="text-[9px]">
-									{selected.name[0]?.toUpperCase()}
-								</AvatarFallback>
-							</Avatar>
+							<EmployeeAvatar
+								image={selected.image}
+								name={selected.name}
+								className="size-5 shrink-0"
+								fallbackClassName="text-[9px]"
+								fallback={selected.name[0]?.toUpperCase()}
+							/>
 							<span className="truncate">
 								{selected.name}{" "}
 								<span className="text-muted-foreground">
@@ -193,17 +188,13 @@ function EmployeePicker({
 											setOpen(false);
 										}}
 									>
-										<Avatar className="size-5 shrink-0">
-											{employeeImageUrl(employee.image) && (
-												<AvatarImage
-													src={employeeImageUrl(employee.image) ?? undefined}
-													alt={employee.name}
-												/>
-											)}
-											<AvatarFallback className="text-[9px]">
-												{employee.name[0]?.toUpperCase()}
-											</AvatarFallback>
-										</Avatar>
+										<EmployeeAvatar
+											image={employee.image}
+											name={employee.name}
+											className="size-5 shrink-0"
+											fallbackClassName="text-[9px]"
+											fallback={employee.name[0]?.toUpperCase()}
+										/>
 										<span className="truncate">{employee.name}</span>
 										<span className="ml-auto shrink-0 text-muted-foreground">
 											{employee.empID}

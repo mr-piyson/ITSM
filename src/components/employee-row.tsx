@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import { employeeImageUrl } from "@/lib/employees-constants";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import {
+	EmployeeAvatar,
+	getEmployeeInitials,
+} from "@/components/employee-avatar";
 import { User2 } from "lucide-react";
 
 export type EmployeeRowData = {
@@ -12,31 +14,21 @@ export type EmployeeRowData = {
 	image?: string | null;
 };
 
-function getInitials(name: string | null, code: string | number): string {
-	return (name ?? String(code))
-		.split(" ")
-		.map((word) => word[0])
-		.join("")
-		.slice(0, 2)
-		.toUpperCase();
-}
-
 export function EmployeeRow({ employee }: { employee: EmployeeRowData }) {
-	const initials = getInitials(employee.name, employee.code);
-
 	return (
 		<>
 			<div className="relative size-9 shrink-0">
 				{employee.image ? (
-					<Avatar>
-						<AvatarImage src={employee.image} />
-						<AvatarFallback>
-							<User2 />
-						</AvatarFallback>
-					</Avatar>
+					<EmployeeAvatar
+						image={employee.image}
+						name={employee.name}
+						code={employee.code}
+						className="size-9"
+						fallback={<User2 />}
+					/>
 				) : (
 					<div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary ring-2 ring-border">
-						{initials}
+						{getEmployeeInitials(employee.name, employee.code)}
 					</div>
 				)}
 				{employee.onPayroll !== undefined && (

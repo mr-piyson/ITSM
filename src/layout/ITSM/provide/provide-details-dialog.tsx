@@ -2,7 +2,7 @@
 
 import { Boxes, HandHelping } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmployeeAvatar } from "@/components/employee-avatar";
 import {
 	Dialog,
 	DialogContent,
@@ -11,7 +11,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { employeeImageUrl } from "@/lib/employees-constants";
 import { formatProvideDate } from "@/lib/provide-constants";
 import type { ProvideItem } from "@/server/routers/ITSM/provide";
 
@@ -22,8 +21,6 @@ export function ProvideDetailsDialog({
 	provide: ProvideItem | null;
 	onOpenChange: (open: boolean) => void;
 }) {
-	const imageUrl = employeeImageUrl(provide?.employeeImage);
-
 	return (
 		<Dialog open={provide !== null} onOpenChange={onOpenChange}>
 			<DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
@@ -42,14 +39,12 @@ export function ProvideDetailsDialog({
 						<div className="space-y-4">
 							{/* Recipient */}
 							<div className="flex items-center gap-3">
-								<Avatar className="size-11 shrink-0">
-									{imageUrl && (
-										<AvatarImage src={imageUrl} alt={provide.employeeName} />
-									)}
-									<AvatarFallback>
-										{provide.employeeName[0]?.toUpperCase() ?? "?"}
-									</AvatarFallback>
-								</Avatar>
+								<EmployeeAvatar
+									image={provide.employeeImage}
+									name={provide.employeeName}
+									className="size-11 shrink-0"
+									fallback={provide.employeeName[0]?.toUpperCase() ?? "?"}
+								/>
 								<div className="min-w-0">
 									<p className="truncate font-medium">
 										{provide.employeeName || "-"}
