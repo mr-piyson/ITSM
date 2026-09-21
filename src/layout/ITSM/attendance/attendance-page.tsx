@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { CalendarDays, Clock, Loader2, UserCheck } from "lucide-react";
+import { parseAsInteger, useQueryState } from "nuqs";
 
 import { EmployeeRow as SharedEmployeeRow } from "@/components/employee-row";
 import {
@@ -61,9 +62,22 @@ export function AttendancePage() {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [selectedEmployee, setSelectedEmployee] =
 		useState<AttendanceEmployee | null>(null);
-	const [empCode, setEmpCode] = useState<number | null>(null);
-	const [month, setMonth] = useState(now.getMonth() + 1);
-	const [year, setYear] = useState(now.getFullYear());
+	const [empCode, setEmpCode] = useQueryState(
+		"empCode",
+		parseAsInteger.withOptions({ history: "replace" }),
+	);
+	const [month, setMonth] = useQueryState(
+		"month",
+		parseAsInteger
+			.withDefault(now.getMonth() + 1)
+			.withOptions({ history: "replace" }),
+	);
+	const [year, setYear] = useQueryState(
+		"year",
+		parseAsInteger
+			.withDefault(now.getFullYear())
+			.withOptions({ history: "replace" }),
+	);
 
 	useEffect(() => {
 		const timer = window.setTimeout(() => {
@@ -87,6 +101,13 @@ export function AttendancePage() {
 			{ empCode: empCode ?? 0 },
 			{ enabled: empCode !== null },
 		);
+
+	useEffect(() => {
+		if (employee) {
+			setSelectedEmployee(employee);
+			setEmployeeSearch(`${employee.name} ${employee.empCode}`);
+		}
+	}, [employee]);
 
 	const { data: summary, isPending: summaryPending } =
 		trpc.attendance.summary.useQuery(

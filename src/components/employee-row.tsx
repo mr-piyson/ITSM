@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { employeeImageUrl } from "@/lib/employees-constants";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { User2 } from "lucide-react";
 
 export type EmployeeRowData = {
 	code: string | number;
@@ -26,11 +28,12 @@ export function EmployeeRow({ employee }: { employee: EmployeeRowData }) {
 		<>
 			<div className="relative size-9 shrink-0">
 				{employee.image ? (
-					<img
-						src={employeeImageUrl(employee.image) ?? undefined}
-						alt={employee.name ?? ""}
-						className="size-9 rounded-full object-cover ring-2 ring-border"
-					/>
+					<Avatar>
+						<AvatarImage src={employee.image} />
+						<AvatarFallback>
+							<User2 />
+						</AvatarFallback>
+					</Avatar>
 				) : (
 					<div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary ring-2 ring-border">
 						{initials}
