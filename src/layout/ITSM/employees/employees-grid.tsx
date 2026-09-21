@@ -7,7 +7,10 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
-import { employeeImageUrl, employeeStaffLabel } from "@/lib/employees-constants";
+import {
+	employeeImageUrl,
+	employeeStaffLabel,
+} from "@/lib/employees-constants";
 import { cn } from "@/lib/utils";
 import type { EmployeeItem } from "@/server/routers/ITSM/employees";
 
@@ -76,10 +79,7 @@ export function EmployeesGrid({ employees }: EmployeesGridProps) {
 								}}
 							>
 								{rowItems.map((employee) => (
-									<EmployeeCard
-										key={employee.emplCode}
-										employee={employee}
-									/>
+									<EmployeeCard key={employee.emplCode} employee={employee} />
 								))}
 							</div>
 						</div>
@@ -102,9 +102,7 @@ function EmployeeCard({ employee }: { employee: EmployeeItem }) {
 		>
 			<Card className="h-full items-center px-4 pt-4 pb-3 transition-all hover:shadow-md hover:-translate-y-0.5">
 				<Avatar className="size-24 ring-2 ring-offset-2 ring-primary/20">
-					{imageUrl && (
-						<AvatarImage src={imageUrl} alt={employee.name ?? ""} />
-					)}
+					{imageUrl && <AvatarImage src={imageUrl} alt={employee.name ?? ""} />}
 					<AvatarFallback className="text-2xl">
 						{employee.name?.[0]?.toUpperCase() ?? "?"}
 					</AvatarFallback>

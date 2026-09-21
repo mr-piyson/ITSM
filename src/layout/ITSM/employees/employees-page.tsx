@@ -124,11 +124,11 @@ export function EmployeesPage() {
 				</div>
 			) : view === "table" ? (
 				<EmployeesTable
-						employees={filtered}
-						onView={handleView}
-						filterModel={filterModel}
-						onFilterModelChange={setFilterModel}
-					/>
+					employees={filtered}
+					onView={handleView}
+					filterModel={filterModel}
+					onFilterModelChange={setFilterModel}
+				/>
 			) : (
 				<EmployeesGrid employees={filtered} />
 			)}

@@ -88,6 +88,7 @@ function EmployeeRow({
 					code: employee.emplCode,
 					name: employee.emplPname,
 					email: employee.emailId,
+					image: employee.empPicPath,
 					type:
 						employee.emplStaffWorkr === "S"
 							? "Staff"
@@ -95,7 +96,6 @@ function EmployeeRow({
 								? "Worker"
 								: null,
 					onPayroll: employee.emplOnPayroll === "Y",
-						image: employee.empPicPath,
 				}}
 			/>
 		</li>

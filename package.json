@@ -8,6 +8,7 @@
 		"dev": "next dev -p 4000",
 		"build": "next build",
 		"deploy": "./scripts/deploy.sh",
+		"deploy:remote": "./scripts/deploy-remote.sh",
 		"setup": "./scripts/setup.sh"
 	},
 	"dependencies": {
