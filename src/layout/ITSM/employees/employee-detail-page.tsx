@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/react";
 import { useAzureStatus } from "@/hooks/use-azure-status";
+import { summarizeAzureAccess } from "@/lib/azure-license-summary";
 
 type EmployeeDetailPageProps = {
 	code: string;
@@ -226,6 +227,49 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 								</div>
 							) : (
 								<>
+									{/* Access Summary */}
+									{(() => {
+										const summary = summarizeAzureAccess(azure);
+										return (
+											<div className="space-y-3">
+												<div className="flex items-center gap-2">
+													<Key className="size-4 text-muted-foreground" />
+													<h4 className="text-sm font-semibold">Access Summary</h4>
+												</div>
+												<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+													<div className="rounded-none border p-3">
+														<Row
+															label="License Type"
+															value={
+																summary.licenseTypes.length
+																	? summary.licenseTypes.join(", ")
+																	: "No license"
+															}
+														/>
+													</div>
+													<div className="rounded-none border p-3">
+														<Row
+															label="Mailbox Archive"
+															value={summary.hasArchive ? "Enabled" : "Not enabled"}
+														/>
+													</div>
+													<div className="rounded-none border p-3">
+														<Row
+															label="Email Active"
+															value={
+																summary.emailActive === null
+																	? "Unknown"
+																	: summary.emailActive
+																		? "Active"
+																		: "Inactive"
+															}
+														/>
+													</div>
+												</div>
+											</div>
+										);
+									})()}
+
 									{/* User Profile */}
 									<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 										<div className="rounded-none border p-3">
@@ -244,37 +288,10 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 											<Row label="Display Name" value={azure.displayName} />
 										</div>
 										<div className="rounded-none border p-3">
-											<Row label="Job Title" value={azure.jobTitle} />
-										</div>
-										<div className="rounded-none border p-3">
-											<Row label="Department" value={azure.department} />
-										</div>
-										<div className="rounded-none border p-3">
-											<Row label="Office Location" value={azure.officeLocation} />
-										</div>
-										<div className="rounded-none border p-3">
-											<Row label="City" value={azure.city} />
-										</div>
-										<div className="rounded-none border p-3">
-											<Row label="Country" value={azure.country} />
-										</div>
-										<div className="rounded-none border p-3">
 											<Row label="Mail" value={azure.mail} />
 										</div>
 										<div className="rounded-none border p-3">
-											<Row
-												label="User Principal Name"
-												value={azure.userPrincipalName}
-											/>
-										</div>
-										<div className="rounded-none border p-3">
 											<Row label="Usage Location" value={azure.usageLocation} />
-										</div>
-										<div className="rounded-none border p-3">
-											<Row label="Company Name" value={azure.companyName} />
-										</div>
-										<div className="rounded-none border p-3">
-											<Row label="Employee ID" value={azure.employeeId} />
 										</div>
 										<div className="rounded-none border p-3">
 											<Row label="User Type" value={azure.userType} />
