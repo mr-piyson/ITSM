@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getAuthorizationUrl, generatePKCE } from "@/lib/microsoft-auth";
+import { env } from "@/lib/env";
 
 export async function GET(request: NextRequest) {
 	try {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
 	} catch (error) {
 		console.error("Error initiating Microsoft auth:", error);
 		return NextResponse.redirect(
-			new URL("/auth?error=auth_failed", request.url),
+			new URL("/auth?error=auth_failed", env.APP_URL),
 		);
 	}
 }

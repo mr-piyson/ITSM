@@ -73,13 +73,13 @@ export async function GET(request: NextRequest) {
 		if (!state || state !== storedState) {
 			console.error("State mismatch - possible CSRF attack");
 			return NextResponse.redirect(
-				new URL("/auth?error=csrf_validation_failed", request.url),
+				new URL("/auth?error=csrf_validation_failed", env.APP_URL),
 			);
 		}
 
 		if (!code || !codeVerifier) {
 			return NextResponse.redirect(
-				new URL("/auth?error=missing_auth_code", request.url),
+				new URL("/auth?error=missing_auth_code", env.APP_URL),
 			);
 		}
 
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 		if (!userInfo?.email) {
 			await logLoginAttempt(0, false);
 			return NextResponse.redirect(
-				new URL("/auth?error=failed_to_get_user_info", request.url),
+				new URL("/auth?error=failed_to_get_user_info", env.APP_URL),
 			);
 		}
 
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
 			// In a production system, you might auto-provision users here
 			await logLoginAttempt(0, false);
 			return NextResponse.redirect(
-				new URL("/auth?error=user_not_found_contact_admin", request.url),
+				new URL("/auth?error=user_not_found_contact_admin", env.APP_URL),
 			);
 		}
 
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
 		await logLoginAttempt(user.id, true);
 
 		// Create response that redirects to /app
-		const response = NextResponse.redirect(new URL("/app", request.url));
+		const response = NextResponse.redirect(new URL("/app", env.APP_URL));
 
 		// Set session cookie
 		const sessionOptions = getSessionOptions(user.token);
@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
 	} catch (error) {
 		console.error("Error in Microsoft auth callback:", error);
 		return NextResponse.redirect(
-			new URL("/auth?error=authentication_failed", request.url),
+			new URL("/auth?error=authentication_failed", env.APP_URL),
 		);
 	}
 }
