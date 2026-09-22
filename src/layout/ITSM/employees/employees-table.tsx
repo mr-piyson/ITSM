@@ -16,6 +16,7 @@ import { EmployeeAvatar } from "@/components/employee-avatar";
 import { Button } from "@/components/ui/button";
 import { employeeStaffLabel } from "@/lib/employees-constants";
 import { useTableTheme } from "@/hooks/use-table-theme";
+import { useAzureSummariesContext } from "@/hooks/use-azure-summaries";
 import type { EmployeeItem } from "@/server/routers/ITSM/employees";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -89,6 +90,62 @@ function AvatarRenderer(params: ICellRendererParams<EmployeeItem>) {
 				fallback={data.name?.[0]?.toUpperCase() ?? "?"}
 			/>
 		</div>
+	);
+}
+
+function useRowAccess(email: string | null) {
+	const { map, register } = useAzureSummariesContext();
+	useEffect(() => {
+		if (email) register(email);
+	}, [email, register]);
+	return email ? map[email] : undefined;
+}
+
+function LicenseRenderer(params: ICellRendererParams<EmployeeItem>) {
+	const summary = useRowAccess(params.data?.email ?? null);
+	if (!summary) {
+		return (
+			<span className="inline-flex whitespace-nowrap font-mono text-sm text-muted-foreground">
+				…
+			</span>
+		);
+	}
+	const label = summary.licenseTypes.length
+		? summary.licenseTypes.join(", ")
+		: "No license";
+	return (
+		<span className="inline-flex whitespace-nowrap rounded-none bg-blue-100 px-2 py-0.5 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+			{label}
+		</span>
+	);
+}
+
+function EmailActiveRenderer(params: ICellRendererParams<EmployeeItem>) {
+	const summary = useRowAccess(params.data?.email ?? null);
+	if (!summary) {
+		return (
+			<span className="inline-flex whitespace-nowrap font-mono text-sm text-muted-foreground">
+				…
+			</span>
+		);
+	}
+	if (summary.emailActive === null) {
+		return (
+			<span className="inline-flex whitespace-nowrap font-mono text-sm text-muted-foreground">
+				Unknown
+			</span>
+		);
+	}
+	return (
+		<span
+			className={
+				summary.emailActive
+					? "inline-flex whitespace-nowrap rounded-none px-2 py-0.5 text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+					: "inline-flex whitespace-nowrap rounded-none px-2 py-0.5 text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+			}
+		>
+			{summary.emailActive ? "Active" : "Inactive"}
+		</span>
 	);
 }
 
@@ -167,6 +224,22 @@ export function EmployeesTable({
 				sortable: true,
 				filter: true,
 				valueFormatter: (params) => params.value ?? "-",
+			},
+			{
+				headerName: "License",
+				colId: "licenseType",
+				width: 200,
+				sortable: false,
+				filter: false,
+				cellRenderer: LicenseRenderer,
+			},
+			{
+				headerName: "Email Active",
+				colId: "emailActive",
+				width: 130,
+				sortable: false,
+				filter: false,
+				cellRenderer: EmailActiveRenderer,
 			},
 			{
 				headerName: "Type",

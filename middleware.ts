@@ -1,9 +1,21 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
-	const sessionToken = request.cookies.get("session_token")?.value;
+const SESSION_COOKIE_NAME = "session_token";
 
-	if (sessionToken) {
+export function middleware(request: NextRequest) {
+	const { pathname } = request.nextUrl;
+	const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+	const isAuthPage = pathname === "/auth";
+
+	if (!sessionToken && !isAuthPage) {
+		const url = new URL("/auth", request.url);
+		if (pathname !== "/") {
+			url.searchParams.set("next", pathname);
+		}
+		return NextResponse.redirect(url);
+	}
+
+	if (sessionToken && isAuthPage) {
 		return NextResponse.redirect(new URL("/app", request.url));
 	}
 
@@ -11,5 +23,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-	matcher: ["/auth"],
+	matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

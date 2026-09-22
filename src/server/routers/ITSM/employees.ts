@@ -1,7 +1,12 @@
 import { z } from "zod";
 
 import { protectedProcedure, router } from "@/server/trpc";
-import { getAzureUserDetails, type AzureUserDetails } from "@/lib/azure-graph";
+import {
+	getAzureUserDetails,
+	getAzureAccessSummaries,
+	type AzureUserDetails,
+} from "@/lib/azure-graph";
+import type { AzureAccessSummary } from "@/lib/azure-license-summary";
 
 type Row = unknown[];
 
@@ -68,6 +73,16 @@ export const employeesRouter = router({
 		.query(async ({ input }): Promise<{ azure: AzureUserDetails | null }> => {
 			const azure = await getAzureUserDetails(input.email);
 			return { azure };
+		}),
+
+	azureBatch: protectedProcedure
+		.input(
+			z.object({
+				emails: z.array(z.string().min(1)).min(1).max(100),
+			}),
+		)
+		.query(async ({ input }): Promise<Record<string, AzureAccessSummary>> => {
+			return getAzureAccessSummaries(input.emails);
 		}),
 
 	list: protectedProcedure.query(async ({ ctx }): Promise<EmployeeItem[]> => {

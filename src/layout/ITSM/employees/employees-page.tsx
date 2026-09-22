@@ -13,6 +13,7 @@ import {
 	filterModelParser,
 	employeeMatchesFilters,
 } from "@/lib/employees-filters";
+import { AzureSummariesProvider } from "@/hooks/use-azure-summaries";
 
 import { EmployeesGrid } from "./employees-grid";
 import { EmployeesTable } from "./employees-table";
@@ -56,82 +57,88 @@ export function EmployeesPage() {
 	};
 
 	return (
-		<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
-			<div className="flex min-w-0 flex-col gap-4">
-				<div className="flex flex-wrap items-center justify-between gap-3">
-					<div>
-						<h1 className="text-xl font-semibold tracking-tight">Employees</h1>
-						<p className="text-xs text-muted-foreground">
-							Employees ({isPending ? "…" : filtered.length})
-						</p>
+		<AzureSummariesProvider>
+			<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
+				<div className="flex min-w-0 flex-col gap-4">
+					<div className="flex flex-wrap items-center justify-between gap-3">
+						<div>
+							<h1 className="text-xl font-semibold tracking-tight">
+								Employees
+							</h1>
+							<p className="text-xs text-muted-foreground">
+								Employees ({isPending ? "…" : filtered.length})
+							</p>
+						</div>
+						<div className="flex items-center gap-2">
+							<div className="flex items-center overflow-hidden rounded-none border">
+								<button
+									type="button"
+									onClick={() => setView("table")}
+									title="Table view"
+									className={cn(
+										"flex size-8 items-center justify-center border-r transition-colors",
+										view === "table"
+											? "bg-primary text-primary-foreground"
+											: "bg-background text-muted-foreground hover:bg-muted",
+									)}
+								>
+									<Table2 className="size-4" />
+								</button>
+								<button
+									type="button"
+									onClick={() => setView("grid")}
+									title="Grid view"
+									className={cn(
+										"flex size-8 items-center justify-center transition-colors",
+										view === "grid"
+											? "bg-primary text-primary-foreground"
+											: "bg-background text-muted-foreground hover:bg-muted",
+									)}
+								>
+									<LayoutGrid className="size-4" />
+								</button>
+							</div>
+						</div>
 					</div>
-					<div className="flex items-center gap-2">
-						<div className="flex items-center overflow-hidden rounded-none border">
-							<button
-								type="button"
-								onClick={() => setView("table")}
-								title="Table view"
-								className={cn(
-									"flex size-8 items-center justify-center border-r transition-colors",
-									view === "table"
-										? "bg-primary text-primary-foreground"
-										: "bg-background text-muted-foreground hover:bg-muted",
-								)}
-							>
-								<Table2 className="size-4" />
-							</button>
-							<button
-								type="button"
-								onClick={() => setView("grid")}
-								title="Grid view"
-								className={cn(
-									"flex size-8 items-center justify-center transition-colors",
-									view === "grid"
-										? "bg-primary text-primary-foreground"
-										: "bg-background text-muted-foreground hover:bg-muted",
-								)}
-							>
-								<LayoutGrid className="size-4" />
-							</button>
+
+					<div className="flex min-w-0 flex-col gap-3">
+						<div className="flex w-full max-w-lg items-center gap-2 rounded-none border bg-background px-2.5 transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/50">
+							<Search
+								data-icon="inline-start"
+								className="size-4 shrink-0 text-muted-foreground"
+							/>
+							<Input
+								type="search"
+								value={query}
+								onChange={(e) => setQuery(e.target.value)}
+								placeholder="Search by name or code…"
+								className="h-8 border-0 pl-0 shadow-none focus-visible:ring-0"
+							/>
 						</div>
 					</div>
 				</div>
 
-				<div className="flex min-w-0 flex-col gap-3">
-					<div className="flex w-full max-w-lg items-center gap-2 rounded-none border bg-background px-2.5 transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/50">
-						<Search
-							data-icon="inline-start"
-							className="size-4 shrink-0 text-muted-foreground"
-						/>
-						<Input
-							type="search"
-							value={query}
-							onChange={(e) => setQuery(e.target.value)}
-							placeholder="Search by name or code…"
-							className="h-8 border-0 pl-0 shadow-none focus-visible:ring-0"
-						/>
+				{isPending ? (
+					<div className="flex flex-1 items-center justify-center">
+						<Loader2 className="size-6 animate-spin text-muted-foreground" />
 					</div>
-				</div>
+				) : filtered.length === 0 ? (
+					<div className="flex flex-1 flex-col items-center justify-center gap-2 border border-dashed py-16 text-center">
+						<p className="text-sm text-muted-foreground">
+							No employees found
+						</p>
+					</div>
+				) : view === "table" ? (
+					<EmployeesTable
+						employees={filtered}
+						onView={handleView}
+						filterModel={filterModel}
+						onFilterModelChange={setFilterModel}
+					/>
+				) : (
+					<EmployeesGrid employees={filtered} />
+				)}
 			</div>
-
-			{isPending ? (
-				<div className="flex flex-1 items-center justify-center">
-					<Loader2 className="size-6 animate-spin text-muted-foreground" />
-				</div>
-			) : filtered.length === 0 ? (
-				<div className="flex flex-1 flex-col items-center justify-center gap-2 border border-dashed py-16 text-center">
-					<p className="text-sm text-muted-foreground">No employees found</p>
-				</div>
-			) : view === "table" ? (
-				<EmployeesTable
-					employees={filtered}
-					onView={handleView}
-					filterModel={filterModel}
-					onFilterModelChange={setFilterModel}
-				/>
-			) : (
-				<EmployeesGrid employees={filtered} />
-			)}
-		</div>
+		</AzureSummariesProvider>
 	);
 }

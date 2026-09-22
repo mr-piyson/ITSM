@@ -1,5 +1,3 @@
-import type { AzureUserDetails } from "@/lib/azure-graph";
-
 export const LICENSE_SKU_LABELS: Record<string, string> = {
 	ENTERPRISEPACK: "Microsoft 365 E3",
 	ENTERPRISEPREMIUM: "Microsoft 365 E5",
@@ -29,9 +27,19 @@ const EXCHANGE_PLAN_NAMES = new Set([
 
 const ARCHIVE_PLAN_NAMES = new Set(["EXCHANGE_S_ARCHIVE", "EXCHANGE_ARCHIVE"]);
 
-function provisioningSucceeded(status: string): boolean {
-	return status === "Success";
-}
+type AzureServicePlan = {
+	servicePlanName: string;
+	provisioningStatus: string;
+};
+
+type AzureAccessUser = {
+	accountEnabled: boolean | null;
+	licenses: {
+		skuPartNumber: string;
+		servicePlans: AzureServicePlan[];
+	}[];
+	mailboxSettings?: { archiveStatus: string | null } | null;
+};
 
 export type AzureAccessSummary = {
 	licenseTypes: string[];
@@ -39,7 +47,11 @@ export type AzureAccessSummary = {
 	emailActive: boolean | null;
 };
 
-export function summarizeAzureAccess(azure: AzureUserDetails): AzureAccessSummary {
+function provisioningSucceeded(status: string): boolean {
+	return status === "Success";
+}
+
+export function summarizeAzureAccess(azure: AzureAccessUser): AzureAccessSummary {
 	const skus = new Set<string>();
 	let hasArchive = false;
 	let hasProvisionedExchange = false;
