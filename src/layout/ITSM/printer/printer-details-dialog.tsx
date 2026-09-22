@@ -2,10 +2,12 @@
 
 import {
 	History,
+	Info,
 	Loader2,
 	MapPin,
 	Pencil,
 	Plus,
+	Printer,
 	Trash2,
 	User,
 } from "lucide-react";
@@ -23,12 +25,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -123,10 +120,11 @@ export function PrinterDetailsDialog({
 						<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
 							{/* General Information */}
 							<Card className="gap-0">
-								<CardHeader className="pb-2">
+								<CardHeader className="flex ">
+									<Printer className="size-4 text-muted-foreground" />
 									<CardTitle>General Information</CardTitle>
 								</CardHeader>
-								<CardContent className="mt-auto space-y-4">
+								<CardContent>
 									<div className="flex items-start gap-4">
 										{imageUrl ? (
 											<img
@@ -185,7 +183,10 @@ export function PrinterDetailsDialog({
 							{detail.info && (
 								<Card className="gap-0">
 									<CardHeader className="pb-2">
-										<CardTitle>Printer Info</CardTitle>
+										<CardTitle className="flex items-center gap-1">
+											<Info className="size-4  text-muted-foreground" />
+											Printer Info
+										</CardTitle>
 									</CardHeader>
 									<CardContent className="mt-auto">
 										<div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
@@ -232,7 +233,10 @@ export function PrinterDetailsDialog({
 												label="Sensor Select"
 												value={detail.info.sensorSelect}
 											/>
-											<Row label="Print Method" value={detail.info.printMethod} />
+											<Row
+												label="Print Method"
+												value={detail.info.printMethod}
+											/>
 											<Row
 												label="Print Width"
 												value={
@@ -272,13 +276,11 @@ export function PrinterDetailsDialog({
 
 							{/* Printer Actions + Linked Toners/Rolls */}
 							<Card className="gap-0">
-								<CardHeader className="flex-row items-center justify-between gap-2 py-3">
-									<div className="flex items-center gap-1.5">
+								<CardHeader className="flex-row items-center justify-between gap-2 ">
+									<CardTitle className="flex items-center gap-1">
 										<History className="size-4 text-muted-foreground" />
-										<CardTitle>
-											Printer Actions ({detail.actions.length})
-										</CardTitle>
-									</div>
+										Printer Actions ({detail.actions.length})
+									</CardTitle>
 								</CardHeader>
 								<CardContent className="mt-auto space-y-4">
 									{detail.actions.length === 0 ? (
@@ -323,9 +325,7 @@ export function PrinterDetailsDialog({
 																		{action.itemName}
 																	</p>
 																)}
-															{action.note && (
-																<p>Note: {action.note}</p>
-															)}
+															{action.note && <p>Note: {action.note}</p>}
 															{(action.requestedBy || action.recievedBy) && (
 																<p>
 																	{action.requestedBy || "—"} →{" "}
