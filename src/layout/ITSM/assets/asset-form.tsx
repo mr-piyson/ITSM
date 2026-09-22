@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
 import { ChevronsUpDown, Loader2, RefreshCw, Upload } from "lucide-react";
@@ -45,6 +45,7 @@ import {
 	ASSET_TYPES,
 	assetImageUrl,
 } from "@/lib/assets-constants";
+import type { AssetPrefill } from "@/lib/asset-prefill";
 import type { AssetItem } from "@/server/routers/ITSM/assets";
 import { trpc } from "@/trpc/react";
 
@@ -124,13 +125,31 @@ type AssetFormDialogProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	asset: AssetItem | null;
+	prefill?: AssetPrefill | null;
 	onSuccess: () => void;
 };
+
+function mergePrefill(
+	prefill: AssetPrefill | null | undefined,
+): AssetFormValues {
+	if (!prefill) {
+		return emptyValues;
+	}
+	const result: AssetFormValues = { ...emptyValues };
+	for (const key of Object.keys(prefill) as (keyof AssetPrefill)[]) {
+		const value = prefill[key];
+		if (typeof value === "string") {
+			Object.assign(result, { [key]: value });
+		}
+	}
+	return result;
+}
 
 export function AssetFormDialog({
 	open,
 	onOpenChange,
 	asset,
+	prefill,
 	onSuccess,
 }: AssetFormDialogProps) {
 	return (
@@ -147,8 +166,9 @@ export function AssetFormDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<AssetFormContent
-					key={asset?.id ?? "new"}
+					key={`${asset?.id ?? "new"}-${prefill ? "prefill" : "plain"}`}
 					asset={asset}
+					prefill={prefill}
 					onSuccess={onSuccess}
 				/>
 			</DialogContent>
@@ -158,9 +178,11 @@ export function AssetFormDialog({
 
 function AssetFormContent({
 	asset,
+	prefill,
 	onSuccess,
 }: {
 	asset: AssetItem | null;
+	prefill?: AssetPrefill | null;
 	onSuccess: () => void;
 }) {
 	const { data: employees = [] } = trpc.assets.employees.useQuery();
@@ -195,7 +217,7 @@ function AssetFormContent({
 					specification: asset.specification ?? "",
 					image: asset.image ?? "",
 				}
-			: emptyValues,
+			: mergePrefill(prefill),
 		onSubmit: async ({ value }) => {
 			try {
 				if (asset) {
@@ -252,6 +274,24 @@ function AssetFormContent({
 			}
 		},
 	});
+
+	const autoCodeRan = useRef(false);
+	useEffect(() => {
+		if (asset || !prefill || autoCodeRan.current) {
+			return;
+		}
+		autoCodeRan.current = true;
+		if (form.state.values.code) {
+			return;
+		}
+		generateCodeMutation.mutate(undefined, {
+			onSuccess: ({ code }) => form.setFieldValue("code", code),
+			onError: (error) =>
+				toast.error(
+					error instanceof Error ? error.message : "Failed to generate code",
+				),
+		});
+	}, [asset, prefill]);
 
 	const handleGenerateCode = async () => {
 		try {

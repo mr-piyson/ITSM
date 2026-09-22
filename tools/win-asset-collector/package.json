@@ -1,0 +1,19 @@
+{
+	"name": "itsm-win-asset-collector",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"description": "Collects hardware info from a Windows PC and opens the ITSM 'Add New Asset' dialog prefilled.",
+	"scripts": {
+		"dev": "bun run src/index.ts",
+		"build": "bun run scripts/build.ts",
+		"build:win": "bun run scripts/build.ts --os win",
+		"build:mac": "bun run scripts/build.ts --os mac",
+		"build:linux": "bun run scripts/build.ts --os linux",
+		"typecheck": "bunx tsc --noEmit"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.2.19",
+		"typescript": "^5.9.3"
+	}
+}

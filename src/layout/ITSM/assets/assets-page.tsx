@@ -2,7 +2,7 @@
 
 import { LayoutGrid, Loader2, Plus, Search, Table2 } from "lucide-react";
 import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { ASSET_TYPES } from "@/lib/assets-constants";
+import { parseAssetPrefill, type AssetPrefill } from "@/lib/asset-prefill";
 import { cn } from "@/lib/utils";
 import type { AssetItem } from "@/server/routers/ITSM/assets";
 import { trpc } from "@/trpc/react";
@@ -102,9 +103,24 @@ export function AssetsPage() {
 			.withOptions({ history: "replace" }),
 	);
 	const [assetCode, setAssetCode] = useQueryState("asset", parseAsString);
+	const [newParam, setNewParam] = useQueryState("new", parseAsString);
 
 	const [formOpen, setFormOpen] = useState(false);
 	const [editingAsset, setEditingAsset] = useState<AssetItem | null>(null);
+	const [prefill, setPrefill] = useState<AssetPrefill | null>(null);
+
+	useEffect(() => {
+		if (!newParam) {
+			return;
+		}
+		const parsed = parseAssetPrefill(newParam);
+		if (parsed) {
+			setPrefill(parsed);
+			setEditingAsset(null);
+			setFormOpen(true);
+		}
+		setNewParam(null, { history: "replace" });
+	}, [newParam, setNewParam]);
 
 	const detailsAsset = useMemo(
 		() => assets.find((a) => a.code === assetCode) ?? null,
@@ -142,19 +158,29 @@ export function AssetsPage() {
 
 	const openAdd = () => {
 		setEditingAsset(null);
+		setPrefill(null);
 		setFormOpen(true);
 	};
 
 	const openEdit = (asset: AssetItem) => {
 		setEditingAsset(asset);
+		setPrefill(null);
 		setFormOpen(true);
 	};
 
 	const handleFormSuccess = () => {
 		setFormOpen(false);
 		setEditingAsset(null);
+		setPrefill(null);
 		utils.assets.list.invalidate();
 		utils.assets.byId.invalidate();
+	};
+
+	const handleFormOpenChange = (open: boolean) => {
+		setFormOpen(open);
+		if (!open) {
+			setPrefill(null);
+		}
 	};
 
 	const closeDetails = () => setAssetCode(null, { history: "replace" });
@@ -301,8 +327,9 @@ export function AssetsPage() {
 
 			<AssetFormDialog
 				open={formOpen}
-				onOpenChange={setFormOpen}
+				onOpenChange={handleFormOpenChange}
 				asset={editingAsset}
+				prefill={prefill}
 				onSuccess={handleFormSuccess}
 			/>
 
