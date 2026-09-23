@@ -1,3 +1,5 @@
+import { imageUrl } from "@/lib/images";
+
 export const ASSET_TYPES = [
 	"Desktop",
 	"Laptop",
@@ -134,13 +136,7 @@ export function assetTypeBadge(type?: string | null): string {
 }
 
 export function assetImageUrl(image?: string | null): string | null {
-	if (!image) {
-		return null;
-	}
-	if (/^https?:\/\//.test(image)) {
-		return image;
-	}
-	return `http://iss.bfginternational.com/ISS/itemsImages/${image}`;
+	return imageUrl(image);
 }
 
 export const ASSET_CODE_LENGTH = 10;

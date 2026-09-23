@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { imageUrl } from "@/lib/images";
 import {
 	modificationLabel,
 	pageLabel,
@@ -211,7 +212,7 @@ export function RequestDetailsDialog({
 								</span>
 								{/* eslint-disable-next-line @next/next/no-img-element */}
 								<img
-									src={`http://iss.bfginternational.com/ISS/itemsImages/${request.imagefilePath}`}
+									src={imageUrl(request.imagefilePath) ?? ""}
 									alt={`Request #${request.id} attachment`}
 									className="max-h-64 w-auto border object-contain"
 								/>

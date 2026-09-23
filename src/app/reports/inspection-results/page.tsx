@@ -60,6 +60,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTableTheme } from "@/hooks/use-tableTheme";
 import { buildAnalyticsCsv, downloadCsv } from "@/lib/csv-export";
+import { imageUrl } from "@/lib/images";
 import { trpc } from "@/trpc/react";
 
 import {
@@ -316,7 +317,7 @@ export default function ReportPage() {
 									{value && (
 										<Image
 											unoptimized
-											src={value.replace("http:/", "http://")}
+											src={imageUrl(value) ?? ""}
 											alt="Preview"
 											width={1200}
 											height={800}

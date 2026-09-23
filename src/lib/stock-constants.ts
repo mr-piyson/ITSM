@@ -1,3 +1,5 @@
+import { imageUrl } from "@/lib/images";
+
 export const LOW_STOCK_THRESHOLD = 3;
 
 // Mirrors the legacy ISS item category list (ISS/newItem.php)
@@ -8,13 +10,7 @@ export const ITEM_CATEGORIES = [
 ] as const;
 
 export function itemImageUrl(image?: string | null): string | null {
-	if (!image) {
-		return null;
-	}
-	if (/^https?:\/\//.test(image)) {
-		return image;
-	}
-	return `http://iss.bfginternational.com/ISS/itemsImages/${image}`;
+	return imageUrl(image);
 }
 
 export type StockStatus = "out" | "low" | "ok";
