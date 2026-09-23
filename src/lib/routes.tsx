@@ -6,6 +6,7 @@ import {
 	ClipboardList,
 	Clock,
 	Database,
+	Download,
 	FileSignature,
 	FileText,
 	HandHelping,
@@ -27,6 +28,9 @@ import {
 	Zap,
 	type LucideIcon,
 } from "lucide-react";
+import { LinuxIcon } from "@/assets/icons/LinuxIcon";
+import { MacIcon } from "@/assets/icons/MacIcon";
+import { WindowsIcon } from "@/assets/icons/WindowsIcon";
 
 export type RouteItem = {
 	title: string;
@@ -251,6 +255,27 @@ export const routes: {
 					title: "Mouse Tester Tool",
 					icon: Mouse,
 					href: "/tools/mouse-tester",
+				},
+				{
+					title: "Asset Collector",
+					icon: Download,
+					children: [
+						{
+							title: "Asset Collector — Windows",
+							icon: WindowsIcon,
+							href: "downloads/ITSM-AssetCollector.exe",
+						},
+						{
+							title: "Asset Collector — macOS",
+							icon: MacIcon,
+							href: "downloads/itsm-asset-collector-macos-arm64",
+						},
+						{
+							title: "Asset Collector — Linux",
+							icon: LinuxIcon,
+							href: "downloads/itsm-asset-collector-linux-x64",
+						},
+					],
 				},
 			],
 		},

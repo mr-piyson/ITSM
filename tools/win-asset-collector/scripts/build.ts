@@ -1,6 +1,10 @@
 import { readFileSync, writeFileSync } from "node:fs";
+import { copyFile, mkdir } from "node:fs/promises";
 
 const ROOT_ENV = new URL("../../../.env", import.meta.url).pathname;
+const PUBLIC_DOWNLOADS = new URL("../../../public/downloads/", import.meta.url)
+	.pathname;
+const DIST_DIR = new URL("../dist/", import.meta.url).pathname;
 
 // Bun < 1.4.2 ships a darwin-arm64 compile runtime whose adhoc signature is
 // rejected by macOS 26+/27 ("Killed: 9"). Pin the compiler so every target's
@@ -105,5 +109,12 @@ for (const target of targets) {
 		process.exit(exitCode);
 	}
 	console.log(`Built dist/${target.outfile}`);
+
+	await mkdir(PUBLIC_DOWNLOADS, { recursive: true });
+	await copyFile(
+		`${DIST_DIR}${target.outfile}`,
+		`${PUBLIC_DOWNLOADS}${target.outfile}`,
+	);
+	console.log(`Copied to public/downloads/${target.outfile}`);
 }
 console.log("\nAll targets built.");
