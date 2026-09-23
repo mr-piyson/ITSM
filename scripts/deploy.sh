@@ -17,6 +17,11 @@ log()   { echo -e "${GREEN}[DEPLOY]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 
+cleanup_on_error() {
+  echo ""
+  error "Deployment failed. The site is showing the maintenance page until the app is restored."
+}
+
 echo "========================================="
 echo "  ITSM Deployment Script"
 echo "========================================="
@@ -48,6 +53,8 @@ fi
 
 log "Pre-flight checks passed."
 echo ""
+
+trap cleanup_on_error ERR
 
 # --- Create systemd service if it doesn't exist ---
 if ! systemctl list-unit-files | grep -q "^${SERVICE_NAME}"; then
@@ -82,6 +89,37 @@ else
 fi
 echo ""
 
+# --- Apache maintenance page (served while the backend is down) ---
+if [ -f /etc/apache2/apache2.conf ]; then
+  MAINT_CONF="/etc/apache2/conf-available/itsm-maintenance.conf"
+
+  if [ ! -f "${MAINT_CONF}" ]; then
+    log "Creating Apache maintenance config: ${MAINT_CONF}"
+
+    sudo tee "${MAINT_CONF}" > /dev/null << EOF
+# ITSM maintenance page (managed by scripts/deploy.sh)
+Alias /maintenance.html ${APP_DIR}/public/maintenance.html
+ProxyPass /maintenance.html !
+<Files "maintenance.html">
+  Header set Cache-Control "no-cache, no-store, must-revalidate"
+</Files>
+ErrorDocument 502 /maintenance.html
+ErrorDocument 503 /maintenance.html
+EOF
+
+    sudo a2enconf itsm-maintenance > /dev/null
+    log "Apache maintenance config created and enabled."
+  else
+    log "Apache maintenance config already exists."
+  fi
+
+  sudo systemctl reload apache2
+  log "Maintenance page will be shown for all routes until the app is ready."
+else
+  warn "Apache not found. Skipping maintenance page setup (the app will show raw 502 errors during deploy)."
+fi
+echo ""
+
 # --- Stop service ---
 log "Stopping service..."
 sudo systemctl stop ${SERVICE_NAME} || true
@@ -105,6 +143,22 @@ log "Building application..."
 # --- Start service ---
 log "Starting service..."
 sudo systemctl start ${SERVICE_NAME}
+
+log "Waiting for application to become ready..."
+READY=0
+for _ in $(seq 1 60); do
+  CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${PORT}/" || true)"
+  case "${CODE}" in
+    2*|3*) READY=1; break;;
+  esac
+  sleep 1
+done
+
+if [ "${READY}" = "1" ]; then
+  log "Application is up and serving requests."
+else
+  error "Application did not become ready within 60s. Check: journalctl -u ${SERVICE_NAME} -f"
+fi
 
 echo ""
 log "========================================="
