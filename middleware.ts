@@ -8,11 +8,7 @@ export function middleware(request: NextRequest) {
 	const isAuthPage = pathname === "/auth";
 
 	if (!sessionToken && !isAuthPage) {
-		const url = new URL("/auth", request.url);
-		if (pathname !== "/") {
-			url.searchParams.set("next", pathname);
-		}
-		return NextResponse.redirect(url);
+		return NextResponse.redirect(new URL("/auth", request.url));
 	}
 
 	if (sessionToken && isAuthPage) {
