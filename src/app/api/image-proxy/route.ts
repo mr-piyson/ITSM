@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const INTRANET_BASE = process.env.INTRANET_URL || "http://intranet.bfginternational.com:88";
+const ISS_BASE = process.env.ISS_URL || "http://localhost";
 
 export async function GET(request: NextRequest) {
 	const url = request.nextUrl.searchParams.get("url");
@@ -17,9 +18,12 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json({ error: "Forbidden hostname" }, { status: 403 });
 		}
 
-		const targetUrl = parsed.hostname === "intranet.bfginternational.com"
-			? `${INTRANET_BASE}${parsed.pathname}`
-			: parsed.toString();
+		const targetUrl =
+			parsed.hostname === "intranet.bfginternational.com"
+				? `${INTRANET_BASE}${parsed.pathname}`
+				: parsed.hostname === "iss.bfginternational.com"
+					? `${ISS_BASE}${parsed.pathname}`
+					: parsed.toString();
 
 		const response = await fetch(targetUrl, {
 			redirect: "follow",
