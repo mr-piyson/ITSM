@@ -18,6 +18,11 @@ const IMAGE_SIGNATURES = [
 	{ ext: "jpg", signature: Buffer.from([0xff, 0xd8, 0xff]) },
 ] as const;
 
+const UPLOAD_DIRS: Record<string, string> = {
+	items: path.resolve(process.cwd(), "..", "ISS", "itemsImages"),
+	printers: path.resolve(process.cwd(), "..", "ISS", "printersImages"),
+};
+
 function sniffImageExtension(buffer: Buffer): string | null {
 	for (const { ext, signature } of IMAGE_SIGNATURES) {
 		if (
@@ -37,16 +42,29 @@ export async function POST(request: Request) {
 	}
 
 	let file: File | null = null;
+	let dir: string | null = null;
 	try {
 		const formData = await request.formData();
 		const value = formData.get("file");
 		file = value instanceof File ? value : null;
+		const dirValue = formData.get("dir");
+		dir =
+			typeof dirValue === "string" && dirValue.trim() !== ""
+				? dirValue
+				: "items";
 	} catch {
 		return NextResponse.json({ error: "Invalid upload" }, { status: 400 });
 	}
 
 	if (!file) {
 		return NextResponse.json({ error: "Missing file" }, { status: 400 });
+	}
+	const targetDir = UPLOAD_DIRS[dir];
+	if (!targetDir) {
+		return NextResponse.json(
+			{ error: "Invalid upload directory" },
+			{ status: 400 },
+		);
 	}
 	if (file.size === 0 || file.size > MAX_SIZE) {
 		return NextResponse.json(
@@ -69,9 +87,8 @@ export async function POST(request: Request) {
 
 	const hash = createHash("sha256").update(buffer).digest("hex");
 	const fileName = `${hash}.${extension}`;
-	const dir = path.resolve(process.cwd(), "..", "ISS", "itemsImages");
-	await mkdir(dir, { recursive: true });
-	await writeFile(path.join(dir, fileName), buffer);
+	await mkdir(targetDir, { recursive: true });
+	await writeFile(path.join(targetDir, fileName), buffer);
 
 	return NextResponse.json({ image: fileName });
 }

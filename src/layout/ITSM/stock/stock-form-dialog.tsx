@@ -26,6 +26,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { ITEM_CATEGORIES, itemImageUrl } from "@/lib/stock-constants";
+import { uploadImageFile } from "@/lib/upload-image";
 import type { StockItem } from "@/server/routers/ITSM/stock";
 import { trpc } from "@/trpc/react";
 
@@ -98,7 +99,6 @@ function StockFormContent({
 	item: StockItem | null;
 	onSuccess: () => void;
 }) {
-	const uploadImageMutation = trpc.stock.uploadImage.useMutation();
 	const createMutation = trpc.stock.create.useMutation();
 	const updateMutation = trpc.stock.update.useMutation();
 
@@ -173,25 +173,13 @@ function StockFormContent({
 		if (!file) {
 			return;
 		}
-		if (!file.type.startsWith("image/")) {
-			toast.error("Please choose an image file");
-			return;
-		}
 		setImageBusy(true);
 		try {
-			const dataUrl = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = () => resolve(String(reader.result));
-				reader.onerror = () => reject(new Error("Could not read the file"));
-				reader.readAsDataURL(file);
-			});
-			const { image } = await uploadImageMutation.mutateAsync({ dataUrl });
+			const image = await uploadImageFile(file);
 			form.setFieldValue("img", image);
 			toast.success("Image uploaded");
-		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : "Image upload failed",
-			);
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Image upload failed");
 		} finally {
 			setImageBusy(false);
 		}
@@ -327,12 +315,12 @@ function StockFormContent({
 						<input
 							id="stockItemImageInput"
 							type="file"
-							accept="image/*"
+							accept=".png,.jpg,.jpeg,image/png,image/jpeg"
 							className="hidden"
 							onChange={(e) => handleFile(e.target.files?.[0])}
 						/>
 						<p className="text-xs text-muted-foreground">
-							PNG, JPG or WebP up to 5 MB.
+							PNG, JPG or JPEG up to 5 MB.
 						</p>
 					</div>
 				</div>

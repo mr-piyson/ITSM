@@ -46,6 +46,7 @@ import {
 	assetImageUrl,
 } from "@/lib/assets-constants";
 import type { AssetPrefill } from "@/lib/asset-prefill";
+import { uploadImageFile } from "@/lib/upload-image";
 import type { AssetItem } from "@/server/routers/ITSM/assets";
 import { trpc } from "@/trpc/react";
 
@@ -307,37 +308,13 @@ function AssetFormContent({
 		if (!file) {
 			return;
 		}
-		const allowedTypes = ["image/png", "image/jpeg"];
-		const extMatches = /\.(png|jpe?g)$/i.test(file.name);
-		if (!allowedTypes.includes(file.type) || !extMatches) {
-			toast.error("Only PNG, JPG and JPEG images are supported");
-			return;
-		}
-		if (file.size === 0 || file.size > 5 * 1024 * 1024) {
-			toast.error("Image must be between 1 byte and 5 MB");
-			return;
-		}
 		setImageBusy(true);
 		try {
-			const formData = new FormData();
-			formData.append("file", file);
-			const response = await fetch("/api/upload", {
-				method: "POST",
-				body: formData,
-			});
-			const result = (await response.json()) as {
-				image?: string;
-				error?: string;
-			};
-			if (!response.ok || !result.image) {
-				throw new Error(result.error ?? "Image upload failed");
-			}
-			form.setFieldValue("image", result.image);
+			const image = await uploadImageFile(file);
+			form.setFieldValue("image", image);
 			toast.success("Image uploaded");
-		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : "Image upload failed",
-			);
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : "Image upload failed");
 		} finally {
 			setImageBusy(false);
 		}

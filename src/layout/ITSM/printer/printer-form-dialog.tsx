@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { printerImageUrl } from "@/lib/printer-constants";
+import { uploadImageFile } from "@/lib/upload-image";
 import type { PrinterItem } from "@/server/routers/ITSM/printers";
 import { trpc } from "@/trpc/react";
 
@@ -94,7 +95,6 @@ function PrinterFormContent({
 	printer: PrinterItem | null;
 	onSuccess: () => void;
 }) {
-	const uploadImageMutation = trpc.printers.uploadImage.useMutation();
 	const createMutation = trpc.printers.create.useMutation();
 	const updateMutation = trpc.printers.update.useMutation();
 
@@ -160,19 +160,9 @@ function PrinterFormContent({
 		if (!file) {
 			return;
 		}
-		if (!file.type.startsWith("image/")) {
-			toast.error("Please choose an image file");
-			return;
-		}
 		setImageBusy(true);
 		try {
-			const dataUrl = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = () => resolve(String(reader.result));
-				reader.onerror = () => reject(new Error("Could not read the file"));
-				reader.readAsDataURL(file);
-			});
-			const { image } = await uploadImageMutation.mutateAsync({ dataUrl });
+			const image = await uploadImageFile(file, "printers");
 			form.setFieldValue("img", image);
 			toast.success("Image uploaded");
 		} catch (error) {
@@ -368,12 +358,12 @@ function PrinterFormContent({
 						<input
 							id="printerImageInput"
 							type="file"
-							accept="image/*"
+							accept=".png,.jpg,.jpeg,image/png,image/jpeg"
 							className="hidden"
 							onChange={(e) => handleFile(e.target.files?.[0])}
 						/>
 						<p className="text-xs text-muted-foreground">
-							PNG, JPG or WebP up to 5 MB.
+							PNG, JPG or JPEG up to 5 MB.
 						</p>
 					</div>
 				</div>

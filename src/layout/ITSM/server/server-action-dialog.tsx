@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { SERVER_ACTION_TYPES, serverImageUrl } from "@/lib/server-constants";
+import { uploadImageFile } from "@/lib/upload-image";
 import type { ServerItem } from "@/server/routers/ITSM/servers";
 import { trpc } from "@/trpc/react";
 
@@ -58,7 +59,6 @@ export function ServerActionDialog({
 	onSuccess,
 }: ServerActionDialogProps) {
 	const addActionMutation = trpc.servers.addAction.useMutation();
-	const uploadImageMutation = trpc.servers.uploadActionImage.useMutation();
 
 	const [imageBusy, setImageBusy] = useState(false);
 	const [image, setImage] = useState("");
@@ -100,21 +100,9 @@ export function ServerActionDialog({
 		if (!file) {
 			return;
 		}
-		if (!file.type.startsWith("image/")) {
-			toast.error("Please choose an image file");
-			return;
-		}
 		setImageBusy(true);
 		try {
-			const dataUrl = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = () => resolve(String(reader.result));
-				reader.onerror = () => reject(new Error("Could not read the file"));
-				reader.readAsDataURL(file);
-			});
-			const { image: uploaded } = await uploadImageMutation.mutateAsync({
-				dataUrl,
-			});
+			const uploaded = await uploadImageFile(file);
 			setImage(uploaded);
 			toast.success("Image uploaded");
 		} catch (error) {
@@ -295,12 +283,12 @@ export function ServerActionDialog({
 								<input
 									id="serverActionImageInput"
 									type="file"
-									accept="image/*"
+									accept=".png,.jpg,.jpeg,image/png,image/jpeg"
 									className="hidden"
 									onChange={(e) => handleFile(e.target.files?.[0])}
 								/>
 								<p className="text-xs text-muted-foreground">
-									PNG, JPG or WebP up to 5 MB.
+									PNG, JPG or JPEG up to 5 MB.
 								</p>
 							</div>
 						</div>

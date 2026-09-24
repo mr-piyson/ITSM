@@ -35,6 +35,7 @@ import {
 	serverImageUrl,
 	type MaintenancePeriod,
 } from "@/lib/server-constants";
+import { uploadImageFile } from "@/lib/upload-image";
 import type { ServerItem } from "@/server/routers/ITSM/servers";
 import { trpc } from "@/trpc/react";
 
@@ -155,7 +156,6 @@ function ServerFormContent({
 	server: ServerItem | null;
 	onSuccess: () => void;
 }) {
-	const uploadImageMutation = trpc.servers.uploadImage.useMutation();
 	const createMutation = trpc.servers.create.useMutation();
 	const updateMutation = trpc.servers.update.useMutation();
 
@@ -243,19 +243,9 @@ function ServerFormContent({
 		if (!file) {
 			return;
 		}
-		if (!file.type.startsWith("image/")) {
-			toast.error("Please choose an image file");
-			return;
-		}
 		setImageBusy(true);
 		try {
-			const dataUrl = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = () => resolve(String(reader.result));
-				reader.onerror = () => reject(new Error("Could not read the file"));
-				reader.readAsDataURL(file);
-			});
-			const { image } = await uploadImageMutation.mutateAsync({ dataUrl });
+			const image = await uploadImageFile(file);
 			form.setFieldValue("image", image);
 			toast.success("Image uploaded");
 		} catch (error) {
@@ -812,12 +802,12 @@ function ServerFormContent({
 								<input
 									id="serverImageInput"
 									type="file"
-									accept="image/*"
+									accept=".png,.jpg,.jpeg,image/png,image/jpeg"
 									className="hidden"
 									onChange={(e) => handleFile(e.target.files?.[0])}
 								/>
 								<p className="text-xs text-muted-foreground">
-									PNG, JPG or WebP up to 5 MB.
+									PNG, JPG or JPEG up to 5 MB.
 								</p>
 							</div>
 						</div>

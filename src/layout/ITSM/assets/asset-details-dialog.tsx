@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { assetImageUrl, assetTypeBadge } from "@/lib/assets-constants";
+import { uploadImageFile } from "@/lib/upload-image";
 import { cn } from "@/lib/utils";
 import type { AssetItem } from "@/server/routers/ITSM/assets";
 import { trpc } from "@/trpc/react";
@@ -71,38 +72,16 @@ export function AssetDetailsDialog({
 		if (!file) {
 			return;
 		}
-		const allowedTypes = ["image/png", "image/jpeg"];
-		const extMatches = /\.(png|jpe?g)$/i.test(file.name);
-		if (!allowedTypes.includes(file.type) || !extMatches) {
-			toast.error("Only PNG, JPG and JPEG images are supported");
-			return;
-		}
-		if (file.size === 0 || file.size > 5 * 1024 * 1024) {
-			toast.error("Image must be between 1 byte and 5 MB");
-			return;
-		}
 		if (!asset) {
 			return;
 		}
 		setImageDragOver(false);
 		setUploading(true);
 		try {
-			const formData = new FormData();
-			formData.append("file", file);
-			const response = await fetch("/api/upload", {
-				method: "POST",
-				body: formData,
-			});
-			const result = (await response.json()) as {
-				image?: string;
-				error?: string;
-			};
-			if (!response.ok || !result.image) {
-				throw new Error(result.error ?? "Image upload failed");
-			}
+			const image = await uploadImageFile(file);
 			await updateImageMutation.mutateAsync({
 				id: asset.id,
-				data: { image: result.image },
+				data: { image },
 			});
 			await Promise.all([
 				utils.assets.byId.invalidate(),

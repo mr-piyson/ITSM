@@ -23,6 +23,7 @@ import {
 } from "@/lib/vendor-constants";
 import { ResponsiveOverlay } from "@/layout/ITSM/contracts/responsive-overlay";
 import type { Vendor } from "@/server/routers/ITSM/vendors";
+import { uploadImageFile } from "@/lib/upload-image";
 import { trpc } from "@/trpc/react";
 
 export type CreatedVendor = {
@@ -70,7 +71,6 @@ function VendorFormContent({
 	onCreated,
 }: VendorFormDialogProps) {
 	const utils = trpc.useUtils();
-	const uploadImageMutation = trpc.vendors.uploadImage.useMutation();
 	const createMutation = trpc.vendors.create.useMutation();
 	const updateMutation = trpc.vendors.update.useMutation();
 
@@ -169,21 +169,9 @@ function VendorFormContent({
 		if (!file) {
 			return;
 		}
-		if (!file.type.startsWith("image/")) {
-			toast.error("Please choose an image file");
-			return;
-		}
 		setImageBusy(true);
 		try {
-			const dataUrl = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = () => resolve(String(reader.result));
-				reader.onerror = () => reject(new Error("Could not read the file"));
-				reader.readAsDataURL(file);
-			});
-			const { image: uploaded } = await uploadImageMutation.mutateAsync({
-				dataUrl,
-			});
+			const uploaded = await uploadImageFile(file);
 			setImage(uploaded);
 			toast.success("Logo uploaded");
 		} catch (error) {
@@ -281,7 +269,7 @@ function VendorFormContent({
 							<input
 								ref={fileInputRef}
 								type="file"
-								accept="image/*"
+								accept=".png,.jpg,.jpeg,image/png,image/jpeg"
 								className="hidden"
 								onChange={(e) => {
 									void handleFile(e.target.files?.[0]);
@@ -289,7 +277,7 @@ function VendorFormContent({
 								}}
 							/>
 							<p className="text-xs text-muted-foreground">
-								PNG, JPG or WebP up to 5 MB.
+								PNG, JPG or JPEG up to 5 MB.
 							</p>
 						</div>
 					</div>

@@ -1,7 +1,3 @@
-import { randomBytes } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
@@ -387,32 +383,5 @@ export const printersRouter = router({
 			);
 
 			return { success: true, id: result.insertId };
-		}),
-
-	uploadImage: protectedProcedure
-		.input(z.object({ dataUrl: z.string().min(1) }))
-		.mutation(async ({ input }): Promise<{ image: string }> => {
-			const match =
-				/^data:image\/(png|jpeg|jpg|gif|bmp|webp);base64,(.+)$/i.exec(
-					input.dataUrl,
-				);
-			if (!match) {
-				throw new Error("Invalid image data");
-			}
-
-			const [, mimeType, base64] = match;
-			const extension = mimeType.toLowerCase() === "jpeg" ? "jpg" : mimeType;
-			const buffer = Buffer.from(base64, "base64");
-
-			if (buffer.byteLength === 0 || buffer.byteLength > 5 * 1024 * 1024) {
-				throw new Error("Image must be between 1 byte and 5 MB");
-			}
-
-			const fileName = `printer-${Date.now()}-${randomBytes(6).toString("hex")}.${extension}`;
-			const dir = path.join(process.cwd(), "ISS", "printersImages");
-			await mkdir(dir, { recursive: true });
-			await writeFile(path.join(dir, fileName), buffer);
-
-			return { image: fileName };
 		}),
 });
