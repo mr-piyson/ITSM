@@ -74,8 +74,8 @@ function getWorkingMonthRange(year: number, month: number) {
 	const prevMonth = month === 1 ? 12 : month - 1;
 	const prevYear = month === 1 ? year - 1 : year;
 	const startDate = new Date(prevYear, prevMonth - 1, 23);
-	const endDate = new Date(year, month - 1, 22);
-	return { startDate, endDate, prevYear, prevMonth };
+	const endExclusive = new Date(year, month - 1, 23);
+	return { startDate, endExclusive, prevYear, prevMonth };
 }
 
 function buildVlogTableName(year: number, month: number): string {
@@ -158,10 +158,8 @@ export const attendanceRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }): Promise<AttendanceLog[]> => {
-			const { prevYear, prevMonth, startDate, endDate } = getWorkingMonthRange(
-				input.year,
-				input.month,
-			);
+			const { prevYear, prevMonth, startDate, endExclusive } =
+				getWorkingMonthRange(input.year, input.month);
 
 			const prevTable = buildVlogTableName(prevYear, prevMonth);
 			const curTable = buildVlogTableName(input.year, input.month);
@@ -181,7 +179,7 @@ export const attendanceRouter = router({
 				}))
 				.filter((log) => {
 					const ts = log.datetime.getTime();
-					return ts >= startDate.getTime() && ts <= endDate.getTime();
+					return ts >= startDate.getTime() && ts < endExclusive.getTime();
 				});
 		}),
 
@@ -194,10 +192,8 @@ export const attendanceRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }): Promise<AttendanceSummary> => {
-			const { startDate, endDate, prevYear, prevMonth } = getWorkingMonthRange(
-				input.year,
-				input.month,
-			);
+			const { startDate, endExclusive, prevYear, prevMonth } =
+				getWorkingMonthRange(input.year, input.month);
 
 			const prevTable = buildVlogTableName(prevYear, prevMonth);
 			const curTable = buildVlogTableName(input.year, input.month);
@@ -217,7 +213,7 @@ export const attendanceRouter = router({
 				}))
 				.filter((log) => {
 					const ts = log.datetime.getTime();
-					return ts >= startDate.getTime() && ts <= endDate.getTime();
+					return ts >= startDate.getTime() && ts < endExclusive.getTime();
 				});
 
 			const [empRows] = await ctx.db.mes.execute<Row[]>(
@@ -261,7 +257,7 @@ export const attendanceRouter = router({
 			const todayStr = toDateString(today);
 
 			const cursor = new Date(startDate);
-			while (cursor <= endDate) {
+			while (cursor < endExclusive) {
 				const dateStr = toDateString(cursor);
 				const dow = cursor.getDay();
 				const isWeekend = dow === 5 || dow === 6;
