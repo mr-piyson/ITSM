@@ -196,7 +196,7 @@
 					<path d="M21 12a9 9 0 1 1-2.64-6.36" />
 					<path d="M21 3v6h-6" />
 				</svg>
-				Refreshing automatically in <span id="countdown">10</span>s
+				Refreshing automatically in <span id="countdown">30</span>s
 			</p>
 			<p class="foot">IT Service Management &mdash; BFG International</p>
 		</main>
@@ -204,7 +204,7 @@
 			(() => {
 				const el = document.getElementById("countdown");
 				if (!el) return;
-				let s = 10;
+				let s = 30;
 				setInterval(() => {
 					s -= 1;
 					el.textContent = String(s);
