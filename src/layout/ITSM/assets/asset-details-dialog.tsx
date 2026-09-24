@@ -1,6 +1,8 @@
 "use client";
 
-import { BadgeCheck, Loader2, Pencil, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+
+import { BadgeCheck, ImageUp, Loader2, Pencil, Trash2 } from "lucide-react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 
@@ -58,6 +60,58 @@ export function AssetDetailsDialog({
 		{ enabled: !!asset },
 	);
 	const deleteMutation = trpc.assets.delete.useMutation();
+	const utils = trpc.useUtils();
+	const uploadImageMutation = trpc.assets.uploadImage.useMutation();
+	const updateImageMutation = trpc.assets.update.useMutation();
+
+	const imageInputRef = useRef<HTMLInputElement>(null);
+	const [uploading, setUploading] = useState(false);
+	const [imageDragOver, setImageDragOver] = useState(false);
+
+	const handleFile = async (file?: File | null) => {
+		if (!file) {
+			return;
+		}
+		const allowedTypes = ["image/png", "image/jpeg"];
+		const extMatches = /\.(png|jpe?g)$/i.test(file.name);
+		if (!allowedTypes.includes(file.type) || !extMatches) {
+			toast.error("Only PNG, JPG and JPEG images are supported");
+			return;
+		}
+		if (file.size > 5 * 1024 * 1024) {
+			toast.error("Image must be 5 MB or smaller");
+			return;
+		}
+		if (!asset) {
+			return;
+		}
+		setImageDragOver(false);
+		setUploading(true);
+		try {
+			const dataUrl = await new Promise<string>((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onload = () => resolve(String(reader.result));
+				reader.onerror = () => reject(new Error("Could not read the file"));
+				reader.readAsDataURL(file);
+			});
+			const { image } = await uploadImageMutation.mutateAsync({ dataUrl });
+			await updateImageMutation.mutateAsync({
+				id: asset.id,
+				data: { image },
+			});
+			await Promise.all([
+				utils.assets.byId.invalidate(),
+				utils.assets.list.invalidate(),
+			]);
+			toast.success("Asset image updated");
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Image upload failed",
+			);
+		} finally {
+			setUploading(false);
+		}
+	};
 
 	const handleDelete = async () => {
 		if (!asset) {
@@ -108,17 +162,58 @@ export function AssetDetailsDialog({
 					<div className="space-y-5">
 						{/* Header */}
 						<div className="flex items-start gap-4">
-							{imageUrl ? (
-								<img
-									src={imageUrl}
-									alt={detail.code}
-									className="h-28 w-36 shrink-0 object-contain"
-								/>
-							) : (
-								<div className="flex h-28 w-36 shrink-0 items-center justify-center border bg-muted text-xs text-muted-foreground">
-									No image
+							<div
+								className="group relative h-28 w-36 shrink-0 cursor-pointer overflow-hidden border bg-muted"
+								title="Click or drop a PNG/JPG/JPEG to replace the image"
+								onDragOver={(e) => {
+									e.preventDefault();
+									setImageDragOver(true);
+								}}
+								onDragLeave={() => setImageDragOver(false)}
+								onDrop={(e) => {
+									e.preventDefault();
+									handleFile(e.dataTransfer.files?.[0]);
+								}}
+								onClick={() => imageInputRef.current?.click()}
+							>
+								{imageUrl ? (
+									<img
+										src={imageUrl}
+										alt={detail.code}
+										className="h-full w-full object-contain"
+									/>
+								) : (
+									<div className="flex h-full w-full items-center justify-center bg-muted text-xs text-muted-foreground">
+										No image
+									</div>
+								)}
+								{uploading && (
+									<div className="absolute inset-0 z-10 flex items-center justify-center bg-background/70">
+										<Loader2 className="size-5 animate-spin text-muted-foreground" />
+									</div>
+								)}
+								<div
+									className={cn(
+										"pointer-events-none absolute inset-0 z-10 flex items-center justify-center gap-1 text-xs font-medium transition-all",
+										imageDragOver
+											? "bg-primary/20 text-primary"
+											: "bg-black/50 text-white opacity-0 group-hover:opacity-100",
+									)}
+								>
+									<ImageUp className="size-4" />
+									{imageDragOver ? "Drop image to replace" : "Replace image"}
 								</div>
-							)}
+							</div>
+							<input
+								ref={imageInputRef}
+								type="file"
+								accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+								className="hidden"
+								onChange={(e) => {
+									handleFile(e.target.files?.[0]);
+									e.target.value = "";
+								}}
+							/>
 							<div className="min-w-0 flex-1 space-y-1.5">
 								<div className="flex flex-wrap items-center gap-2">
 									<span
