@@ -1,7 +1,4 @@
 import { execFile } from "node:child_process";
-import { createHash } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { promisify } from "node:util";
 
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
@@ -142,25 +139,6 @@ function toString(value: unknown): string | null {
 		return null;
 	}
 	return String(value);
-}
-
-function sniffImageExtension(buffer: Buffer): string | null {
-	const signatures = [
-		{
-			ext: "png",
-			signature: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-		},
-		{ ext: "jpg", signature: Buffer.from([0xff, 0xd8, 0xff]) },
-	];
-	for (const { ext, signature } of signatures) {
-		if (
-			buffer.length >= signature.length &&
-			buffer.subarray(0, signature.length).equals(signature)
-		) {
-			return ext;
-		}
-	}
-	return null;
 }
 
 function normalizeAsset(row: AssetRow): AssetItem {
@@ -437,41 +415,6 @@ export const assetsRouter = router({
 			}));
 		},
 	),
-
-	uploadImage: protectedProcedure
-		.input(z.object({ dataUrl: z.string().min(1) }))
-		.mutation(async ({ input }): Promise<{ image: string }> => {
-			const match = /^data:image\/(png|jpeg|jpg);base64,(.+)$/i.exec(
-				input.dataUrl,
-			);
-			if (!match) {
-				throw new Error(
-					"Invalid image data. Only PNG, JPG and JPEG are supported.",
-				);
-			}
-
-			const base64 = match[2];
-			const buffer = Buffer.from(base64, "base64");
-
-			if (buffer.byteLength === 0 || buffer.byteLength > 5 * 1024 * 1024) {
-				throw new Error("Image must be between 1 byte and 5 MB");
-			}
-
-			const extension = sniffImageExtension(buffer);
-			if (!extension) {
-				throw new Error(
-					"Unsupported image format. Only PNG, JPG and JPEG are supported.",
-				);
-			}
-
-			const hash = createHash("sha256").update(buffer).digest("hex");
-			const fileName = `${hash}.${extension}`;
-			const dir = path.resolve(process.cwd(), "..", "ISS", "itemsImages");
-			await mkdir(dir, { recursive: true });
-			await writeFile(path.join(dir, fileName), buffer);
-
-			return { image: fileName };
-		}),
 
 	ping: protectedProcedure
 		.input(

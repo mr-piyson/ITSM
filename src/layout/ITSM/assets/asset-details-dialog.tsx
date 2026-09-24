@@ -61,7 +61,6 @@ export function AssetDetailsDialog({
 	);
 	const deleteMutation = trpc.assets.delete.useMutation();
 	const utils = trpc.useUtils();
-	const uploadImageMutation = trpc.assets.uploadImage.useMutation();
 	const updateImageMutation = trpc.assets.update.useMutation();
 
 	const imageInputRef = useRef<HTMLInputElement>(null);
@@ -78,8 +77,8 @@ export function AssetDetailsDialog({
 			toast.error("Only PNG, JPG and JPEG images are supported");
 			return;
 		}
-		if (file.size > 5 * 1024 * 1024) {
-			toast.error("Image must be 5 MB or smaller");
+		if (file.size === 0 || file.size > 5 * 1024 * 1024) {
+			toast.error("Image must be between 1 byte and 5 MB");
 			return;
 		}
 		if (!asset) {
@@ -88,16 +87,22 @@ export function AssetDetailsDialog({
 		setImageDragOver(false);
 		setUploading(true);
 		try {
-			const dataUrl = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = () => resolve(String(reader.result));
-				reader.onerror = () => reject(new Error("Could not read the file"));
-				reader.readAsDataURL(file);
+			const formData = new FormData();
+			formData.append("file", file);
+			const response = await fetch("/api/upload", {
+				method: "POST",
+				body: formData,
 			});
-			const { image } = await uploadImageMutation.mutateAsync({ dataUrl });
+			const result = (await response.json()) as {
+				image?: string;
+				error?: string;
+			};
+			if (!response.ok || !result.image) {
+				throw new Error(result.error ?? "Image upload failed");
+			}
 			await updateImageMutation.mutateAsync({
 				id: asset.id,
-				data: { image },
+				data: { image: result.image },
 			});
 			await Promise.all([
 				utils.assets.byId.invalidate(),

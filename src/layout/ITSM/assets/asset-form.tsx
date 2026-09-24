@@ -187,7 +187,6 @@ function AssetFormContent({
 }) {
 	const { data: employees = [] } = trpc.assets.employees.useQuery();
 	const generateCodeMutation = trpc.assets.generateCode.useMutation();
-	const uploadImageMutation = trpc.assets.uploadImage.useMutation();
 	const createMutation = trpc.assets.create.useMutation();
 	const updateMutation = trpc.assets.update.useMutation();
 
@@ -308,20 +307,32 @@ function AssetFormContent({
 		if (!file) {
 			return;
 		}
-		if (!file.type.startsWith("image/")) {
-			toast.error("Please choose an image file");
+		const allowedTypes = ["image/png", "image/jpeg"];
+		const extMatches = /\.(png|jpe?g)$/i.test(file.name);
+		if (!allowedTypes.includes(file.type) || !extMatches) {
+			toast.error("Only PNG, JPG and JPEG images are supported");
+			return;
+		}
+		if (file.size === 0 || file.size > 5 * 1024 * 1024) {
+			toast.error("Image must be between 1 byte and 5 MB");
 			return;
 		}
 		setImageBusy(true);
 		try {
-			const dataUrl = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = () => resolve(String(reader.result));
-				reader.onerror = () => reject(new Error("Could not read the file"));
-				reader.readAsDataURL(file);
+			const formData = new FormData();
+			formData.append("file", file);
+			const response = await fetch("/api/upload", {
+				method: "POST",
+				body: formData,
 			});
-			const { image } = await uploadImageMutation.mutateAsync({ dataUrl });
-			form.setFieldValue("image", image);
+			const result = (await response.json()) as {
+				image?: string;
+				error?: string;
+			};
+			if (!response.ok || !result.image) {
+				throw new Error(result.error ?? "Image upload failed");
+			}
+			form.setFieldValue("image", result.image);
 			toast.success("Image uploaded");
 		} catch (error) {
 			toast.error(
@@ -806,12 +817,12 @@ function AssetFormContent({
 								<input
 									id="assetImageInput"
 									type="file"
-									accept="image/*"
+									accept=".png,.jpg,.jpeg,image/png,image/jpeg"
 									className="hidden"
 									onChange={(e) => handleFile(e.target.files?.[0])}
 								/>
 								<p className="text-xs text-muted-foreground">
-									PNG, JPG or WebP up to 5 MB.
+									PNG, JPG or JPEG up to 5 MB.
 								</p>
 							</div>
 						</div>
