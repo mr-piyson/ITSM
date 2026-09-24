@@ -15,7 +15,13 @@
 
 # next.js
 /.next/
+/.next-deploy/
+/.next-old/
 /out/
+
+# deploy
+/deploy.log
+/deploy.pid
 
 # production
 /build

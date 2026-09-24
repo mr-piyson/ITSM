@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -E
 
 APP_NAME="itsm"
 SERVICE_NAME="${APP_NAME}.service"
@@ -15,12 +16,27 @@ NC='\033[0m'
 
 log()   { echo -e "${GREEN}=>${NC} $1"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
-error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
+error() { echo -e "${RED}[ERROR]${NC} $1"; echo "DEPLOY_FAILED" >&2; exit 1; }
 
-cleanup_on_error() {
+rollback_or_fail() {
   echo ""
-  error "Deployment failed. The site is showing the maintenance page until the app is restored."
+  if [ -d "${APP_DIR}/.next-old" ]; then
+    warn "Deployment failed. Restoring previous build..."
+    sudo systemctl stop ${SERVICE_NAME} || true
+    rm -rf "${APP_DIR}/.next"
+    mv "${APP_DIR}/.next-old" "${APP_DIR}/.next"
+    sudo systemctl start ${SERVICE_NAME} || true
+    warn "Previous build restored. Logs: journalctl -u ${SERVICE_NAME} -f"
+  else
+    error "Deployment failed. The previously running build was left untouched."
+  fi
+  echo "DEPLOY_FAILED" >&2
+  exit 1
 }
+
+trap rollback_or_fail ERR
+
+echo "$$" > "${APP_DIR}/deploy.pid" 2>/dev/null || true
 
 echo "========================================="
 echo "  ITSM Deployment Script"
@@ -53,8 +69,6 @@ fi
 
 log "Pre-flight checks passed."
 echo ""
-
-trap cleanup_on_error ERR
 
 # --- Create systemd service if it doesn't exist ---
 if ! systemctl list-unit-files | grep -q "^${SERVICE_NAME}"; then
@@ -120,11 +134,7 @@ else
 fi
 echo ""
 
-# --- Stop service ---
-log "Stopping service..."
-sudo systemctl stop ${SERVICE_NAME} || true
-
-# --- Update application ---
+# --- Pull application source ---
 log "Pulling latest changes..."
 cd "${APP_DIR}"
 git reset --hard HEAD
@@ -133,14 +143,20 @@ git pull origin main
 log "Installing dependencies..."
 "${BUN_BIN}" install --frozen-lockfile
 
-log "Cleaning previous build..."
-rm -rf "${APP_DIR}/.next"
+# --- Build to a staging directory while the old app keeps serving ---
+log "Building to staging directory (.next-deploy)..."
+rm -rf "${APP_DIR}/.next-deploy"
 rm -rf "${APP_DIR}/.env.local"
 
-log "Building application..."
-"${BUN_BIN}" run build
+NEXT_DIST_DIR=".next-deploy" "${BUN_BIN}" run build
 
-# --- Start service ---
+# --- Atomic swap & restart (downtime is only these three commands) ---
+log "Stopping service and swapping build... (downtime starts now)"
+sudo systemctl stop ${SERVICE_NAME} || true
+
+mv "${APP_DIR}/.next" "${APP_DIR}/.next-old"
+mv "${APP_DIR}/.next-deploy" "${APP_DIR}/.next"
+
 log "Starting service..."
 sudo systemctl start ${SERVICE_NAME}
 
@@ -156,8 +172,31 @@ done
 
 if [ "${READY}" = "1" ]; then
   log "Application is up and serving requests."
+  rm -rf "${APP_DIR}/.next-old"
 else
-  error "Application did not become ready within 60s. Check: journalctl -u ${SERVICE_NAME} -f"
+  warn "New build did not become ready within 60s. Restoring previous build..."
+  sudo systemctl stop ${SERVICE_NAME} || true
+  rm -rf "${APP_DIR}/.next"
+  mv "${APP_DIR}/.next-old" "${APP_DIR}/.next"
+  sudo systemctl start ${SERVICE_NAME} || true
+
+  log "Waiting for restored application to become ready..."
+  RESTORED=0
+  for _ in $(seq 1 60); do
+    CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${PORT}/" || true)"
+    case "${CODE}" in
+      2*|3*) RESTORED=1; break;;
+    esac
+    sleep 1
+  done
+
+  if [ "${RESTORED}" = "1" ]; then
+    warn "Previous build was restored and is serving requests. New build rejected."
+  else
+    error "Previous build also failed to start. Check: journalctl -u ${SERVICE_NAME} -f"
+  fi
+  echo "DEPLOY_FAILED" >&2
+  exit 1
 fi
 
 echo ""
@@ -170,3 +209,4 @@ sudo systemctl status ${SERVICE_NAME} --no-pager || true
 log ""
 log "App running at: http://localhost:${PORT}"
 log "Logs: journalctl -u ${SERVICE_NAME} -f"
+echo "DEPLOY_SUCCESS"
