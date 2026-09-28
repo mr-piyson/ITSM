@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
 }
 
 model assestOwnerUpdateLogs {
@@ -13,7 +13,7 @@ model assestOwnerUpdateLogs {
   oldOwnerEmpID Int
   oldOwnerText  String?  @db.VarChar(100)
   newOwnerID    Int
-  date          DateTime @db.Timestamp(0)
+  date          DateTime @db.DateTime(0)
   assetID       Int
 }
 
@@ -26,7 +26,7 @@ model assetBooking {
   bookingPurpose String   @db.VarChar(100)
   status         String   @db.VarChar(100)
   user           Int
-  addedTime      DateTime @db.Timestamp(0)
+  addedTime      DateTime @db.DateTime(0)
   otherInfo      String?  @db.VarChar(100)
 }
 
@@ -57,13 +57,13 @@ model assets {
   purchasePrice  String?   @db.VarChar(50)
   warrantyDate   DateTime? @db.Date
   warrantyStatus String?   @db.VarChar(50)
-  verified       DateTime? @db.Timestamp(0)
+  verified       DateTime? @db.DateTime(0)
 }
 
 model changes_logs {
   id     Int      @id @default(autoincrement())
   userID Int
-  date   DateTime @db.Timestamp(0)
+  date   DateTime @db.DateTime(0)
   action String   @db.VarChar(50)
   node   String   @db.VarChar(50)
   nodeID Int
@@ -132,7 +132,7 @@ model items {
 model logins_logs {
   id            Int      @id @default(autoincrement())
   ip            String   @db.VarChar(50)
-  date          DateTime @db.Timestamp(0)
+  date          DateTime @db.DateTime(0)
   userID        Int
   login_success Boolean
 }
@@ -226,7 +226,7 @@ model purchase {
   paidDate       DateTime? @db.Date
   currency       String    @db.VarChar(50)
   user           Int
-  date           DateTime  @db.Timestamp(0)
+  date           DateTime  @db.DateTime(0)
   link           String    @db.Text
   ServiceType    Boolean
 }
@@ -250,7 +250,7 @@ model requestReplies {
   id        Int      @id @default(autoincrement())
   requestID Int
   reply     String   @db.Text
-  replyDate DateTime @db.Timestamp(0)
+  replyDate DateTime @db.DateTime(0)
   userID    Int
 }
 
@@ -265,7 +265,7 @@ model requests {
   descrip       String?   @db.Text
   imagefilePath String?   @db.VarChar(200)
   status        String?   @db.VarChar(50)
-  submitDate    DateTime? @db.Timestamp(0)
+  submitDate    DateTime? @db.DateTime(0)
   requestPrio   String?   @db.VarChar(50)
 }
 
@@ -273,7 +273,7 @@ model serverActions {
   id                Int      @id @default(autoincrement())
   serverID          Int
   actionType        String   @db.VarChar(100)
-  actionDate        DateTime @db.Timestamp(0)
+  actionDate        DateTime @db.DateTime(0)
   actionDescription String   @db.Text
   actionImage       String?  @db.VarChar(100)
   user              Int
@@ -317,8 +317,8 @@ model tapes {
   year        Int?
   status      String?   @db.VarChar(50)
   sequenceNum Int?
-  lastWritten DateTime? @db.Timestamp(0)
-  expire      DateTime? @db.Timestamp(0)
+  lastWritten DateTime? @db.DateTime(0)
+  expire      DateTime? @db.DateTime(0)
   capacity    String?   @db.VarChar(50)
   free        String?   @db.VarChar(50)
   inActive    Boolean
@@ -351,4 +351,62 @@ model vendorsContacts {
   contactName    String  @db.VarChar(100)
   contact        String  @db.VarChar(100)
   personPosition String? @db.VarChar(100)
+}
+
+model contract_reminder_settings {
+  id         Int      @id
+  enabled    Boolean? @default(false)
+  remindDays String?  @db.VarChar(100)
+}
+
+model dcc_connectivity_logs {
+  id                     Int       @id @default(autoincrement())
+  dcc_id                 Int
+  status                 String    @db.VarChar(20)
+  dcc_reachable          Boolean   @default(false)
+  dcc_ping_latency_ms    Int?
+  reader_reachable       Boolean   @default(false)
+  reader_ping_latency_ms Int?
+  checked_at             DateTime? @default(now()) @db.DateTime(0)
+  user                   Int?      @default(0)
+  dccs                   dccs      @relation(fields: [dcc_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_dcc_logs_dcc")
+
+  @@index([checked_at], map: "idx_dcc_logs_checked")
+  @@index([dcc_id], map: "idx_dcc_logs_dcc")
+}
+
+model dccs {
+  id                     Int                     @id @default(autoincrement())
+  name                   String                  @db.VarChar(100)
+  ip_address             String?                 @db.VarChar(50)
+  card_reader_id         Int?
+  dcc_code               String?                 @unique(map: "uq_dccs_code") @db.VarChar(20)
+  card_reader_ip         String?                 @db.VarChar(50)
+  screen_inch            String?                 @db.VarChar(20)
+  toggles                Boolean                 @default(false)
+  scanner                Boolean                 @default(false)
+  card_reader            Boolean                 @default(false)
+  paper_printer          Boolean                 @default(false)
+  rfid_label_printer     Boolean                 @default(false)
+  light_tower            Boolean                 @default(false)
+  check_interval_seconds Int                     @default(300)
+  last_checked_at        DateTime?               @db.DateTime(0)
+  last_status            String?                 @db.VarChar(20)
+  inActive               Boolean                 @default(false)
+  user                   Int?                    @default(0)
+  dcc_connectivity_logs  dcc_connectivity_logs[]
+}
+
+model mail_settings {
+  id        Int      @id
+  host      String?  @db.VarChar(255)
+  port      Int?
+  secure    Boolean? @default(false)
+  username  String?  @db.VarChar(255)
+  password  String?  @db.VarChar(255)
+  fromEmail String?  @db.VarChar(255)
+  fromName  String?  @db.VarChar(255)
+  toEmails  String?  @db.Text
+  ccEmails  String?  @db.Text
+  enabled   Boolean? @default(false)
 }
