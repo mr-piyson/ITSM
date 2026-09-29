@@ -64,3 +64,6 @@ graphify-out
 
 # asset collector builds
 tools/win-asset-collector/dist/
+
+# database dumps (contain company data)
+scripts/backups/

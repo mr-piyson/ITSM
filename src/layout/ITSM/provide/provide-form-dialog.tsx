@@ -48,8 +48,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { provideToday } from "@/lib/provide-constants";
 import { cn } from "@/lib/utils";
-import type { EmployeeItem } from "@/server/routers/ITSM/assets";
 import type { StockItemOption } from "@/server/routers/ITSM/provide";
+import type { PickEmployee } from "@/server/routers/ITSM/employees";
 import { trpc } from "@/trpc/react";
 
 type FormItem = {
@@ -62,9 +62,9 @@ type FormItem = {
 };
 
 const formSchema = z.object({
-	empID: z.number().int().positive("Select the employee receiving the items"),
-	requestBy: z.number().int().positive("Select who requested the items"),
-	recievedBy: z.number().int().positive("Select who received the items"),
+	emplCode: z.string().trim().min(1, "Select the employee receiving the items"),
+	requestByEmplCode: z.string().trim().min(1, "Select who requested the items"),
+	recievedByEmplCode: z.string().trim().min(1, "Select who received the items"),
 	providedBy: z.number().int().positive("Select who provided the items"),
 	providedDate: z
 		.string()
@@ -115,18 +115,18 @@ export function ProvideFormDialog({
 function EmployeePicker({
 	label,
 	employees,
-	empID,
+	emplCode,
 	onSelect,
 }: {
 	label: string;
-	employees: EmployeeItem[];
-	empID: number;
-	onSelect: (empID: number) => void;
+	employees: PickEmployee[];
+	emplCode: string;
+	onSelect: (emplCode: string) => void;
 }) {
 	const [open, setOpen] = useState(false);
 	const [search, setSearch] = useState("");
 
-	const selected = employees.find((e) => e.empID === empID);
+	const selected = employees.find((e) => e.emplCode === emplCode);
 	const list = employees.filter((employee) => {
 		const q = search.trim().toLowerCase();
 		if (!q) {
@@ -134,7 +134,7 @@ function EmployeePicker({
 		}
 		return (
 			employee.name.toLowerCase().includes(q) ||
-			String(employee.empID).includes(q)
+			employee.emplCode.toLowerCase().includes(q)
 		);
 	});
 
@@ -159,7 +159,7 @@ function EmployeePicker({
 							<span className="truncate">
 								{selected.name}{" "}
 								<span className="text-muted-foreground">
-									({selected.empID})
+									({selected.emplCode})
 								</span>
 							</span>
 						</span>
@@ -180,24 +180,25 @@ function EmployeePicker({
 							<CommandGroup>
 								{list.map((employee) => (
 									<CommandItem
-										key={employee.empID}
-										value={employee.name}
-										data-checked={empID === employee.empID}
+										key={employee.emplCode}
+										value={employee.emplCode}
+										data-checked={emplCode === employee.emplCode}
 										onSelect={() => {
-											onSelect(employee.empID);
+											onSelect(employee.emplCode);
 											setOpen(false);
 										}}
 									>
 										<EmployeeAvatar
 											image={employee.image}
 											name={employee.name}
+											code={employee.emplCode}
 											className="size-5 shrink-0"
 											fallbackClassName="text-[9px]"
 											fallback={employee.name[0]?.toUpperCase()}
 										/>
 										<span className="truncate">{employee.name}</span>
 										<span className="ml-auto shrink-0 text-muted-foreground">
-											{employee.empID}
+											{employee.emplCode}
 										</span>
 									</CommandItem>
 								))}
@@ -323,7 +324,7 @@ function ItemPicker({
 }
 
 function ProvideFormContent({ onSuccess }: { onSuccess: () => void }) {
-	const { data: employees = [] } = trpc.assets.employees.useQuery();
+	const { data: employees = [] } = trpc.employees.pickList.useQuery();
 	const { data: stockItems = [] } = trpc.provides.stockItems.useQuery();
 	const { data: users = [] } = trpc.provides.users.useQuery();
 	const { data: currentUser } = trpc.auth.me.useQuery();
@@ -347,9 +348,9 @@ function ProvideFormContent({ onSuccess }: { onSuccess: () => void }) {
 
 	const form = useForm({
 		defaultValues: {
-			empID: 0,
-			requestBy: 0,
-			recievedBy: 0,
+			emplCode: "",
+			requestByEmplCode: "",
+			recievedByEmplCode: "",
 			providedBy: 0,
 			providedDate: provideToday(),
 			notes: "",
@@ -387,9 +388,9 @@ function ProvideFormContent({ onSuccess }: { onSuccess: () => void }) {
 
 			try {
 				await createMutation.mutateAsync({
-					empID: value.empID,
-					requestBy: value.requestBy,
-					recievedBy: value.recievedBy,
+					emplCode: value.emplCode,
+					requestByEmplCode: value.requestByEmplCode,
+					recievedByEmplCode: value.recievedByEmplCode,
 					providedBy: value.providedBy,
 					providedDate: value.providedDate,
 					notes: value.notes.trim() || undefined,
@@ -519,20 +520,24 @@ function ProvideFormContent({ onSuccess }: { onSuccess: () => void }) {
 					<EmployeePicker
 						label="Employee"
 						employees={employees}
-						empID={form.state.values.empID}
-						onSelect={(empID) => form.setFieldValue("empID", empID)}
+						emplCode={form.state.values.emplCode}
+						onSelect={(emplCode) => form.setFieldValue("emplCode", emplCode)}
 					/>
 					<EmployeePicker
 						label="Requested by"
 						employees={employees}
-						empID={form.state.values.requestBy}
-						onSelect={(empID) => form.setFieldValue("requestBy", empID)}
+						emplCode={form.state.values.requestByEmplCode}
+						onSelect={(emplCode) =>
+							form.setFieldValue("requestByEmplCode", emplCode)
+						}
 					/>
 					<EmployeePicker
 						label="Received by"
 						employees={employees}
-						empID={form.state.values.recievedBy}
-						onSelect={(empID) => form.setFieldValue("recievedBy", empID)}
+						emplCode={form.state.values.recievedByEmplCode}
+						onSelect={(emplCode) =>
+							form.setFieldValue("recievedByEmplCode", emplCode)
+						}
 					/>
 				</div>
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

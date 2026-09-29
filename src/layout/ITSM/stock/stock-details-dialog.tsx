@@ -217,7 +217,9 @@ export function StockDetailsDialog({
 															{provide.employeeName || "-"}
 														</span>
 														<span className="block truncate text-[10px] text-muted-foreground">
-															EmpID {provide.empID} ·{" "}
+															{provide.emplCode
+																? `Code ${provide.emplCode} · `
+																: ""}
 															{formatStockDate(provide.date)}
 														</span>
 													</span>

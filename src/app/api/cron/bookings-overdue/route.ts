@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { checkCronSecret, formatDate, todayDateString } from "@/lib/cron";
 import db from "@/lib/database";
 import { sendMail } from "@/lib/mail";
+import { getEmployeesByCodes } from "@/lib/oracle-employees.server";
 
 export const dynamic = "force-dynamic";
 
@@ -16,15 +17,19 @@ function escapeHtml(value: unknown): string {
 		.replaceAll(">", "&gt;");
 }
 
-function bookingRow(row: Row) {
+function bookingRow(
+	row: Row,
+	employee: { name: string; email: string | null },
+) {
 	return {
 		assetID: Number(row.assetID),
 		type: row.type ? String(row.type) : "-",
 		model: row.model ? String(row.model) : "-",
 		deviceName: row.deviceName ? String(row.deviceName) : "",
 		otherInfo: row.otherInfo ? String(row.otherInfo) : "-",
-		employeeName: row.employeeName ? String(row.employeeName) : "Unknown",
-		empID: Number(row.empID),
+		employeeName: employee.name || "Unknown",
+		employeeEmail: employee.email,
+		emplCode: String(row.emplCode ?? ""),
 		purpose: row.bookingPurpose ? String(row.bookingPurpose) : "-",
 		bookingDate: formatDate(row.bookingDate),
 		returnDate: formatDate(row.returnDate),
@@ -44,10 +49,8 @@ export async function GET(request: Request) {
 	const today = todayDateString();
 
 	const [rows] = await db.iss.execute<Row[]>(
-		`SELECT ab.*, e.name AS employeeName, e.email AS employeeEmail,
-		        a.deviceName, a.type, a.model
+		`SELECT ab.*, a.deviceName, a.type, a.model
 		 FROM assetBooking ab
-		 LEFT JOIN employees e ON e.empID = ab.empID
 		 LEFT JOIN assets a ON a.id = ab.assetID
 		 WHERE ab.status != 'recieved' AND ab.returnDate <= ?
 		 ORDER BY ab.returnDate ASC`,
@@ -58,11 +61,18 @@ export async function GET(request: Request) {
 		return NextResponse.json({ ok: true, overdue: 0 });
 	}
 
+	const employees = await getEmployeesByCodes(rows.map((row) => row.emplCode));
+	const employeeOf = (row: Row) => {
+		const info = employees.get(String(row.emplCode ?? "").trim());
+		return { name: info?.name ?? "", email: info?.email ?? null };
+	};
+
 	let sent = 0;
 	for (const raw of rows) {
-		const b = bookingRow(raw);
+		const employee = employeeOf(raw);
+		const b = bookingRow(raw, employee);
 		const result = await sendMail({
-			to: raw.employeeEmail ? [String(raw.employeeEmail)] : undefined,
+			to: b.employeeEmail ? [b.employeeEmail] : undefined,
 			subject: "Outdated Booked Asset",
 			html: `
 				<p>Dear ${escapeHtml(b.employeeName)},</p>
@@ -81,13 +91,13 @@ export async function GET(request: Request) {
 
 	const digestRows = rows
 		.map((raw) => {
-			const b = bookingRow(raw);
+			const b = bookingRow(raw, employeeOf(raw));
 			return `<tr>
 				<td style="border:1px solid;border-collapse:collapse;padding:8px;">${b.assetID}</td>
 				<td style="border:1px solid;border-collapse:collapse;padding:8px;">${escapeHtml(b.type)}</td>
 				<td style="border:1px solid;border-collapse:collapse;padding:8px;">${escapeHtml(b.model)} (${escapeHtml(b.deviceName)})</td>
 				<td style="border:1px solid;border-collapse:collapse;padding:8px;">${escapeHtml(b.otherInfo)}</td>
-				<td style="border:1px solid;border-collapse:collapse;padding:8px;">${escapeHtml(b.employeeName)} (EmpID- ${b.empID})</td>
+				<td style="border:1px solid;border-collapse:collapse;padding:8px;">${escapeHtml(b.employeeName)} (${escapeHtml(b.emplCode)})</td>
 				<td style="border:1px solid;border-collapse:collapse;padding:8px;">${escapeHtml(b.purpose)}</td>
 				<td style="border:1px solid;border-collapse:collapse;padding:8px;">${b.bookingDate}</td>
 				<td style="border:1px solid;border-collapse:collapse;padding:8px;">${b.returnDate}</td>

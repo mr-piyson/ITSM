@@ -70,7 +70,7 @@ export function BookingPage() {
 			}
 			return [
 				booking.employeeName,
-				String(booking.empID),
+				booking.emplCode,
 				booking.assetCode,
 				booking.assetName,
 				booking.assetType,

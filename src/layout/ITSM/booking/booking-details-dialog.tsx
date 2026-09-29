@@ -89,7 +89,9 @@ export function BookingDetailsDialog({
 								<div className="min-w-0">
 									<p className="truncate font-medium">{booking.employeeName}</p>
 									<p className="text-xs text-muted-foreground">
-										Employee ID {booking.empID}
+										{booking.emplCode
+											? `Employee Code ${booking.emplCode}`
+											: "No employee code"}
 									</p>
 								</div>
 							</div>

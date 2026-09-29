@@ -262,7 +262,7 @@ export function AssetDetailsDialog({
 									{detail.owner ?? "No owner assigned"}
 								</p>
 								<p className="text-xs text-muted-foreground">
-									Employee ID: {detail.empID || "—"}
+									Employee Code: {detail.emplCode || "—"}
 								</p>
 							</div>
 						</div>

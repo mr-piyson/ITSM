@@ -47,7 +47,7 @@ import { trpc } from "@/trpc/react";
 
 const formSchema = z
 	.object({
-		empID: z.number().int().positive(),
+		emplCode: z.string().trim().min(1),
 		assetID: z.number().int().positive(),
 		startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 		endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -60,7 +60,7 @@ const formSchema = z
 	});
 
 type FormValues = {
-	empID: number;
+	emplCode: string;
 	empName: string;
 	assetID: number;
 	assetLabel: string;
@@ -72,7 +72,7 @@ type FormValues = {
 };
 
 const emptyValues: FormValues = {
-	empID: 0,
+	emplCode: "",
 	empName: "",
 	assetID: 0,
 	assetLabel: "",
@@ -124,7 +124,7 @@ function fieldError(state: {
 }
 
 function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
-	const { data: employees = [] } = trpc.assets.employees.useQuery();
+	const { data: employees = [] } = trpc.employees.pickList.useQuery();
 	const { data: assets = [] } = trpc.bookings.availableAssets.useQuery();
 	const createMutation = trpc.bookings.create.useMutation();
 
@@ -139,7 +139,7 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 			const purpose =
 				value.purpose === "Other" ? value.purposeCustom : value.purpose;
 			const parsed = formSchema.safeParse({
-				empID: value.empID,
+				emplCode: value.emplCode,
 				assetID: value.assetID,
 				startDate: value.startDate,
 				endDate: value.endDate,
@@ -153,7 +153,7 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 			}
 			try {
 				await createMutation.mutateAsync({
-					empID: value.empID,
+					emplCode: value.emplCode,
 					assetID: value.assetID,
 					startDate: value.startDate,
 					endDate: value.endDate,
@@ -171,7 +171,7 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 	});
 
 	const selectedEmployee = employees.find(
-		(e) => e.empID === form.state.values.empID,
+		(e) => e.emplCode === form.state.values.emplCode,
 	);
 	const employeeList = employees.filter((employee) => {
 		const q = empSearch.trim().toLowerCase();
@@ -180,7 +180,7 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 		}
 		return (
 			employee.name.toLowerCase().includes(q) ||
-			String(employee.empID).includes(q)
+			employee.emplCode.toLowerCase().includes(q)
 		);
 	});
 
@@ -232,7 +232,7 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 								<span className="truncate">
 									{selectedEmployee.name}{" "}
 									<span className="text-muted-foreground">
-										({selectedEmployee.empID})
+										({selectedEmployee.emplCode})
 									</span>
 								</span>
 							</span>
@@ -253,11 +253,13 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 								<CommandGroup>
 									{employeeList.map((employee) => (
 										<CommandItem
-											key={employee.empID}
-											value={employee.name}
-											data-checked={form.state.values.empID === employee.empID}
+											key={employee.emplCode}
+											value={employee.emplCode}
+											data-checked={
+												form.state.values.emplCode === employee.emplCode
+											}
 											onSelect={() => {
-												form.setFieldValue("empID", employee.empID);
+												form.setFieldValue("emplCode", employee.emplCode);
 												form.setFieldValue("empName", employee.name);
 												setEmpOpen(false);
 											}}
@@ -265,13 +267,14 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 											<EmployeeAvatar
 												image={employee.image}
 												name={employee.name}
+												code={employee.emplCode}
 												className="size-5 shrink-0"
 												fallbackClassName="text-[9px]"
 												fallback={employee.name[0]?.toUpperCase()}
 											/>
 											<span className="truncate">{employee.name}</span>
 											<span className="ml-auto shrink-0 text-muted-foreground">
-												{employee.empID}
+												{employee.emplCode}
 											</span>
 										</CommandItem>
 									))}

@@ -2,6 +2,7 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "@/server/trpc";
+import { getEmployeesByCodes } from "@/lib/oracle-employees.server";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -16,12 +17,12 @@ export type ProvideLineItem = {
 export type ProvideItem = {
 	id: number;
 	date: string;
-	empID: number;
+	emplCode: string;
 	employeeName: string;
 	employeeImage: string | null;
-	requestBy: number;
+	requestByEmplCode: string;
 	requestedByName: string;
-	recievedBy: number;
+	recievedByEmplCode: string;
 	receivedByName: string;
 	provideBy: string;
 	provideByID: number;
@@ -49,9 +50,9 @@ const createItemSchema = z.object({
 });
 
 const createSchema = z.object({
-	empID: z.coerce.number().int().positive(),
-	requestBy: z.coerce.number().int().positive(),
-	recievedBy: z.coerce.number().int().positive(),
+	emplCode: z.string().trim().min(1).max(20),
+	requestByEmplCode: z.string().trim().min(1).max(20),
+	recievedByEmplCode: z.string().trim().min(1).max(20),
 	providedBy: z.coerce.number().int().positive(),
 	providedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 	notes: z.string().trim().max(2000).optional(),
@@ -84,26 +85,31 @@ export const providesRouter = router({
 			SELECT
 				p.id,
 				p.date,
-				p.empID,
-				p.requestBy,
-				p.recievedBy,
+				p.emplCode,
+				p.requestByEmplCode,
+				p.recievedByEmplCode,
 				p.provideBy,
 				p.notes,
 				p.user,
-				e.name AS employeeName,
-				e.image AS employeeImage,
-				r.name AS requestedByName,
-				re.name AS receivedByName,
 				u.name AS providedByName,
 				cu.name AS createdByName
 			FROM provide p
-			LEFT JOIN employees e ON e.empID = p.empID
-			LEFT JOIN employees r ON r.empID = p.requestBy
-			LEFT JOIN employees re ON re.empID = p.recievedBy
 			LEFT JOIN users u ON u.id = p.provideBy
 			LEFT JOIN users cu ON cu.id = p.user
 			ORDER BY p.date DESC, p.id DESC
 		`);
+
+		const employees = await getEmployeesByCodes(
+			rows.flatMap((row) => [
+				row.emplCode,
+				row.requestByEmplCode,
+				row.recievedByEmplCode,
+			]),
+		);
+		const nameOf = (code: unknown): string =>
+			employees.get(String(code ?? "").trim())?.name ?? "";
+		const imageOf = (code: unknown): string | null =>
+			employees.get(String(code ?? "").trim())?.image ?? null;
 
 		const [itemRows] = await ctx.db.iss.execute<Row[]>(`
 			SELECT
@@ -135,13 +141,13 @@ export const providesRouter = router({
 		return rows.map((row) => ({
 			id: Number(row.id),
 			date: toDateString(row.date),
-			empID: Number(row.empID),
-			employeeName: String(row.employeeName ?? ""),
-			employeeImage: toString(row.employeeImage),
-			requestBy: Number(row.requestBy),
-			requestedByName: String(row.requestedByName ?? ""),
-			recievedBy: Number(row.recievedBy),
-			receivedByName: String(row.receivedByName ?? ""),
+			emplCode: String(row.emplCode ?? ""),
+			employeeName: nameOf(row.emplCode),
+			employeeImage: imageOf(row.emplCode),
+			requestByEmplCode: String(row.requestByEmplCode ?? ""),
+			requestedByName: nameOf(row.requestByEmplCode),
+			recievedByEmplCode: String(row.recievedByEmplCode ?? ""),
+			receivedByName: nameOf(row.recievedByEmplCode),
 			provideBy: String(row.providedByName ?? row.provideBy ?? ""),
 			provideByID: Number(row.provideBy),
 			notes: String(row.notes ?? ""),
@@ -201,14 +207,14 @@ export const providesRouter = router({
 			}
 
 			const [result] = await ctx.db.iss.execute<ResultSetHeader>(
-				`INSERT INTO provide (date, empID, requestBy, provideBy, recievedBy, notes, user)
+				`INSERT INTO provide (date, emplCode, requestByEmplCode, provideBy, recievedByEmplCode, notes, user)
 				 VALUES (?, ?, ?, ?, ?, ?, ?)`,
 				[
 					input.providedDate,
-					input.empID,
-					input.requestBy,
+					input.emplCode,
+					input.requestByEmplCode,
 					input.providedBy,
-					input.recievedBy,
+					input.recievedByEmplCode,
 					input.notes ?? "",
 					ctx.user.id,
 				],

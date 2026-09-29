@@ -7,8 +7,14 @@ import {
 	type AzureUserDetails,
 } from "@/lib/azure-graph";
 import type { AzureAccessSummary } from "@/lib/azure-license-summary";
+import {
+	listPickableEmployees,
+	type PickEmployee,
+} from "@/lib/oracle-employees.server";
 
 type Row = unknown[];
+
+export type { PickEmployee };
 
 export type EmployeeItem = {
 	emplCode: string;
@@ -103,4 +109,12 @@ export const employeesRouter = router({
 			await oracleConn.release();
 		}
 	}),
+
+	/**
+	 * Employee picker source for asset owners, provide parties and bookings:
+	 * active Oracle employees only.
+	 */
+	pickList: protectedProcedure.query(
+		async (): Promise<PickEmployee[]> => listPickableEmployees(),
+	),
 });

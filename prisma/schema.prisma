@@ -8,26 +8,26 @@ datasource db {
 }
 
 model assestOwnerUpdateLogs {
-  id            Int      @id @default(autoincrement())
-  user          Int
-  oldOwnerEmpID Int
-  oldOwnerText  String?  @db.VarChar(100)
-  newOwnerID    Int
-  date          DateTime @db.DateTime(0)
-  assetID       Int
+	id                 Int      @id @default(autoincrement())
+	user               Int
+	oldOwnerEmplCode   String?  @db.VarChar(20)
+	oldOwnerText       String?  @db.VarChar(100)
+	newOwnerEmplCode   String?  @db.VarChar(20)
+	date               DateTime @db.DateTime(0)
+	assetID            Int
 }
 
 model assetBooking {
-  id             Int      @id @default(autoincrement())
-  empID          Int
-  assetID        Int
-  bookingDate    DateTime @db.Date
-  returnDate     DateTime @db.Date
-  bookingPurpose String   @db.VarChar(100)
-  status         String   @db.VarChar(100)
-  user           Int
-  addedTime      DateTime @db.DateTime(0)
-  otherInfo      String?  @db.VarChar(100)
+	id             Int      @id @default(autoincrement())
+	emplCode       String   @db.VarChar(20)
+	assetID        Int
+	bookingDate    DateTime @db.Date
+	returnDate     DateTime @db.Date
+	bookingPurpose String   @db.VarChar(100)
+	status         String   @db.VarChar(100)
+	user           Int
+	addedTime      DateTime @db.DateTime(0)
+	otherInfo      String?  @db.VarChar(100)
 }
 
 model assets {
@@ -47,9 +47,9 @@ model assets {
   owner          String?   @db.VarChar(50)
   specification  String?   @db.Text
   inActive       Boolean
-  image          String?   @db.VarChar(200)
-  empID          Int?      @default(0)
-  department     String?   @db.VarChar(100)
+	image          String?   @db.VarChar(200)
+	emplCode       String?   @db.VarChar(20)
+	department     String?   @db.VarChar(100)
   firmwareVer    String?   @db.VarChar(50)
   macAddress     String?   @db.VarChar(100)
   deviceStatus   String?   @db.VarChar(50)
@@ -189,14 +189,14 @@ model printersToners {
 }
 
 model provide {
-  id         Int      @id @default(autoincrement())
-  date       DateTime @db.Date
-  empID      Int
-  requestBy  Int
-  provideBy  String   @db.VarChar(50)
-  recievedBy Int
-  notes      String   @db.Text
-  user       Int
+	id                 Int      @id @default(autoincrement())
+	date                DateTime @db.Date
+	emplCode            String   @db.VarChar(20)
+	requestByEmplCode   String   @db.VarChar(20)
+	provideBy           String   @db.VarChar(50)
+	recievedByEmplCode  String   @db.VarChar(20)
+	notes               String   @db.Text
+	user                Int
 }
 
 model provideItems {

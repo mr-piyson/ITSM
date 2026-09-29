@@ -72,7 +72,9 @@ export function BookingTable({
 									{row.original.employeeName || "-"}
 								</p>
 								<p className="truncate text-[10px] text-muted-foreground">
-									EmpID {row.original.empID}
+									{row.original.emplCode
+										? `Code ${row.original.emplCode}`
+										: "-"}
 								</p>
 							</div>
 						</div>

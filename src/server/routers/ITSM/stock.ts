@@ -2,6 +2,7 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "@/server/trpc";
+import { getEmployeesByCodes } from "@/lib/oracle-employees.server";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -29,7 +30,7 @@ export type StockPurchaseHistoryItem = {
 export type StockProvideHistoryItem = {
 	id: number;
 	provideID: number;
-	empID: number;
+	emplCode: string;
 	employeeName: string;
 	date: string;
 	quantity: number;
@@ -124,14 +125,17 @@ export const stockRouter = router({
 
 			const [provideRows] = await ctx.db.iss.execute<Row[]>(
 				`SELECT pi.id, pi.provideID, pi.quantity,
-						pr.date, pr.empID, e.name AS employeeName
+						pr.date, pr.emplCode
 				 FROM provideItems pi
 				 INNER JOIN provide pr ON pr.id = pi.provideID
-				 LEFT JOIN employees e ON e.empID = pr.empID
 				 WHERE pi.itemID = ?
 				 ORDER BY pr.date DESC, pi.id DESC
 				 LIMIT 20`,
 				[input.id],
+			);
+
+			const employees = await getEmployeesByCodes(
+				provideRows.map((row) => row.emplCode),
 			);
 
 			return {
@@ -147,8 +151,9 @@ export const stockRouter = router({
 				provides: provideRows.map((row) => ({
 					id: Number(row.id),
 					provideID: Number(row.provideID),
-					empID: Number(row.empID ?? 0),
-					employeeName: String(row.employeeName ?? "-"),
+					emplCode: String(row.emplCode ?? ""),
+					employeeName:
+						employees.get(String(row.emplCode ?? "").trim())?.name ?? "-",
 					date: toDateString(row.date),
 					quantity: Number(row.quantity ?? 0),
 				})),

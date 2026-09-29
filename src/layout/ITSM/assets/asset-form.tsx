@@ -61,7 +61,7 @@ type AssetFormValues = {
 	type: string;
 	location: string;
 	department: string;
-	empID: number;
+	emplCode: string;
 	ownerName: string;
 	deviceName: string;
 	serialNumber: string;
@@ -82,7 +82,7 @@ const emptyValues: AssetFormValues = {
 	type: "",
 	location: "",
 	department: "",
-	empID: 0,
+	emplCode: "",
 	ownerName: "",
 	deviceName: "",
 	serialNumber: "",
@@ -186,7 +186,7 @@ function AssetFormContent({
 	prefill?: AssetPrefill | null;
 	onSuccess: () => void;
 }) {
-	const { data: employees = [] } = trpc.assets.employees.useQuery();
+	const { data: employees = [] } = trpc.employees.pickList.useQuery();
 	const generateCodeMutation = trpc.assets.generateCode.useMutation();
 	const createMutation = trpc.assets.create.useMutation();
 	const updateMutation = trpc.assets.update.useMutation();
@@ -202,7 +202,7 @@ function AssetFormContent({
 					type: asset.type ?? "",
 					location: asset.location ?? "",
 					department: asset.department ?? "",
-					empID: asset.empID ?? 0,
+					emplCode: asset.emplCode ?? "",
 					ownerName: asset.owner ?? "",
 					deviceName: asset.deviceName ?? "",
 					serialNumber: asset.serialNumber,
@@ -240,7 +240,7 @@ function AssetFormContent({
 							hdd: clean(value.hdd),
 							specification: clean(value.specification),
 							image: clean(value.image),
-							empID: value.empID || 0,
+							emplCode: value.emplCode || null,
 						},
 					});
 					toast.success("Asset updated successfully");
@@ -262,7 +262,7 @@ function AssetFormContent({
 						hdd: clean(value.hdd),
 						specification: clean(value.specification),
 						image: clean(value.image),
-						empID: value.empID || 0,
+						emplCode: value.emplCode || null,
 					});
 					toast.success("Asset added successfully");
 				}
@@ -324,7 +324,7 @@ function AssetFormContent({
 		form.state.values.image || asset?.image || null,
 	);
 	const selectedOwner = employees.find(
-		(e) => e.empID === form.state.values.empID,
+		(e) => e.emplCode === form.state.values.emplCode,
 	);
 	const ownerList = employees.filter((employee) => {
 		const q = ownerSearch.trim().toLowerCase();
@@ -333,7 +333,7 @@ function AssetFormContent({
 		}
 		return (
 			employee.name.toLowerCase().includes(q) ||
-			String(employee.empID).includes(q)
+			employee.emplCode.toLowerCase().includes(q)
 		);
 	});
 
@@ -497,7 +497,7 @@ function AssetFormContent({
 									<span className="truncate">
 										{selectedOwner.name}{" "}
 										<span className="text-muted-foreground">
-											({selectedOwner.empID})
+											({selectedOwner.emplCode})
 										</span>
 									</span>
 								) : (
@@ -519,20 +519,20 @@ function AssetFormContent({
 										<CommandGroup>
 											{ownerList.map((employee) => (
 												<CommandItem
-													key={employee.empID}
-													value={employee.name}
+													key={employee.emplCode}
+													value={employee.emplCode}
 													data-checked={
-														form.state.values.empID === employee.empID
+														form.state.values.emplCode === employee.emplCode
 													}
 													onSelect={() => {
-														form.setFieldValue("empID", employee.empID);
+														form.setFieldValue("emplCode", employee.emplCode);
 														form.setFieldValue("ownerName", employee.name);
 														setOwnerOpen(false);
 													}}
 												>
 													<span className="truncate">{employee.name}</span>
 													<span className="ml-auto shrink-0 text-muted-foreground">
-														{employee.empID}
+														{employee.emplCode}
 													</span>
 												</CommandItem>
 											))}

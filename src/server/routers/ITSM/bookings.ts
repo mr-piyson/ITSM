@@ -9,12 +9,13 @@ import {
 	type BookingEmailContext,
 } from "@/lib/mail";
 import { protectedProcedure, router } from "@/server/trpc";
+import { getEmployeesByCodes } from "@/lib/oracle-employees.server";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
 export type BookingItem = {
 	id: number;
-	empID: number;
+	emplCode: string;
 	employeeName: string;
 	employeeImage: string | null;
 	assetID: number;
@@ -46,7 +47,7 @@ export type BookingAssetOption = {
 };
 
 const createSchema = z.object({
-	empID: z.coerce.number().int().positive(),
+	emplCode: z.string().trim().min(1).max(20),
 	assetID: z.coerce.number().int().positive(),
 	purpose: z.string().trim().min(1).max(100),
 	otherInfo: z.string().trim().max(100).optional(),
@@ -96,6 +97,11 @@ function todayString(): string {
 	return `${year}-${month}-${day}`;
 }
 
+async function employeeNameFor(code: string): Promise<string> {
+	const employees = await getEmployeesByCodes([code]);
+	return employees.get(code.trim())?.name ?? "";
+}
+
 async function sendBookingNotification(
 	context: BookingEmailContext,
 	kind: "created" | "extended" | "returned",
@@ -118,7 +124,7 @@ export const bookingsRouter = router({
 		const [rows] = await ctx.db.iss.execute<Row[]>(`
 			SELECT
 				ab.id,
-				ab.empID,
+				ab.emplCode,
 				ab.assetID,
 				ab.bookingDate,
 				ab.returnDate,
@@ -126,8 +132,6 @@ export const bookingsRouter = router({
 				ab.status,
 				ab.otherInfo,
 				ab.addedTime,
-				e.name AS employeeName,
-				e.image AS employeeImage,
 				a.code AS assetCode,
 				a.deviceName AS assetName,
 				a.type AS assetType,
@@ -137,30 +141,37 @@ export const bookingsRouter = router({
 				u.name AS createdByName
 			FROM assetBooking ab
 			LEFT JOIN assets a ON a.id = ab.assetID
-			LEFT JOIN employees e ON e.empID = ab.empID
 			LEFT JOIN users u ON u.id = ab.user
 			ORDER BY ab.bookingDate DESC, ab.id DESC
 		`);
-		return rows.map((row) => ({
-			id: Number(row.id),
-			empID: Number(row.empID),
-			employeeName: String(row.employeeName ?? ""),
-			employeeImage: toString(row.employeeImage),
-			assetID: Number(row.assetID),
-			assetCode: String(row.assetCode ?? ""),
-			assetName: toString(row.assetName),
-			assetType: toString(row.assetType),
-			assetManufacturer: toString(row.assetManufacturer),
-			assetModel: toString(row.assetModel),
-			assetLocation: toString(row.assetLocation),
-			status: String(row.status ?? ""),
-			bookingDate: toDateString(row.bookingDate),
-			returnDate: toDateString(row.returnDate),
-			purpose: String(row.purpose ?? ""),
-			otherInfo: toString(row.otherInfo),
-			addedTime: toDateTimeISO(row.addedTime),
-			createdByName: toString(row.createdByName),
-		}));
+
+		const employees = await getEmployeesByCodes(
+			rows.map((row) => row.emplCode),
+		);
+
+		return rows.map((row) => {
+			const employee = employees.get(String(row.emplCode ?? "").trim());
+			return {
+				id: Number(row.id),
+				emplCode: String(row.emplCode ?? ""),
+				employeeName: employee?.name ?? "",
+				employeeImage: employee?.image ?? null,
+				assetID: Number(row.assetID),
+				assetCode: String(row.assetCode ?? ""),
+				assetName: toString(row.assetName),
+				assetType: toString(row.assetType),
+				assetManufacturer: toString(row.assetManufacturer),
+				assetModel: toString(row.assetModel),
+				assetLocation: toString(row.assetLocation),
+				status: String(row.status ?? ""),
+				bookingDate: toDateString(row.bookingDate),
+				returnDate: toDateString(row.returnDate),
+				purpose: String(row.purpose ?? ""),
+				otherInfo: toString(row.otherInfo),
+				addedTime: toDateTimeISO(row.addedTime),
+				createdByName: toString(row.createdByName),
+			};
+		});
 	}),
 
 	availableAssets: protectedProcedure.query(
@@ -175,12 +186,16 @@ export const bookingsRouter = router({
 					a.model,
 					a.location,
 					a.image,
-					e.name AS owner
+					a.emplCode
 				FROM assets a
-				LEFT JOIN employees e ON e.empID = a.empID
 				WHERE a.inActive = 0 AND a.deviceStatus = 'Available'
 				ORDER BY a.code ASC
 			`);
+
+			const employees = await getEmployeesByCodes(
+				rows.map((row) => row.emplCode),
+			);
+
 			return rows.map((row) => ({
 				id: Number(row.id),
 				code: String(row.code ?? ""),
@@ -189,7 +204,7 @@ export const bookingsRouter = router({
 				manufacturer: toString(row.manufacturer),
 				model: toString(row.model),
 				location: toString(row.location),
-				owner: toString(row.owner),
+				owner: employees.get(String(row.emplCode ?? "").trim())?.name ?? null,
 				image: toString(row.image),
 			}));
 		},
@@ -220,10 +235,10 @@ export const bookingsRouter = router({
 
 			const [result] = await ctx.db.iss.execute<ResultSetHeader>(
 				`INSERT INTO assetBooking
-				 (empID, assetID, bookingDate, returnDate, bookingPurpose, status, user, addedTime, otherInfo)
+				 (emplCode, assetID, bookingDate, returnDate, bookingPurpose, status, user, addedTime, otherInfo)
 				 VALUES (?, ?, ?, ?, ?, 'booked', ?, NOW(), ?)`,
 				[
-					input.empID,
+					input.emplCode,
 					input.assetID,
 					input.startDate,
 					input.endDate,
@@ -245,11 +260,7 @@ export const bookingsRouter = router({
 				[ctx.user.id, bookingID],
 			);
 
-			const [empRows] = await ctx.db.iss.execute<Row[]>(
-				`SELECT name FROM employees WHERE empID = ? LIMIT 1`,
-				[input.empID],
-			);
-			const employeeName = String(empRows[0]?.name ?? "");
+			const employeeName = await employeeNameFor(input.emplCode);
 
 			await sendBookingNotification(
 				{
@@ -282,7 +293,7 @@ export const bookingsRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const [bookingRows] = await ctx.db.iss.execute<Row[]>(
-				`SELECT status, empID, bookingDate, returnDate, bookingPurpose AS purpose, otherInfo
+				`SELECT status, emplCode, bookingDate, returnDate, bookingPurpose AS purpose, otherInfo
 				 FROM assetBooking WHERE id = ? LIMIT 1`,
 				[input.id],
 			);
@@ -308,9 +319,8 @@ export const bookingsRouter = router({
 				[ctx.user.id, input.id],
 			);
 
-			const [empRows] = await ctx.db.iss.execute<Row[]>(
-				`SELECT name FROM employees WHERE empID = ? LIMIT 1`,
-				[Number(booking.empID)],
+			const employeeName = await employeeNameFor(
+				String(booking.emplCode ?? ""),
 			);
 			const [assetRows] = await ctx.db.iss.execute<Row[]>(
 				`SELECT type, manufacturer, model, deviceName FROM assets WHERE id = ? LIMIT 1`,
@@ -320,7 +330,7 @@ export const bookingsRouter = router({
 
 			await sendBookingNotification(
 				{
-					employeeName: String(empRows[0]?.name ?? ""),
+					employeeName,
 					assetLabel: [
 						asset?.type,
 						asset?.manufacturer,
@@ -350,7 +360,7 @@ export const bookingsRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const [bookingRows] = await ctx.db.iss.execute<Row[]>(
-				`SELECT status, empID, bookingDate, returnDate, bookingPurpose AS purpose, otherInfo
+				`SELECT status, emplCode, bookingDate, returnDate, bookingPurpose AS purpose, otherInfo
 				 FROM assetBooking WHERE id = ? LIMIT 1`,
 				[input.id],
 			);
@@ -379,9 +389,8 @@ export const bookingsRouter = router({
 				[ctx.user.id, input.id],
 			);
 
-			const [empRows] = await ctx.db.iss.execute<Row[]>(
-				`SELECT name FROM employees WHERE empID = ? LIMIT 1`,
-				[Number(booking.empID)],
+			const employeeName = await employeeNameFor(
+				String(booking.emplCode ?? ""),
 			);
 			const [assetRows] = await ctx.db.iss.execute<Row[]>(
 				`SELECT type, manufacturer, model, deviceName FROM assets WHERE id = ? LIMIT 1`,
@@ -391,7 +400,7 @@ export const bookingsRouter = router({
 
 			await sendBookingNotification(
 				{
-					employeeName: String(empRows[0]?.name ?? ""),
+					employeeName,
 					assetLabel: [
 						asset?.type,
 						asset?.manufacturer,

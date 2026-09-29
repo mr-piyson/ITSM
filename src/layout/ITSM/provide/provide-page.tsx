@@ -45,7 +45,7 @@ export function ProvidePage() {
 		return provides.filter((provide) => {
 			const parts = [
 				provide.employeeName,
-				String(provide.empID),
+				provide.emplCode,
 				provide.requestedByName,
 				provide.receivedByName,
 				provide.provideBy,

@@ -2,6 +2,7 @@ import type { RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "@/server/trpc";
+import { getEmployeesByCodes } from "@/lib/oracle-employees.server";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -96,12 +97,14 @@ export const reportsRouter = router({
 			const [rows] = await ctx.db.iss.execute<Row[]>(
 				`SELECT assets.id, assets.code, assets.type, assets.deviceName,
 				        assets.deviceStatus, assets.location, assets.department,
-				        employees.name AS owner
+				        assets.emplCode
 				 FROM assets
-				 LEFT JOIN employees ON assets.empID = employees.empID
 				 WHERE assets.deviceStatus = ? AND assets.type IN (${placeholders})
 				 ORDER BY assets.code ASC`,
 				[input.status, ...input.types],
+			);
+			const employees = await getEmployeesByCodes(
+				rows.map((row) => row.emplCode),
 			);
 			return rows.map((row) => ({
 				id: Number(row.id),
@@ -111,7 +114,7 @@ export const reportsRouter = router({
 				status: toStringValue(row.deviceStatus),
 				location: toStringValue(row.location),
 				department: toStringValue(row.department),
-				owner: toStringValue(row.owner),
+				owner: employees.get(String(row.emplCode ?? "").trim())?.name ?? null,
 			}));
 		}),
 
@@ -256,15 +259,23 @@ export const reportsRouter = router({
 			if (input.section !== "purchase") {
 				const [rows] = await ctx.db.iss.execute<Row[]>(
 					`SELECT provide.id, provide.date, provide.notes, provide.provideBy,
-					        e1.name AS empName, e2.name AS reqName, e3.name AS recName
+					        provide.emplCode, provide.requestByEmplCode,
+					        provide.recievedByEmplCode
 					 FROM provide
-					 INNER JOIN employees e1 ON e1.empID = provide.empID
-					 INNER JOIN employees e2 ON e2.empID = provide.requestBy
-					 INNER JOIN employees e3 ON e3.empID = provide.recievedBy
 					 WHERE provide.date >= ? AND provide.date <= ?
 					 ORDER BY provide.date DESC`,
 					[input.fromDate, `${input.toDate} 23:59:59`],
 				);
+
+				const employees = await getEmployeesByCodes(
+					rows.flatMap((row) => [
+						row.emplCode,
+						row.requestByEmplCode,
+						row.recievedByEmplCode,
+					]),
+				);
+				const nameOf = (code: unknown): string | null =>
+					employees.get(String(code ?? "").trim())?.name ?? null;
 
 				provides = [];
 				for (const row of rows) {
@@ -284,9 +295,9 @@ export const reportsRouter = router({
 					provides.push({
 						id: Number(row.id),
 						date: toStringValue(row.date),
-						employeeName: toStringValue(row.empName),
-						requestedByName: toStringValue(row.reqName),
-						receivedByName: toStringValue(row.recName),
+						employeeName: nameOf(row.emplCode),
+						requestedByName: nameOf(row.requestByEmplCode),
+						receivedByName: nameOf(row.recievedByEmplCode),
 						providedBy: toStringValue(row.provideBy),
 						lineItems: lineItems.trimEnd(),
 						quantities: quantities.trimEnd(),

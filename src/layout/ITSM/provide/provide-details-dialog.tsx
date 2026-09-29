@@ -50,7 +50,9 @@ export function ProvideDetailsDialog({
 										{provide.employeeName || "-"}
 									</p>
 									<p className="text-xs text-muted-foreground">
-										Employee ID {provide.empID}
+										{provide.emplCode
+											? `Employee Code ${provide.emplCode}`
+											: "No employee code"}
 									</p>
 								</div>
 							</div>
@@ -65,9 +67,11 @@ export function ProvideDetailsDialog({
 									</p>
 									<p className="text-sm">
 										{provide.requestedByName || "-"}
-										<span className="ml-1 text-xs text-muted-foreground">
-											({provide.requestBy})
-										</span>
+										{provide.requestedByName && (
+											<span className="ml-1 text-xs text-muted-foreground">
+												({provide.requestByEmplCode})
+											</span>
+										)}
 									</p>
 								</div>
 								<div>
@@ -76,9 +80,11 @@ export function ProvideDetailsDialog({
 									</p>
 									<p className="text-sm">
 										{provide.receivedByName || "-"}
-										<span className="ml-1 text-xs text-muted-foreground">
-											({provide.recievedBy})
-										</span>
+										{provide.receivedByName && (
+											<span className="ml-1 text-xs text-muted-foreground">
+												({provide.recievedByEmplCode})
+											</span>
+										)}
 									</p>
 								</div>
 								<div>

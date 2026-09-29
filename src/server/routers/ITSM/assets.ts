@@ -5,6 +5,7 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "@/server/trpc";
+import { getEmployeesByCodes } from "@/lib/oracle-employees.server";
 
 type AssetRow = RowDataPacket & Record<string, unknown>;
 
@@ -36,15 +37,9 @@ export type AssetItem = {
 	warrantyDate: string | null;
 	warrantyStatus: string | null;
 	inActive: boolean;
-	empID: number | null;
+	emplCode: string | null;
 	owner: string | null;
 	empImg: string | null;
-};
-
-export type EmployeeItem = {
-	empID: number;
-	name: string;
-	image: string | null;
 };
 
 export type AssetNote = {
@@ -81,7 +76,7 @@ const updateFieldsSchema = z.object({
 	hdd: z.string().nullable().optional(),
 	specification: z.string().nullable().optional(),
 	image: z.string().nullable().optional(),
-	empID: z.number().int().optional(),
+	emplCode: z.string().trim().max(20).nullable().optional(),
 });
 
 const createAssetSchema = z.object({
@@ -101,7 +96,7 @@ const createAssetSchema = z.object({
 	firmwareVer: z.string().max(50).nullable().optional(),
 	specification: z.string().nullable().optional(),
 	image: z.string().max(200).nullable().optional(),
-	empID: z.number().int().optional(),
+	emplCode: z.string().trim().max(20).nullable().optional(),
 });
 
 const IPV4_REGEX = /^(\d{1,3}\.){3}\d{1,3}$/;
@@ -171,23 +166,35 @@ function normalizeAsset(row: AssetRow): AssetItem {
 		warrantyDate: toString(row.warrantyDate),
 		warrantyStatus: toString(row.warrantyStatus),
 		inActive: Boolean(row.inActive),
-		empID:
-			row.empID === null || row.empID === undefined ? null : Number(row.empID),
+		emplCode: toString(row.emplCode),
 		owner: toString(row.owner),
 		empImg: toString(row.empImg),
 	};
 }
 
+async function hydrateAssetOwners(items: AssetItem[]): Promise<AssetItem[]> {
+	const employees = await getEmployeesByCodes(
+		items.map((item) => item.emplCode),
+	);
+	return items.map((item) => {
+		const employee = employees.get((item.emplCode ?? "").trim());
+		return {
+			...item,
+			owner: employee?.name ?? null,
+			empImg: employee?.image ?? null,
+		};
+	});
+}
+
 export const assetsRouter = router({
 	list: protectedProcedure.query(async ({ ctx }): Promise<AssetItem[]> => {
 		const [rows] = await ctx.db.iss.execute<AssetRow[]>(`
-			SELECT a.*, e.name as owner, e.image as empImg
+			SELECT a.*
 			FROM assets a
-			LEFT JOIN employees e ON e.empID = a.empID
 			WHERE a.inActive = 0
 			ORDER BY a.id DESC
 		`);
-		return rows.map(normalizeAsset);
+		return hydrateAssetOwners(rows.map(normalizeAsset));
 	}),
 
 	byId: protectedProcedure
@@ -196,9 +203,8 @@ export const assetsRouter = router({
 			const [assetQuery, logsQuery] = await Promise.all([
 				ctx.db.iss.execute<AssetRow[]>(
 					`
-					SELECT a.*, e.name as owner, e.image as empImg
+					SELECT a.*
 					FROM assets a
-					LEFT JOIN employees e ON e.empID = a.empID
 					WHERE a.id = ?
 					LIMIT 1
 				`,
@@ -207,15 +213,12 @@ export const assetsRouter = router({
 				ctx.db.iss.execute<AssetRow[]>(
 					`
 					SELECT
-						e1.name as old,
-						e2.name as new,
-						a.date,
-						e2.image
-					FROM assestOwnerUpdateLogs a
-					LEFT JOIN employees e1 ON e1.empID = a.oldOwnerEmpID
-					LEFT JOIN employees e2 ON e2.empID = a.newOwnerID
-					WHERE a.assetID = ?
-					ORDER BY a.date ASC
+						oldOwnerEmplCode,
+						newOwnerEmplCode,
+						date
+					FROM assestOwnerUpdateLogs
+					WHERE assetID = ?
+					ORDER BY date ASC
 				`,
 					[input.id],
 				),
@@ -228,20 +231,32 @@ export const assetsRouter = router({
 				return null;
 			}
 
+			const employees = await getEmployeesByCodes([
+				assetRows[0].emplCode,
+				...logRows.flatMap((row) => [
+					row.oldOwnerEmplCode,
+					row.newOwnerEmplCode,
+				]),
+			]);
+			const nameOf = (code: unknown): string =>
+				employees.get(String(code ?? "").trim())?.name ?? "";
+			const imageOf = (code: unknown): string =>
+				employees.get(String(code ?? "").trim())?.image ?? "";
+
 			const logs: AssetNote[] = logRows.map((row) => ({
-				old: String(row.old ?? ""),
-				new: String(row.new ?? ""),
+				old: nameOf(row.oldOwnerEmplCode),
+				new: nameOf(row.newOwnerEmplCode),
 				date: (row.date as Date).toISOString(),
-				image: String(row.image ?? ""),
+				image: imageOf(row.newOwnerEmplCode),
 			}));
 
-			const latestLog = logs[logs.length - 1];
 			const asset = normalizeAsset(assetRows[0]);
+			const owner = employees.get((asset.emplCode ?? "").trim());
 
 			return {
 				...asset,
-				owner: latestLog?.new || asset.owner,
-				empImg: latestLog?.image || asset.empImg,
+				owner: owner?.name ?? null,
+				empImg: owner?.image ?? null,
 				ownerChangeLogs: logs,
 			};
 		}),
@@ -256,27 +271,24 @@ export const assetsRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			const { id, data } = input;
 
-			if (data.empID !== undefined) {
+			if (data.emplCode !== undefined) {
 				const [oldRows] = await ctx.db.iss.execute<AssetRow[]>(
-					`SELECT a.empID, e.name as ownerName
-					 FROM assets a
-					 LEFT JOIN employees e ON e.empID = a.empID
-					 WHERE a.id = ?
-					 LIMIT 1`,
+					`SELECT emplCode FROM assets WHERE id = ? LIMIT 1`,
 					[id],
 				);
-				const oldEmpID = oldRows[0] ? Number(oldRows[0].empID ?? 0) : 0;
-				const newEmpID = Number(data.empID ?? 0);
-				if (newEmpID !== oldEmpID) {
+				const oldEmplCode = oldRows[0] ? toString(oldRows[0].emplCode) : null;
+				const newEmplCode = data.emplCode ?? null;
+				if (newEmplCode !== oldEmplCode) {
+					const previous = await getEmployeesByCodes([oldEmplCode]);
 					await ctx.db.iss.execute(
 						`INSERT INTO assestOwnerUpdateLogs
-						 (user, oldOwnerEmpID, oldOwnerText, newOwnerID, date, assetID)
+						 (user, oldOwnerEmplCode, oldOwnerText, newOwnerEmplCode, date, assetID)
 						 VALUES (?, ?, ?, ?, NOW(), ?)`,
 						[
 							ctx.user.id,
-							oldEmpID,
-							oldRows[0]?.ownerName ? String(oldRows[0].ownerName) : null,
-							newEmpID,
+							oldEmplCode,
+							previous.get((oldEmplCode ?? "").trim())?.name ?? null,
+							newEmplCode,
 							id,
 						],
 					);
@@ -329,7 +341,7 @@ export const assetsRouter = router({
 			const [result] = await db.iss.execute<ResultSetHeader>(
 				`INSERT INTO assets
 				 (code, serialNumber, deviceName, type, location, manufacturer, model,
-				  processor, os, memory, hdd, ip, empID, specification, inActive,
+				  processor, os, memory, hdd, ip, emplCode, specification, inActive,
 				  department, firmwareVer, image)
 				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
 				[
@@ -345,7 +357,7 @@ export const assetsRouter = router({
 					input.memory ?? null,
 					input.hdd ?? null,
 					input.ip ?? null,
-					input.empID ?? 0,
+					input.emplCode ?? null,
 					input.specification ?? null,
 					input.department ?? null,
 					input.firmwareVer ?? null,
@@ -400,19 +412,6 @@ export const assetsRouter = router({
 				}
 			}
 			throw new Error("Unable to generate a unique asset code, try again");
-		},
-	),
-
-	employees: protectedProcedure.query(
-		async ({ ctx }): Promise<EmployeeItem[]> => {
-			const [rows] = await ctx.db.iss.execute<AssetRow[]>(
-				`SELECT empID, name, image FROM employees WHERE inActive = 0 ORDER BY name ASC`,
-			);
-			return rows.map((row) => ({
-				empID: Number(row.empID),
-				name: String(row.name ?? ""),
-				image: toString(row.image),
-			}));
 		},
 	),
 
