@@ -3,10 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import { ChevronsUpDown, Loader2, RefreshCw, Upload } from "lucide-react";
+import {
+	ChevronsUpDown,
+	Loader2,
+	RefreshCw,
+	Upload,
+	Warehouse,
+} from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { EmployeeAvatar } from "@/components/employee-avatar";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -502,25 +509,37 @@ function AssetFormContent({
 							>
 								{form.state.values.emplCode ? (
 									selectedOwner ? (
-										<span className="truncate">
-											{selectedOwner.name}{" "}
-											<span className="text-muted-foreground">
-												({selectedOwner.emplCode})
+										<span className="flex min-w-0 items-center gap-2">
+											<EmployeeAvatar
+												image={selectedOwner.image}
+												name={selectedOwner.name}
+												code={selectedOwner.emplCode}
+												className="size-5 shrink-0"
+												fallbackClassName="text-[9px]"
+											/>
+											<span className="min-w-0 flex-1 truncate text-left">
+												{selectedOwner.name}{" "}
+												<span className="text-muted-foreground">
+													({selectedOwner.emplCode})
+												</span>
 											</span>
 										</span>
 									) : (
-										<span className="truncate font-mono text-muted-foreground">
+										<span className="min-w-0 flex-1 truncate text-left font-mono text-muted-foreground">
 											{form.state.values.emplCode}
 										</span>
 									)
 								) : (
-									<span className="text-muted-foreground">
-										In IT (no owner)
+									<span className="flex min-w-0 flex-1 items-center gap-2 text-left text-muted-foreground">
+										<span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted">
+											<Warehouse className="size-3" />
+										</span>
+										<span className="truncate">In IT (no owner)</span>
 									</span>
 								)}
 								<ChevronsUpDown className="size-4 shrink-0 opacity-50" />
 							</PopoverTrigger>
-							<PopoverContent className="w-72 p-0">
+							<PopoverContent className="w-96 p-0">
 								<Command shouldFilter={false}>
 									<CommandInput
 										placeholder="Search name / ID…"
@@ -530,6 +549,7 @@ function AssetFormContent({
 									<CommandGroup className="border-b bg-popover">
 										<CommandItem
 											value="__in_it__"
+											className="py-1.5"
 											data-checked={form.state.values.emplCode === ""}
 											onSelect={() => {
 												form.setFieldValue("emplCode", "");
@@ -537,13 +557,18 @@ function AssetFormContent({
 												setOwnerOpen(false);
 											}}
 										>
-											<span className="truncate">In IT (no owner)</span>
-											<span className="ml-auto shrink-0 text-muted-foreground">
+											<span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+												<Warehouse className="size-3.5" />
+											</span>
+											<span className="min-w-0 flex-1 truncate">
+												In IT (no owner)
+											</span>
+											<span className="shrink-0 text-muted-foreground">
 												IT pool
 											</span>
 										</CommandItem>
 									</CommandGroup>
-									<CommandList>
+									<CommandList className="max-h-96">
 										{ownerList.length === 0 ? (
 											<p className="py-6 text-center text-sm text-muted-foreground">
 												No employee found
@@ -554,6 +579,7 @@ function AssetFormContent({
 													<CommandItem
 														key={employee.emplCode}
 														value={employee.emplCode}
+														className="py-1.5"
 														data-checked={
 															form.state.values.emplCode === employee.emplCode
 														}
@@ -563,8 +589,20 @@ function AssetFormContent({
 															setOwnerOpen(false);
 														}}
 													>
-														<span className="truncate">{employee.name}</span>
-														<span className="ml-auto shrink-0 text-muted-foreground">
+														<EmployeeAvatar
+															image={employee.image}
+															name={employee.name}
+															code={employee.emplCode}
+															className="size-6 shrink-0"
+															fallbackClassName="text-[9px]"
+														/>
+														<span
+															className="min-w-0 flex-1 truncate"
+															title={employee.name}
+														>
+															{employee.name}
+														</span>
+														<span className="shrink-0 font-mono text-muted-foreground">
 															{employee.emplCode}
 														</span>
 													</CommandItem>
