@@ -3,25 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import {
-	ChevronsUpDown,
-	Loader2,
-	RefreshCw,
-	Upload,
-	Warehouse,
-} from "lucide-react";
+import { Loader2, RefreshCw, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { EmployeeAvatar } from "@/components/employee-avatar";
+import { EmployeeCombobox } from "@/components/employee-combobox";
 import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from "@/components/ui/command";
 import {
 	Dialog,
 	DialogContent,
@@ -32,11 +19,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
 import {
 	Select,
 	SelectContent,
@@ -198,8 +180,6 @@ function AssetFormContent({
 	const updateMutation = trpc.assets.update.useMutation();
 
 	const [imageBusy, setImageBusy] = useState(false);
-	const [ownerOpen, setOwnerOpen] = useState(false);
-	const [ownerSearch, setOwnerSearch] = useState("");
 
 	const form = useForm({
 		defaultValues: asset
@@ -329,19 +309,6 @@ function AssetFormContent({
 	const previewImage = assetImageUrl(
 		form.state.values.image || asset?.image || null,
 	);
-	const selectedOwner = employees.find(
-		(e) => e.emplCode === form.state.values.emplCode,
-	);
-	const ownerList = employees.filter((employee) => {
-		const q = ownerSearch.trim().toLowerCase();
-		if (!q) {
-			return true;
-		}
-		return (
-			employee.name.toLowerCase().includes(q) ||
-			employee.emplCode.toLowerCase().includes(q)
-		);
-	});
 
 	return (
 		<form
@@ -490,129 +457,17 @@ function AssetFormContent({
 
 					<div className="space-y-2">
 						<Label>Owner</Label>
-						<Popover
-							open={ownerOpen}
-							onOpenChange={(next) => {
-								setOwnerOpen(next);
-								if (next) {
-									setOwnerSearch("");
-								}
+						<EmployeeCombobox
+							value={form.state.values.emplCode || null}
+							onSelect={(employee) => {
+								form.setFieldValue("emplCode", employee?.emplCode ?? "");
+								form.setFieldValue("ownerName", employee?.name ?? "");
 							}}
-						>
-							<PopoverTrigger
-								render={
-									<Button
-										variant="outline"
-										className="w-full justify-between"
-									/>
-								}
-							>
-								{form.state.values.emplCode ? (
-									selectedOwner ? (
-										<span className="flex min-w-0 items-center gap-2">
-											<EmployeeAvatar
-												image={selectedOwner.image}
-												name={selectedOwner.name}
-												code={selectedOwner.emplCode}
-												className="size-5 shrink-0"
-												fallbackClassName="text-[9px]"
-											/>
-											<span className="min-w-0 flex-1 truncate text-left">
-												{selectedOwner.name}{" "}
-												<span className="text-muted-foreground">
-													({selectedOwner.emplCode})
-												</span>
-											</span>
-										</span>
-									) : (
-										<span className="min-w-0 flex-1 truncate text-left font-mono text-muted-foreground">
-											{form.state.values.emplCode}
-										</span>
-									)
-								) : (
-									<span className="flex min-w-0 flex-1 items-center gap-2 text-left text-muted-foreground">
-										<span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted">
-											<Warehouse className="size-3" />
-										</span>
-										<span className="truncate">In IT (no owner)</span>
-									</span>
-								)}
-								<ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-							</PopoverTrigger>
-							<PopoverContent className="w-96 p-0">
-								<Command shouldFilter={false}>
-									<CommandInput
-										placeholder="Search name / ID…"
-										value={ownerSearch}
-										onValueChange={setOwnerSearch}
-									/>
-									<CommandGroup className="border-b bg-popover">
-										<CommandItem
-											value="__in_it__"
-											className="py-1.5"
-											data-checked={form.state.values.emplCode === ""}
-											onSelect={() => {
-												form.setFieldValue("emplCode", "");
-												form.setFieldValue("ownerName", "");
-												setOwnerOpen(false);
-											}}
-										>
-											<span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-												<Warehouse className="size-3.5" />
-											</span>
-											<span className="min-w-0 flex-1 truncate">
-												In IT (no owner)
-											</span>
-											<span className="shrink-0 text-muted-foreground">
-												IT pool
-											</span>
-										</CommandItem>
-									</CommandGroup>
-									<CommandList className="max-h-96">
-										{ownerList.length === 0 ? (
-											<p className="py-6 text-center text-sm text-muted-foreground">
-												No employee found
-											</p>
-										) : (
-											<CommandGroup>
-												{ownerList.map((employee) => (
-													<CommandItem
-														key={employee.emplCode}
-														value={employee.emplCode}
-														className="py-1.5"
-														data-checked={
-															form.state.values.emplCode === employee.emplCode
-														}
-														onSelect={() => {
-															form.setFieldValue("emplCode", employee.emplCode);
-															form.setFieldValue("ownerName", employee.name);
-															setOwnerOpen(false);
-														}}
-													>
-														<EmployeeAvatar
-															image={employee.image}
-															name={employee.name}
-															code={employee.emplCode}
-															className="size-6 shrink-0"
-															fallbackClassName="text-[9px]"
-														/>
-														<span
-															className="min-w-0 flex-1 truncate"
-															title={employee.name}
-														>
-															{employee.name}
-														</span>
-														<span className="shrink-0 font-mono text-muted-foreground">
-															{employee.emplCode}
-														</span>
-													</CommandItem>
-												))}
-											</CommandGroup>
-										)}
-									</CommandList>
-								</Command>
-							</PopoverContent>
-						</Popover>
+							employees={employees}
+							allowNone
+							noneLabel="In IT (no owner)"
+							noneHint="IT pool"
+						/>
 					</div>
 				</div>
 			</div>

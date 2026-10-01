@@ -79,25 +79,82 @@ function toDateString(value: unknown): string {
 	return String(value ?? "");
 }
 
+function mapProvideRows(
+	rows: Row[],
+	itemRows: Row[],
+	employees: Awaited<ReturnType<typeof getEmployeesByCodes>>,
+): ProvideItem[] {
+	const nameOf = (code: unknown): string =>
+		employees.get(String(code ?? "").trim())?.name ?? "";
+	const imageOf = (code: unknown): string | null =>
+		employees.get(String(code ?? "").trim())?.image ?? null;
+
+	const itemsByProvide = new Map<number, ProvideLineItem[]>();
+	for (const row of itemRows) {
+		const provideID = Number(row.provideID);
+		const list = itemsByProvide.get(provideID) ?? [];
+		list.push({
+			id: Number(row.id),
+			itemID: Number(row.itemID),
+			itemName: String(row.itemName ?? ""),
+			itemBrand: String(row.itemBrand ?? ""),
+			quantity: Number(row.quantity),
+		});
+		itemsByProvide.set(provideID, list);
+	}
+
+	return rows.map((row) => ({
+		id: Number(row.id),
+		date: toDateString(row.date),
+		emplCode: String(row.emplCode ?? ""),
+		employeeName: nameOf(row.emplCode),
+		employeeImage: imageOf(row.emplCode),
+		requestByEmplCode: String(row.requestByEmplCode ?? ""),
+		requestedByName: nameOf(row.requestByEmplCode),
+		recievedByEmplCode: String(row.recievedByEmplCode ?? ""),
+		receivedByName: nameOf(row.recievedByEmplCode),
+		provideBy: String(row.providedByName ?? row.provideBy ?? ""),
+		provideByID: Number(row.provideBy),
+		notes: String(row.notes ?? ""),
+		createdByName: toString(row.createdByName),
+		items: itemsByProvide.get(Number(row.id)) ?? [],
+	}));
+}
+
+const PROVIDE_SELECT = `
+	SELECT
+		p.id,
+		p.date,
+		p.emplCode,
+		p.requestByEmplCode,
+		p.recievedByEmplCode,
+		p.provideBy,
+		p.notes,
+		p.user,
+		u.name AS providedByName,
+		cu.name AS createdByName
+	FROM provide p
+	LEFT JOIN users u ON u.id = p.provideBy
+	LEFT JOIN users cu ON cu.id = p.user
+`;
+
+const PROVIDE_ITEMS_SELECT = `
+	SELECT
+		pi.id,
+		pi.provideID,
+		pi.itemID,
+		pi.quantity,
+		i.name AS itemName,
+		i.brand AS itemBrand
+	FROM provideItems pi
+	INNER JOIN items i ON i.id = pi.itemID
+`;
+
 export const providesRouter = router({
 	list: protectedProcedure.query(async ({ ctx }): Promise<ProvideItem[]> => {
-		const [rows] = await ctx.db.iss.execute<Row[]>(`
-			SELECT
-				p.id,
-				p.date,
-				p.emplCode,
-				p.requestByEmplCode,
-				p.recievedByEmplCode,
-				p.provideBy,
-				p.notes,
-				p.user,
-				u.name AS providedByName,
-				cu.name AS createdByName
-			FROM provide p
-			LEFT JOIN users u ON u.id = p.provideBy
-			LEFT JOIN users cu ON cu.id = p.user
-			ORDER BY p.date DESC, p.id DESC
-		`);
+		const [rows] = await ctx.db.iss.execute<Row[]>(
+			`${PROVIDE_SELECT} ORDER BY p.date DESC, p.id DESC`,
+		);
 
 		const employees = await getEmployeesByCodes(
 			rows.flatMap((row) => [
@@ -106,55 +163,42 @@ export const providesRouter = router({
 				row.recievedByEmplCode,
 			]),
 		);
-		const nameOf = (code: unknown): string =>
-			employees.get(String(code ?? "").trim())?.name ?? "";
-		const imageOf = (code: unknown): string | null =>
-			employees.get(String(code ?? "").trim())?.image ?? null;
 
-		const [itemRows] = await ctx.db.iss.execute<Row[]>(`
-			SELECT
-				pi.id,
-				pi.provideID,
-				pi.itemID,
-				pi.quantity,
-				i.name AS itemName,
-				i.brand AS itemBrand
-			FROM provideItems pi
-			INNER JOIN items i ON i.id = pi.itemID
-			ORDER BY pi.id ASC
-		`);
+		const [itemRows] = await ctx.db.iss.execute<Row[]>(
+			`${PROVIDE_ITEMS_SELECT} ORDER BY pi.id ASC`,
+		);
 
-		const itemsByProvide = new Map<number, ProvideLineItem[]>();
-		for (const row of itemRows) {
-			const provideID = Number(row.provideID);
-			const list = itemsByProvide.get(provideID) ?? [];
-			list.push({
-				id: Number(row.id),
-				itemID: Number(row.itemID),
-				itemName: String(row.itemName ?? ""),
-				itemBrand: String(row.itemBrand ?? ""),
-				quantity: Number(row.quantity),
-			});
-			itemsByProvide.set(provideID, list);
-		}
-
-		return rows.map((row) => ({
-			id: Number(row.id),
-			date: toDateString(row.date),
-			emplCode: String(row.emplCode ?? ""),
-			employeeName: nameOf(row.emplCode),
-			employeeImage: imageOf(row.emplCode),
-			requestByEmplCode: String(row.requestByEmplCode ?? ""),
-			requestedByName: nameOf(row.requestByEmplCode),
-			recievedByEmplCode: String(row.recievedByEmplCode ?? ""),
-			receivedByName: nameOf(row.recievedByEmplCode),
-			provideBy: String(row.providedByName ?? row.provideBy ?? ""),
-			provideByID: Number(row.provideBy),
-			notes: String(row.notes ?? ""),
-			createdByName: toString(row.createdByName),
-			items: itemsByProvide.get(Number(row.id)) ?? [],
-		}));
+		return mapProvideRows(rows, itemRows, employees);
 	}),
+
+	byEmployee: protectedProcedure
+		.input(z.object({ code: z.string().trim().min(1).max(20) }))
+		.query(async ({ ctx, input }): Promise<ProvideItem[]> => {
+			const [rows] = await ctx.db.iss.execute<Row[]>(
+				`${PROVIDE_SELECT} WHERE p.emplCode = ? ORDER BY p.date DESC, p.id DESC`,
+				[input.code],
+			);
+
+			const employees = await getEmployeesByCodes(
+				rows.flatMap((row) => [
+					row.emplCode,
+					row.requestByEmplCode,
+					row.recievedByEmplCode,
+				]),
+			);
+
+			const [itemRows] = await ctx.db.iss.execute<Row[]>(
+				`
+				${PROVIDE_ITEMS_SELECT}
+				INNER JOIN provide p ON p.id = pi.provideID
+				WHERE p.emplCode = ?
+				ORDER BY pi.id ASC
+			`,
+				[input.code],
+			);
+
+			return mapProvideRows(rows, itemRows, employees);
+		}),
 
 	stockItems: protectedProcedure.query(
 		async ({ ctx }): Promise<StockItemOption[]> => {

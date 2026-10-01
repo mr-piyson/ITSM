@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { EmployeeAvatar } from "@/components/employee-avatar";
+import { EmployeeCombobox } from "@/components/employee-combobox";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -128,8 +128,6 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 	const { data: assets = [] } = trpc.bookings.availableAssets.useQuery();
 	const createMutation = trpc.bookings.create.useMutation();
 
-	const [empOpen, setEmpOpen] = useState(false);
-	const [empSearch, setEmpSearch] = useState("");
 	const [assetOpen, setAssetOpen] = useState(false);
 	const [assetSearch, setAssetSearch] = useState("");
 
@@ -170,20 +168,6 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 		},
 	});
 
-	const selectedEmployee = employees.find(
-		(e) => e.emplCode === form.state.values.emplCode,
-	);
-	const employeeList = employees.filter((employee) => {
-		const q = empSearch.trim().toLowerCase();
-		if (!q) {
-			return true;
-		}
-		return (
-			employee.name.toLowerCase().includes(q) ||
-			employee.emplCode.toLowerCase().includes(q)
-		);
-	});
-
 	const selectedAsset = assets.find((a) => a.id === form.state.values.assetID);
 	const assetList = assets.filter((asset) => {
 		const q = assetSearch.trim().toLowerCase();
@@ -214,75 +198,18 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 			{/* Employee */}
 			<div className="space-y-2">
 				<Label>Employee *</Label>
-				<Popover open={empOpen} onOpenChange={setEmpOpen}>
-					<PopoverTrigger
-						render={
-							<Button variant="outline" className="w-full justify-between" />
+				<EmployeeCombobox
+					value={form.state.values.emplCode || null}
+					onSelect={(employee) => {
+						if (!employee) {
+							return;
 						}
-					>
-						{selectedEmployee ? (
-							<span className="flex min-w-0 items-center gap-2">
-								<EmployeeAvatar
-									image={selectedEmployee.image}
-									name={selectedEmployee.name}
-									className="size-5 shrink-0"
-									fallbackClassName="text-[9px]"
-									fallback={selectedEmployee.name[0]?.toUpperCase()}
-								/>
-								<span className="truncate">
-									{selectedEmployee.name}{" "}
-									<span className="text-muted-foreground">
-										({selectedEmployee.emplCode})
-									</span>
-								</span>
-							</span>
-						) : (
-							<span className="text-muted-foreground">Search employee…</span>
-						)}
-						<ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-					</PopoverTrigger>
-					<PopoverContent className="w-80 p-0">
-						<Command shouldFilter={false}>
-							<CommandInput
-								placeholder="Search name / ID…"
-								value={empSearch}
-								onValueChange={setEmpSearch}
-							/>
-							<CommandList>
-								<CommandEmpty>No employee found</CommandEmpty>
-								<CommandGroup>
-									{employeeList.map((employee) => (
-										<CommandItem
-											key={employee.emplCode}
-											value={employee.emplCode}
-											data-checked={
-												form.state.values.emplCode === employee.emplCode
-											}
-											onSelect={() => {
-												form.setFieldValue("emplCode", employee.emplCode);
-												form.setFieldValue("empName", employee.name);
-												setEmpOpen(false);
-											}}
-										>
-											<EmployeeAvatar
-												image={employee.image}
-												name={employee.name}
-												code={employee.emplCode}
-												className="size-5 shrink-0"
-												fallbackClassName="text-[9px]"
-												fallback={employee.name[0]?.toUpperCase()}
-											/>
-											<span className="truncate">{employee.name}</span>
-											<span className="ml-auto shrink-0 text-muted-foreground">
-												{employee.emplCode}
-											</span>
-										</CommandItem>
-									))}
-								</CommandGroup>
-							</CommandList>
-						</Command>
-					</PopoverContent>
-				</Popover>
+						form.setFieldValue("emplCode", employee.emplCode);
+						form.setFieldValue("empName", employee.name);
+					}}
+					employees={employees}
+					placeholder="Search employee…"
+				/>
 			</div>
 
 			{/* Asset */}

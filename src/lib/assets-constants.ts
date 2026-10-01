@@ -135,6 +135,24 @@ export function assetTypeBadge(type?: string | null): string {
 	return ASSET_TYPE_BADGE[type] ?? "bg-muted text-muted-foreground";
 }
 
+export const ASSET_STATUSES = ["In Use", "Available", "Defective"] as const;
+
+export type AssetStatus = (typeof ASSET_STATUSES)[number];
+
+export const ASSET_STATUS_BADGE: Record<string, string> = {
+	"In Use": "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100",
+	Available:
+		"bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+	Defective: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
+};
+
+export function assetStatusBadge(status?: string | null): string {
+	if (!status) {
+		return "bg-muted text-muted-foreground";
+	}
+	return ASSET_STATUS_BADGE[status] ?? "bg-muted text-muted-foreground";
+}
+
 export function assetImageUrl(image?: string | null): string | null {
 	return imageUrl(image);
 }

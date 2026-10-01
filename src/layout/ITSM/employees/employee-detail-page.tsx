@@ -22,6 +22,8 @@ import { trpc } from "@/trpc/react";
 import { useAzureStatus } from "@/hooks/use-azure-status";
 import { summarizeAzureAccess } from "@/lib/azure-license-summary";
 
+import { EmployeeInventorySection } from "./employee-inventory-section";
+
 type EmployeeDetailPageProps = {
 	code: string;
 };
@@ -41,7 +43,9 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 		{ code },
 		{ enabled: !!code },
 	);
-	const { azure, isLoading: azureLoading } = useAzureStatus(employee?.email ?? null);
+	const { azure, isLoading: azureLoading } = useAzureStatus(
+		employee?.email ?? null,
+	);
 
 	const imageUrl = employee ? employeeImageUrl(employee.picPath) : null;
 
@@ -206,6 +210,11 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 
 						<Separator />
 
+						{/* What he has */}
+						<EmployeeInventorySection code={employee.emplCode} />
+
+						<Separator />
+
 						{/* Azure AD Details */}
 						<div className="space-y-3">
 							<div className="flex items-center gap-2">
@@ -234,7 +243,9 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 											<div className="space-y-3">
 												<div className="flex items-center gap-2">
 													<Key className="size-4 text-muted-foreground" />
-													<h4 className="text-sm font-semibold">Access Summary</h4>
+													<h4 className="text-sm font-semibold">
+														Access Summary
+													</h4>
 												</div>
 												<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
 													<div className="rounded-none border p-3">
@@ -250,7 +261,9 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 													<div className="rounded-none border p-3">
 														<Row
 															label="Mailbox Archive"
-															value={summary.hasArchive ? "Enabled" : "Not enabled"}
+															value={
+																summary.hasArchive ? "Enabled" : "Not enabled"
+															}
 														/>
 													</div>
 													<div className="rounded-none border p-3">

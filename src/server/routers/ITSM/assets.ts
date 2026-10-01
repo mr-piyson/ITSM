@@ -197,6 +197,22 @@ export const assetsRouter = router({
 		return hydrateAssetOwners(rows.map(normalizeAsset));
 	}),
 
+	byOwner: protectedProcedure
+		.input(z.object({ code: z.string().trim().min(1).max(20) }))
+		.query(async ({ ctx, input }): Promise<AssetItem[]> => {
+			const [rows] = await ctx.db.iss.execute<AssetRow[]>(
+				`
+				SELECT a.*
+				FROM assets a
+				WHERE a.inActive = 0
+					AND TRIM(COALESCE(a.emplCode, '')) = ?
+				ORDER BY a.code ASC
+			`,
+				[input.code],
+			);
+			return hydrateAssetOwners(rows.map(normalizeAsset));
+		}),
+
 	byId: protectedProcedure
 		.input(z.object({ id: z.coerce.number().int().positive() }))
 		.query(async ({ ctx, input }): Promise<AssetDetail | null> => {
