@@ -89,6 +89,20 @@ function toDateTimeISO(value: unknown): string | null {
 	return String(value);
 }
 
+// An asset is bookable only while it sits in the IT pool: no owner assigned,
+// not marked In Use / Defective and not covered by an active booking.
+const BOOKABLE_WHERE = `a.inActive = 0
+			AND (a.emplCode IS NULL OR TRIM(a.emplCode) = '')
+			AND (
+				a.deviceStatus IS NULL
+				OR TRIM(a.deviceStatus) = ''
+				OR a.deviceStatus NOT IN ('In Use', 'Defective')
+			)
+			AND NOT EXISTS (
+				SELECT 1 FROM assetBooking b
+				WHERE b.assetID = a.id AND b.status = 'booked'
+			)`;
+
 function todayString(): string {
 	const now = new Date();
 	const year = now.getFullYear();
@@ -188,7 +202,7 @@ export const bookingsRouter = router({
 					a.image,
 					a.emplCode
 				FROM assets a
-				WHERE a.inActive = 0 AND a.deviceStatus = 'Available'
+				WHERE ${BOOKABLE_WHERE}
 				ORDER BY a.code ASC
 			`);
 
@@ -221,16 +235,43 @@ export const bookingsRouter = router({
 			}
 
 			const [assetRows] = await ctx.db.iss.execute<Row[]>(
-				`SELECT id, deviceStatus, code, deviceName, type, manufacturer, model
-				 FROM assets WHERE id = ? AND inActive = 0 LIMIT 1`,
+				`SELECT a.id, a.deviceStatus, a.emplCode, a.code, a.deviceName,
+				        a.type, a.manufacturer, a.model
+				 FROM assets a
+				 WHERE a.id = ? AND ${BOOKABLE_WHERE}
+				 LIMIT 1`,
 				[input.assetID],
 			);
 			const asset = assetRows[0];
 			if (!asset) {
-				throw new Error("Selected asset was not found");
-			}
-			if (String(asset.deviceStatus ?? "") !== "Available") {
-				throw new Error("Selected asset is no longer available for booking");
+				const [anyRows] = await ctx.db.iss.execute<Row[]>(
+					`SELECT id, deviceStatus, emplCode, inActive
+					 FROM assets WHERE id = ? LIMIT 1`,
+					[input.assetID],
+				);
+				const existing = anyRows[0];
+				if (!existing) {
+					throw new Error("Selected asset was not found");
+				}
+				if (existing.inActive) {
+					throw new Error("Selected asset is no longer available for booking");
+				}
+				const owner = toString(existing.emplCode);
+				if (owner) {
+					throw new Error("Only assets without an owner (in IT) can be booked");
+				}
+				if (String(existing.deviceStatus ?? "").trim() === "Defective") {
+					throw new Error("Selected asset is marked as defective");
+				}
+				const [activeBookings] = await ctx.db.iss.execute<Row[]>(
+					`SELECT id FROM assetBooking
+					 WHERE assetID = ? AND status = 'booked' LIMIT 1`,
+					[input.assetID],
+				);
+				if (activeBookings.length > 0) {
+					throw new Error("Selected asset is already booked");
+				}
+				throw new Error("Selected asset is not available for booking");
 			}
 
 			const [result] = await ctx.db.iss.execute<ResultSetHeader>(

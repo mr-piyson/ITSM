@@ -10,7 +10,6 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
-	CommandEmpty,
 	CommandGroup,
 	CommandInput,
 	CommandItem,
@@ -493,16 +492,22 @@ function AssetFormContent({
 									/>
 								}
 							>
-								{selectedOwner ? (
-									<span className="truncate">
-										{selectedOwner.name}{" "}
-										<span className="text-muted-foreground">
-											({selectedOwner.emplCode})
+								{form.state.values.emplCode ? (
+									selectedOwner ? (
+										<span className="truncate">
+											{selectedOwner.name}{" "}
+											<span className="text-muted-foreground">
+												({selectedOwner.emplCode})
+											</span>
 										</span>
-									</span>
+									) : (
+										<span className="truncate font-mono text-muted-foreground">
+											{form.state.values.emplCode}
+										</span>
+									)
 								) : (
 									<span className="text-muted-foreground">
-										Search employee…
+										In IT (no owner)
 									</span>
 								)}
 								<ChevronsUpDown className="size-4 shrink-0 opacity-50" />
@@ -515,28 +520,49 @@ function AssetFormContent({
 										onValueChange={setOwnerSearch}
 									/>
 									<CommandList>
-										<CommandEmpty>No employee found</CommandEmpty>
 										<CommandGroup>
-											{ownerList.map((employee) => (
-												<CommandItem
-													key={employee.emplCode}
-													value={employee.emplCode}
-													data-checked={
-														form.state.values.emplCode === employee.emplCode
-													}
-													onSelect={() => {
-														form.setFieldValue("emplCode", employee.emplCode);
-														form.setFieldValue("ownerName", employee.name);
-														setOwnerOpen(false);
-													}}
-												>
-													<span className="truncate">{employee.name}</span>
-													<span className="ml-auto shrink-0 text-muted-foreground">
-														{employee.emplCode}
-													</span>
-												</CommandItem>
-											))}
+											<CommandItem
+												value="__in_it__"
+												data-checked={form.state.values.emplCode === ""}
+												onSelect={() => {
+													form.setFieldValue("emplCode", "");
+													form.setFieldValue("ownerName", "");
+													setOwnerOpen(false);
+												}}
+											>
+												<span className="truncate">In IT (no owner)</span>
+												<span className="ml-auto shrink-0 text-muted-foreground">
+													IT pool
+												</span>
+											</CommandItem>
 										</CommandGroup>
+										{ownerList.length === 0 ? (
+											<p className="py-6 text-center text-sm text-muted-foreground">
+												No employee found
+											</p>
+										) : (
+											<CommandGroup>
+												{ownerList.map((employee) => (
+													<CommandItem
+														key={employee.emplCode}
+														value={employee.emplCode}
+														data-checked={
+															form.state.values.emplCode === employee.emplCode
+														}
+														onSelect={() => {
+															form.setFieldValue("emplCode", employee.emplCode);
+															form.setFieldValue("ownerName", employee.name);
+															setOwnerOpen(false);
+														}}
+													>
+														<span className="truncate">{employee.name}</span>
+														<span className="ml-auto shrink-0 text-muted-foreground">
+															{employee.emplCode}
+														</span>
+													</CommandItem>
+												))}
+											</CommandGroup>
+										)}
 									</CommandList>
 								</Command>
 							</PopoverContent>

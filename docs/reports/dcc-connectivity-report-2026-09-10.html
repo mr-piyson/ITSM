@@ -1,0 +1,1134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>DCC Connectivity Report — 10 September 2026</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#f5f7f8; --card:#ffffff; --fg:#0f172a; --muted:#64748b; --line:#e2e8f0;
+  --accent:#00a39d; --accent-ink:#007a75;
+  --ok:#16a34a; --warn:#f59e0b; --bad:#dc2626;
+  --pionly:#f59e0b; --rdonly:#8b5cf6;
+  --nodata:rgba(100,116,139,.10); --grid:rgba(100,116,139,.18);
+  --shadow:0 1px 2px rgba(15,23,42,.05),0 12px 32px rgba(15,23,42,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0b1220; --card:#111a2b; --fg:#e6edf6; --muted:#94a3b8; --line:#1e293b;
+    --accent:#2dd4bf; --accent-ink:#5eead4;
+    --ok:#22c55e; --warn:#fbbf24; --bad:#f87171;
+    --pionly:#fbbf24; --rdonly:#a78bfa;
+    --nodata:rgba(148,163,184,.10); --grid:rgba(148,163,184,.20);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.35);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg); color:var(--fg); line-height:1.5; font-size:15px;
+  padding:32px 20px 72px;
+}
+.wrap{max-width:1040px;margin:0 auto}
+header.report{border-bottom:3px solid var(--accent);padding-bottom:20px;margin-bottom:26px}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+h1{font-size:32px;line-height:1.15;margin:6px 0 4px;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:16px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip-meta{font-size:12px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 11px;color:var(--muted)}
+.chip-meta b{color:var(--fg);font-weight:600}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 26px;margin-bottom:20px;box-shadow:var(--shadow)}
+h2{font-size:20px;margin-bottom:4px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;flex:none}
+h3{font-size:15px;margin:20px 0 8px;color:var(--accent-ink)}
+.lede{color:var(--muted);font-size:14px;margin-bottom:16px}
+p{margin-bottom:10px}
+ul,ol{margin:0 0 10px 20px}
+li{margin-bottom:7px}
+strong{font-weight:650}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em}
+code{background:rgba(100,116,139,.12);padding:1px 5px;border-radius:4px}
+/* verdict */
+.verdict{border-left:5px solid var(--bad);background:linear-gradient(90deg,rgba(220,38,38,.10),transparent 70%);border-radius:12px;padding:18px 20px;margin-bottom:18px}
+.verdict.ok{border-left-color:var(--ok);background:linear-gradient(90deg,rgba(22,163,74,.10),transparent 70%)}
+.verdict .tag{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--bad);border-radius:6px;padding:4px 10px;margin-bottom:8px}
+.verdict h2{font-size:22px}
+.verdict p{margin:8px 0 0;color:var(--muted);font-size:14.5px}
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:rgba(100,116,139,.04)}
+.kpi .v{font-size:30px;font-weight:750;letter-spacing:-.03em;line-height:1.1}
+.kpi .v.bad{color:var(--bad)} .kpi .v.warn{color:var(--warn)} .kpi .v.ok{color:var(--ok)}
+.kpi .l{font-size:12.5px;color:var(--muted);margin-top:4px}
+.kpi .s{font-size:11.5px;color:var(--muted);opacity:.8;margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+/* built cards */
+.build{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.build .b{border:1px solid var(--line);border-radius:12px;padding:16px;background:rgba(100,116,139,.04)}
+.build .b h4{font-size:14.5px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.build .b h4 .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none}
+.build .b p{font-size:13.5px;color:var(--muted);margin-bottom:6px}
+.build .b .files{font-size:11.5px;color:var(--muted);opacity:.9}
+.build .b .files code{background:rgba(100,116,139,.14)}
+/* charts */
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart-narrow{max-width:100%}
+.grid{stroke:var(--grid);stroke-width:1}
+.axisline{stroke:var(--grid);stroke-width:1.2}
+.axis{fill:var(--muted);font-size:9.5px;font-family:inherit}
+.axis-note{fill:var(--muted);font-size:9.5px;font-family:inherit}
+.anno{fill:var(--muted);font-size:11px;font-family:inherit;font-style:italic;opacity:.85}
+.line-pi{fill:none;stroke:var(--pionly);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.line-rd{fill:none;stroke:#dc2626;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.pt-pi{fill:var(--pionly);stroke:var(--card);stroke-width:1.2}
+.pt-rd{fill:#dc2626;stroke:var(--card);stroke-width:1.2}
+.volbar{fill:var(--accent);opacity:.35}
+.seg-label{fill:#fff;font-size:13px;font-weight:700;font-family:inherit}
+.svg-title{fill:var(--fg);font-size:12.5px;font-weight:650;font-family:inherit}
+.gauge-track{fill:rgba(100,116,139,.18)}
+.rank-track{fill:rgba(100,116,139,.13)}
+.rank-code{fill:var(--fg);font-size:10.5px;font-family:ui-monospace,Menlo,monospace;font-weight:600}
+.rank-val{fill:var(--fg);font-size:10.5px;font-weight:700;font-family:inherit}
+.rank-sub{fill:var(--muted);font-size:10px;font-family:inherit}
+.gauges{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}
+.legend-block{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin-top:12px}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:13px}
+.swatch{width:12px;height:12px;border-radius:3px;flex:none}
+.legend-t{flex:1}
+.legend-v{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+/* table */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:940px}
+thead th{
+  position:sticky;top:0;background:rgba(100,116,139,.10);text-align:left;
+  padding:9px 10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+  border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none
+}
+thead th:hover{color:var(--fg)}
+tbody td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(100,116,139,.06)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.strong{font-weight:650}
+.bad-text{color:var(--bad)}
+.bar-cell{min-width:170px}
+.bar{display:inline-block;vertical-align:middle;width:112px;height:9px;border-radius:5px;background:rgba(100,116,139,.18);overflow:hidden}
+.bar-fill{display:block;height:100%}
+.bar-fill.stable{background:var(--ok)} .bar-fill.unstable{background:var(--warn)} .bar-fill.critical{background:var(--bad)}
+.bar-val{display:inline-block;margin-left:8px;font-variant-numeric:tabular-nums;font-weight:650}
+.chip{display:inline-block;font-size:11.5px;font-weight:650;border-radius:999px;padding:3px 10px;border:1px solid transparent}
+.chip.stable{background:rgba(22,163,74,.14);color:var(--ok);border-color:rgba(22,163,74,.35)}
+.chip.unstable{background:rgba(245,158,11,.16);color:var(--warn);border-color:rgba(245,158,11,.4)}
+.chip.critical{background:rgba(220,38,38,.14);color:var(--bad);border-color:rgba(220,38,38,.35)}
+.chip.fail{background:rgba(220,38,38,.14);color:var(--bad);border-color:rgba(220,38,38,.35)}
+.chip.pass{background:rgba(22,163,74,.14);color:var(--ok);border-color:rgba(22,163,74,.35)}
+/* callouts */
+.callout{border-left:4px solid var(--accent);background:rgba(0,163,157,.07);border-radius:0 10px 10px 0;padding:12px 16px;font-size:14px;margin:14px 0}
+.callout.warn{border-left-color:var(--warn);background:rgba(245,158,11,.10)}
+.callout.bad{border-left-color:var(--bad);background:rgba(220,38,38,.09)}
+.findings{counter-reset:f;list-style:none;margin-left:0}
+.findings li{counter-increment:f;position:relative;padding-left:34px;margin-bottom:12px;font-size:14.5px}
+.findings li::before{
+  content:counter(f);position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:7px;
+  background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center
+}
+.reco{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.reco h4{font-size:14.5px;margin-bottom:6px;color:var(--accent-ink)}
+.reco .why{font-size:12.5px;color:var(--muted);margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+.prio{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:5px;padding:2px 7px;margin-left:8px;vertical-align:middle}
+.prio.p0{background:rgba(220,38,38,.15);color:var(--bad)}
+.prio.p1{background:rgba(245,158,11,.18);color:var(--warn)}
+.prio.p2{background:rgba(100,116,139,.16);color:var(--muted)}
+footer{color:var(--muted);font-size:12.5px;text-align:center;margin-top:26px;border-top:1px solid var(--line);padding-top:16px}
+.legend-inline{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;margin:4px 0 12px;color:var(--muted)}
+.legend-inline span{display:inline-flex;align-items:center;gap:7px}
+.legend-inline i{width:16px;height:3px;border-radius:2px;display:inline-block}
+@media (max-width:720px){
+  h1{font-size:25px} .gauges,.legend-block{grid-template-columns:1fr} section{padding:18px 16px}
+}
+@media print{
+  body{background:#fff;padding:0;font-size:11.5px}
+  section,header.report{box-shadow:none;break-inside:avoid;page-break-inside:avoid;border-color:#cbd5e1}
+  .verdict{break-inside:avoid}
+  a{text-decoration:none;color:inherit}
+}
+@page{margin:14mm}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="report">
+  <div class="eyebrow">Digital Control Cabinet (DCC) &middot; Connectivity Assessment</div>
+  <h1>DCC &amp; Card Reader Connectivity Report</h1>
+  <div class="sub">Monitoring window: <strong>10 September 2026 (all day)</strong> &middot; 32 DCC stations &middot; plant-floor rollout readiness</div>
+  <div class="meta">
+    <span class="chip-meta">Window <b>10 September 2026 (all day)</b></span>
+    <span class="chip-meta">Checks analysed <b>7,507</b></span>
+    <span class="chip-meta">DCCs active <b>32 / 32</b></span>
+    <span class="chip-meta">First check <b>10 Sep 2026, 06:36</b></span>
+    <span class="chip-meta">Last check <b>10 Sep 2026, 13:39</b></span>
+    <span class="chip-meta">Generated <b>28 Sep 2026, 15:20</b></span>
+    <span class="chip-meta">Source <b>ISS DB &middot; dcc_connectivity_logs</b></span>
+  </div>
+</header>
+
+<section>
+  <div class="verdict">
+    <span class="tag">Rollout verdict: Not ready</span>
+    <h2>Connectivity is not stable enough to go live</h2>
+    <p>Across every station and every check in the window, the DCCs and their card readers could not hold a
+       reliable connection. <strong>21.4% of checks passed</strong> (both devices reachable),
+       <strong>17 of 32 DCCs never passed a single check</strong>, and no station met the
+       99% uptime bar. The <strong>possible solutions to be considered</strong> (section&nbsp;7) are: card readers
+       wired directly to their Raspberry&nbsp;Pi over the same power cable, direct Ethernet for the DCCs (or an
+       external antenna on a USB cable), and the matching live kiosk software update &mdash; all of them before any
+       rollout.</p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v bad">21.4%</div><div class="l">Overall uptime (both devices up)</div><div class="s">1,608 of 7,507 checks passed</div></div>
+    <div class="kpi"><div class="v bad">32.9%</div><div class="l">DCC / Raspberry Pi reachable</div><div class="s">2,472 of 7,507 checks</div></div>
+    <div class="kpi"><div class="v bad">32.8%</div><div class="l">Card reader reachable (WiFi)</div><div class="s">2,462 of 7,507 checks</div></div>
+    <div class="kpi"><div class="v bad">0</div><div class="l">DCCs at &ge;99% uptime</div><div class="s">target: 32 of 32</div></div>
+    <div class="kpi"><div class="v bad">17</div><div class="l">DCCs with 0% uptime</div><div class="s">never connected once in the window</div></div>
+    <div class="kpi"><div class="v warn">24</div><div class="l">DCCs below 50% uptime</div><div class="s">of 32 stations</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">1</span> What was put in place</h2>
+  <p class="lede">Three deliverables were implemented and are running in the ITSM application.</p>
+  <div class="build">
+    <div class="b">
+      <h4><span class="dot"></span>All DCCs turned on</h4>
+      <p>All <strong>32 DCC stations</strong> were seeded and activated in the inventory
+         (<code>inActive = 0</code>), each with its Raspberry&nbsp;Pi IP, card-reader IP, peripherals and a
+         300&nbsp;second check interval.</p>
+      <div class="files">Data: <code>sql/seed-dccs.sql</code>, <code>sql/DCCs.csv</code> &middot; table: <code>dccs</code></div>
+    </div>
+    <div class="b">
+      <h4><span class="dot"></span>DCCs dashboard</h4>
+      <p>An inventory grid with status badges, per-DCC details with connectivity history, and a
+         <strong>realtime dashboard</strong> showing every station as a card with a live reachability sparkline
+         (Pi vs card reader).</p>
+      <div class="files"><code>/app/dccs</code> &middot; <code>/app/dccs/realtime</code> &middot;
+        <code>src/layout/ITSM/dcc/*</code> &middot; tRPC <code>dccs.*</code></div>
+    </div>
+    <div class="b">
+      <h4><span class="dot"></span>Cron task pinging every DCC</h4>
+      <p>A scheduled endpoint pings each active DCC <strong>and</strong> its card reader concurrently, decides
+         <code>connected</code> only when <em>both</em> answer, writes a row to
+         <code>dcc_connectivity_logs</code> and refreshes <code>dccs.last_status</code>. It must be wired to an external scheduler
+         (systemd timer / crontab / Vercel cron) &mdash; see the coverage caveat below.</p>
+      <div class="files"><code>GET /api/cron/dcc-connectivity</code> (guard: <code>CRON_SECRET</code>) &middot;
+        <code>src/lib/dcc-connectivity.ts</code></div>
+    </div>
+  </div>
+  <div class="callout">
+    <strong>Status rule:</strong> a check is <em>connected</em> only when the DCC (Pi) <b>and</b> the card reader
+    both answer the ping. Anything else is recorded as <em>disconnected</em>.
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">2</span> Connectivity over the window</h2>
+  <p class="lede">Reachability per hour (share of checks in that hour where the device answered).
+     Shaded hours had no checks at all &mdash; nothing was being measured then.</p>
+  <div class="legend-inline">
+    <span><i style="background:var(--pionly)"></i> DCC / Raspberry Pi</span>
+    <span><i style="background:#dc2626"></i> Card reader (WiFi)</span>
+    <span><i style="background:rgba(0,163,157,.45)"></i> checks recorded (bottom)</span>
+    <span><i style="background:var(--nodata);height:12px;width:14px;border-radius:2px"></i> no monitoring data</span>
+  </div>
+  <svg viewBox="0 0 960 294" role="img" aria-label="Hourly reachability timeline" class="chart">
+<rect x="46.00" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="83.50" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="121.00" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="158.50" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="196.00" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="233.50" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="458.50" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="571.00" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="608.50" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="646.00" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="683.50" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="721.00" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="758.50" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="796.00" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="833.50" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="871.00" y="10" width="37.50" height="186" fill="var(--nodata)" /><rect x="908.50" y="10" width="37.50" height="186" fill="var(--nodata)" />
+<line x1="46" y1="196.0" x2="946" y2="196.0" class="grid" /><text x="38" y="199.5" text-anchor="end" class="axis">0%</text><line x1="46" y1="149.5" x2="946" y2="149.5" class="grid" /><text x="38" y="153.0" text-anchor="end" class="axis">25%</text><line x1="46" y1="103.0" x2="946" y2="103.0" class="grid" /><text x="38" y="106.5" text-anchor="end" class="axis">50%</text><line x1="46" y1="56.5" x2="946" y2="56.5" class="grid" /><text x="38" y="60.0" text-anchor="end" class="axis">75%</text><line x1="46" y1="10.0" x2="946" y2="10.0" class="grid" /><text x="38" y="13.5" text-anchor="end" class="axis">100%</text>
+<line x1="46" y1="196" x2="946" y2="196" class="axisline" />
+<path d="M 289.8,165.5 L 327.3,143.2 L 364.8,114.1 L 402.3,117.9 L 439.8,123.9M 514.8,141.1 L 552.3,143.9" class="line-pi" />
+<path d="M 289.8,172.7 L 327.3,135.9 L 364.8,120.0 L 402.3,107.2 L 439.8,122.2M 514.8,129.3 L 552.3,152.6" class="line-rd" />
+<g><circle cx="289.8" cy="165.5" r="3.4" class="pt-pi" /><title>2026-09-10 06:00 — DCC (Pi) reachable 16.4% (143/871)</title></g><g><circle cx="289.8" cy="172.7" r="3.4" class="pt-rd" /><title>2026-09-10 06:00 — Card reader reachable 12.5% (109/871)</title></g><rect x="271.00" y="10" width="37.50" height="186" fill="transparent"><title>2026-09-10 06:00 — 871 checks | DCC 16.4% | Reader 12.5%</title></rect><g><circle cx="327.3" cy="143.2" r="3.4" class="pt-pi" /><title>2026-09-10 07:00 — DCC (Pi) reachable 28.4% (464/1634)</title></g><g><circle cx="327.3" cy="135.9" r="3.4" class="pt-rd" /><title>2026-09-10 07:00 — Card reader reachable 32.3% (528/1634)</title></g><rect x="308.50" y="10" width="37.50" height="186" fill="transparent"><title>2026-09-10 07:00 — 1634 checks | DCC 28.4% | Reader 32.3%</title></rect><g><circle cx="364.8" cy="114.1" r="3.4" class="pt-pi" /><title>2026-09-10 08:00 — DCC (Pi) reachable 44.0% (962/2184)</title></g><g><circle cx="364.8" cy="120.0" r="3.4" class="pt-rd" /><title>2026-09-10 08:00 — Card reader reachable 40.8% (892/2184)</title></g><rect x="346.00" y="10" width="37.50" height="186" fill="transparent"><title>2026-09-10 08:00 — 2184 checks | DCC 44.0% | Reader 40.8%</title></rect><g><circle cx="402.3" cy="117.9" r="3.4" class="pt-pi" /><title>2026-09-10 09:00 — DCC (Pi) reachable 42.0% (94/224)</title></g><g><circle cx="402.3" cy="107.2" r="3.4" class="pt-rd" /><title>2026-09-10 09:00 — Card reader reachable 47.8% (107/224)</title></g><rect x="383.50" y="10" width="37.50" height="186" fill="transparent"><title>2026-09-10 09:00 — 224 checks | DCC 42.0% | Reader 47.8%</title></rect><g><circle cx="439.8" cy="123.9" r="3.4" class="pt-pi" /><title>2026-09-10 10:00 — DCC (Pi) reachable 38.8% (248/640)</title></g><g><circle cx="439.8" cy="122.2" r="3.4" class="pt-rd" /><title>2026-09-10 10:00 — Card reader reachable 39.7% (254/640)</title></g><rect x="421.00" y="10" width="37.50" height="186" fill="transparent"><title>2026-09-10 10:00 — 640 checks | DCC 38.8% | Reader 39.7%</title></rect><g><circle cx="514.8" cy="141.1" r="3.4" class="pt-pi" /><title>2026-09-10 12:00 — DCC (Pi) reachable 29.5% (274/929)</title></g><g><circle cx="514.8" cy="129.3" r="3.4" class="pt-rd" /><title>2026-09-10 12:00 — Card reader reachable 35.8% (333/929)</title></g><rect x="496.00" y="10" width="37.50" height="186" fill="transparent"><title>2026-09-10 12:00 — 929 checks | DCC 29.5% | Reader 35.8%</title></rect><g><circle cx="552.3" cy="143.9" r="3.4" class="pt-pi" /><title>2026-09-10 13:00 — DCC (Pi) reachable 28.0% (287/1025)</title></g><g><circle cx="552.3" cy="152.6" r="3.4" class="pt-rd" /><title>2026-09-10 13:00 — Card reader reachable 23.3% (239/1025)</title></g><rect x="533.50" y="10" width="37.50" height="186" fill="transparent"><title>2026-09-10 13:00 — 1025 checks | DCC 28.0% | Reader 23.3%</title></rect>
+<text x="158.5" y="103" text-anchor="middle" class="anno">no checks recorded</text><text x="758.5" y="103" text-anchor="middle" class="anno">no checks recorded</text>
+<line x1="46" y1="260" x2="946" y2="260" class="axisline" />
+<rect x="272.00" y="239.3" width="35.50" height="20.7" class="volbar"><title>2026-09-10 06:00 — 871 checks</title></rect><rect x="309.50" y="221.1" width="35.50" height="38.9" class="volbar"><title>2026-09-10 07:00 — 1634 checks</title></rect><rect x="347.00" y="208.0" width="35.50" height="52.0" class="volbar"><title>2026-09-10 08:00 — 2184 checks</title></rect><rect x="384.50" y="254.7" width="35.50" height="5.3" class="volbar"><title>2026-09-10 09:00 — 224 checks</title></rect><rect x="422.00" y="244.8" width="35.50" height="15.2" class="volbar"><title>2026-09-10 10:00 — 640 checks</title></rect><rect x="497.00" y="237.9" width="35.50" height="22.1" class="volbar"><title>2026-09-10 12:00 — 929 checks</title></rect><rect x="534.50" y="235.6" width="35.50" height="24.4" class="volbar"><title>2026-09-10 13:00 — 1025 checks</title></rect>
+<text x="38" y="217" text-anchor="end" class="axis">2,184</text>
+<text x="38" y="257" text-anchor="end" class="axis">0</text>
+<text x="64.8" y="274" text-anchor="middle" class="axis">10 Sep 00:00</text><text x="289.8" y="274" text-anchor="middle" class="axis">10 Sep 06:00</text><text x="514.8" y="274" text-anchor="middle" class="axis">10 Sep 12:00</text><text x="739.8" y="274" text-anchor="middle" class="axis">10 Sep 18:00</text>
+<text x="46" y="290" class="axis-note">bottom: checks recorded per hour (cron coverage)</text>
+</svg>
+  <p class="lede" style="margin-top:12px">
+    Monitoring coverage: <strong>7 of 24 hours</strong> (29.2%) contain
+    checks &mdash; data starts 10 Sep 2026, 06:36 and stops 10 Sep 2026, 13:39.
+    All 7,507 checks fall on 10&nbsp;Sep &mdash; the day is only partially covered, so hourly figures below
+    must be read together with the volume bars.
+  </p>
+</section>
+
+<section>
+  <h2><span class="n">3</span> DCC vs card reader</h2>
+  <p class="lede">How often each device answered, and how the 7,507 checks break down by failure mode.</p>
+  <div class="gauges">
+    <div class="gauge">
+<svg viewBox="0 0 440 82" role="img" aria-label="DCC / Raspberry Pi (wired target) reachability" class="chart chart-narrow">
+<text x="0" y="14" class="svg-title">DCC / Raspberry Pi (wired target)</text>
+<rect x="0" y="30" width="440" height="22" rx="11" class="gauge-track" />
+<rect x="0" y="30" width="144.9" height="22" rx="11" fill="var(--pionly)" />
+<text x="0" y="74" class="axis-note">32.9% reachable &middot; 2,472 of 7,507 checks</text>
+</svg></div>
+    <div class="gauge">
+<svg viewBox="0 0 440 82" role="img" aria-label="Card reader (WiFi) reachability" class="chart chart-narrow">
+<text x="0" y="14" class="svg-title">Card reader (WiFi)</text>
+<rect x="0" y="30" width="440" height="22" rx="11" class="gauge-track" />
+<rect x="0" y="30" width="144.3" height="22" rx="11" fill="#dc2626" />
+<text x="0" y="74" class="axis-note">32.8% reachable &middot; 2,462 of 7,507 checks</text>
+</svg></div>
+  </div>
+  <div style="margin-top:22px"><svg viewBox="0 0 960 132" role="img" aria-label="Failure mode breakdown" class="chart chart-narrow">
+<text x="0" y="16" class="svg-title">How each of the 7,507 checks failed</text>
+<rect x="0.00" y="34" width="205.63" height="40" fill="var(--ok)"><title>Both reachable: 1,608 checks (21.4%)</title></rect><text x="102.8" y="59" text-anchor="middle" class="seg-label">21.4%</text><rect x="205.63" y="34" width="110.49" height="40" fill="var(--rdonly)"><title>Card reader down only: 864 checks (11.5%)</title></rect><text x="260.9" y="59" text-anchor="middle" class="seg-label">11.5%</text><rect x="316.12" y="34" width="109.21" height="40" fill="var(--pionly)"><title>DCC (Pi) down only: 854 checks (11.4%)</title></rect><text x="370.7" y="59" text-anchor="middle" class="seg-label">11.4%</text><rect x="425.33" y="34" width="534.67" height="40" fill="var(--bad)"><title>Both down: 4,181 checks (55.7%)</title></rect><text x="692.7" y="59" text-anchor="middle" class="seg-label">55.7%</text>
+<text x="0" y="92" class="axis-note">bars are proportional to check count</text>
+</svg>
+<div class="legend-block"><div class="legend-row"><span class="swatch" style="background:var(--ok)"></span><span class="legend-t">Both reachable</span><span class="legend-v">1,608 checks &middot; 21.4%</span></div><div class="legend-row"><span class="swatch" style="background:var(--rdonly)"></span><span class="legend-t">Card reader down only</span><span class="legend-v">864 checks &middot; 11.5%</span></div><div class="legend-row"><span class="swatch" style="background:var(--pionly)"></span><span class="legend-t">DCC (Pi) down only</span><span class="legend-v">854 checks &middot; 11.4%</span></div><div class="legend-row"><span class="swatch" style="background:var(--bad)"></span><span class="legend-t">Both down</span><span class="legend-v">4,181 checks &middot; 55.7%</span></div></div></div>
+  <div class="callout warn">
+    <strong>55.7% of checks failed with <em>both</em> devices down</strong>
+    (4,181 checks) &mdash; a shared dependency (station uplink, switch port, access point or power),
+    not a single faulty peripheral. The remaining failures split almost evenly:
+    card-reader-only 11.5% (864),
+    DCC-only 11.4% (854).
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">4</span> Stability ranking of all 32 DCCs</h2>
+  <p class="lede">Uptime = share of checks where <em>both</em> the DCC and its card reader were reachable.
+     Sorted worst first. The 99% line is the rollout target.</p>
+  <svg viewBox="0 0 960 668" role="img" aria-label="Per-DCC uptime ranking" class="chart">
+<line x1="74.0" y1="28" x2="74.0" y2="642" class="grid" /><text x="74.0" y="22" text-anchor="middle" class="axis">0%</text><line x1="260.5" y1="28" x2="260.5" y2="642" class="grid" /><text x="260.5" y="22" text-anchor="middle" class="axis">25%</text><line x1="447.0" y1="28" x2="447.0" y2="642" class="grid" /><text x="447.0" y="22" text-anchor="middle" class="axis">50%</text><line x1="633.5" y1="28" x2="633.5" y2="642" class="grid" /><text x="633.5" y="22" text-anchor="middle" class="axis">75%</text><line x1="812.5" y1="28" x2="812.5" y2="642" class="grid" /><text x="812.5" y="22" text-anchor="middle" class="axis">99% target</text>
+<g>
+<text x="66" y="46" text-anchor="end" class="rank-code">DCC029</text>
+<rect x="74" y="37" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="37" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC029 — 0.0% uptime</title></rect>
+<text x="828" y="47" class="rank-val">0.0%</text>
+<text x="864" y="47" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="65" text-anchor="end" class="rank-code">DCC006</text>
+<rect x="74" y="56" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="56" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC006 — 0.0% uptime</title></rect>
+<text x="828" y="66" class="rank-val">0.0%</text>
+<text x="864" y="66" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="84" text-anchor="end" class="rank-code">DCC001</text>
+<rect x="74" y="75" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="75" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC001 — 0.0% uptime</title></rect>
+<text x="828" y="85" class="rank-val">0.0%</text>
+<text x="864" y="85" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="103" text-anchor="end" class="rank-code">DCC004</text>
+<rect x="74" y="94" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="94" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC004 — 0.0% uptime</title></rect>
+<text x="828" y="104" class="rank-val">0.0%</text>
+<text x="864" y="104" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="122" text-anchor="end" class="rank-code">DCC011</text>
+<rect x="74" y="113" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="113" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC011 — 0.0% uptime</title></rect>
+<text x="828" y="123" class="rank-val">0.0%</text>
+<text x="864" y="123" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="141" text-anchor="end" class="rank-code">DCC017</text>
+<rect x="74" y="132" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="132" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC017 — 0.0% uptime</title></rect>
+<text x="828" y="142" class="rank-val">0.0%</text>
+<text x="864" y="142" class="rank-sub">Pi 96.2 · Rd 0.0</text>
+</g><g>
+<text x="66" y="160" text-anchor="end" class="rank-code">DCC002</text>
+<rect x="74" y="151" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="151" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC002 — 0.0% uptime</title></rect>
+<text x="828" y="161" class="rank-val">0.0%</text>
+<text x="864" y="161" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="179" text-anchor="end" class="rank-code">DCC007</text>
+<rect x="74" y="170" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="170" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC007 — 0.0% uptime</title></rect>
+<text x="828" y="180" class="rank-val">0.0%</text>
+<text x="864" y="180" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="198" text-anchor="end" class="rank-code">DCC008</text>
+<rect x="74" y="189" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="189" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC008 — 0.0% uptime</title></rect>
+<text x="828" y="199" class="rank-val">0.0%</text>
+<text x="864" y="199" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="217" text-anchor="end" class="rank-code">DCC009</text>
+<rect x="74" y="208" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="208" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC009 — 0.0% uptime</title></rect>
+<text x="828" y="218" class="rank-val">0.0%</text>
+<text x="864" y="218" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="236" text-anchor="end" class="rank-code">DCC010</text>
+<rect x="74" y="227" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="227" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC010 — 0.0% uptime</title></rect>
+<text x="828" y="237" class="rank-val">0.0%</text>
+<text x="864" y="237" class="rank-sub">Pi 0.0 · Rd 11.5</text>
+</g><g>
+<text x="66" y="255" text-anchor="end" class="rank-code">DCC012</text>
+<rect x="74" y="246" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="246" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC012 — 0.0% uptime</title></rect>
+<text x="828" y="256" class="rank-val">0.0%</text>
+<text x="864" y="256" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="274" text-anchor="end" class="rank-code">DCC021</text>
+<rect x="74" y="265" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="265" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC021 — 0.0% uptime</title></rect>
+<text x="828" y="275" class="rank-val">0.0%</text>
+<text x="864" y="275" class="rank-sub">Pi 0.0 · Rd 60.3</text>
+</g><g>
+<text x="66" y="293" text-anchor="end" class="rank-code">DCC023</text>
+<rect x="74" y="284" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="284" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC023 — 0.0% uptime</title></rect>
+<text x="828" y="294" class="rank-val">0.0%</text>
+<text x="864" y="294" class="rank-sub">Pi 73.5 · Rd 0.0</text>
+</g><g>
+<text x="66" y="312" text-anchor="end" class="rank-code">DCC024</text>
+<rect x="74" y="303" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="303" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC024 — 0.0% uptime</title></rect>
+<text x="828" y="313" class="rank-val">0.0%</text>
+<text x="864" y="313" class="rank-sub">Pi 13.2 · Rd 0.0</text>
+</g><g>
+<text x="66" y="331" text-anchor="end" class="rank-code">DCC031</text>
+<rect x="74" y="322" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="322" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC031 — 0.0% uptime</title></rect>
+<text x="828" y="332" class="rank-val">0.0%</text>
+<text x="864" y="332" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="350" text-anchor="end" class="rank-code">DCC032</text>
+<rect x="74" y="341" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="341" width="0.0" height="13" rx="3" fill="var(--bad)"><title>DCC032 — 0.0% uptime</title></rect>
+<text x="828" y="351" class="rank-val">0.0%</text>
+<text x="864" y="351" class="rank-sub">Pi 0.0 · Rd 0.0</text>
+</g><g>
+<text x="66" y="369" text-anchor="end" class="rank-code">DCC027</text>
+<rect x="74" y="360" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="360" width="3.2" height="13" rx="3" fill="var(--bad)"><title>DCC027 — 0.4% uptime</title></rect>
+<text x="828" y="370" class="rank-val">0.4%</text>
+<text x="864" y="370" class="rank-sub">Pi 0.9 · Rd 76.9</text>
+</g><g>
+<text x="66" y="388" text-anchor="end" class="rank-code">DCC003</text>
+<rect x="74" y="379" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="379" width="60.6" height="13" rx="3" fill="var(--bad)"><title>DCC003 — 8.1% uptime</title></rect>
+<text x="828" y="389" class="rank-val">8.1%</text>
+<text x="864" y="389" class="rank-sub">Pi 27.4 · Rd 33.8</text>
+</g><g>
+<text x="66" y="407" text-anchor="end" class="rank-code">DCC026</text>
+<rect x="74" y="398" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="398" width="108.4" height="13" rx="3" fill="var(--bad)"><title>DCC026 — 14.5% uptime</title></rect>
+<text x="828" y="408" class="rank-val">14.5%</text>
+<text x="864" y="408" class="rank-sub">Pi 15.4 · Rd 77.4</text>
+</g><g>
+<text x="66" y="426" text-anchor="end" class="rank-code">DCC030</text>
+<rect x="74" y="417" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="417" width="130.2" height="13" rx="3" fill="var(--bad)"><title>DCC030 — 17.4% uptime</title></rect>
+<text x="828" y="427" class="rank-val">17.4%</text>
+<text x="864" y="427" class="rank-sub">Pi 63.4 · Rd 17.4</text>
+</g><g>
+<text x="66" y="445" text-anchor="end" class="rank-code">DCC025</text>
+<rect x="74" y="436" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="436" width="156.2" height="13" rx="3" fill="var(--bad)"><title>DCC025 — 20.9% uptime</title></rect>
+<text x="828" y="446" class="rank-val">20.9%</text>
+<text x="864" y="446" class="rank-sub">Pi 41.5 · Rd 20.9</text>
+</g><g>
+<text x="66" y="464" text-anchor="end" class="rank-code">DCC005</text>
+<rect x="74" y="455" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="455" width="223.2" height="13" rx="3" fill="var(--bad)"><title>DCC005 — 29.9% uptime</title></rect>
+<text x="828" y="465" class="rank-val">29.9%</text>
+<text x="864" y="465" class="rank-sub">Pi 31.6 · Rd 79.1</text>
+</g><g>
+<text x="66" y="483" text-anchor="end" class="rank-code">DCC022</text>
+<rect x="74" y="474" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="474" width="339.7" height="13" rx="3" fill="var(--bad)"><title>DCC022 — 45.5% uptime</title></rect>
+<text x="828" y="484" class="rank-val">45.5%</text>
+<text x="864" y="484" class="rank-sub">Pi 45.5 · Rd 66.8</text>
+</g><g>
+<text x="66" y="502" text-anchor="end" class="rank-code">DCC019</text>
+<rect x="74" y="493" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="493" width="396.8" height="13" rx="3" fill="var(--warn)"><title>DCC019 — 53.2% uptime</title></rect>
+<text x="828" y="503" class="rank-val">53.2%</text>
+<text x="864" y="503" class="rank-sub">Pi 80.9 · Rd 56.6</text>
+</g><g>
+<text x="66" y="521" text-anchor="end" class="rank-code">DCC013</text>
+<rect x="74" y="512" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="512" width="398.5" height="13" rx="3" fill="var(--warn)"><title>DCC013 — 53.4% uptime</title></rect>
+<text x="828" y="522" class="rank-val">53.4%</text>
+<text x="864" y="522" class="rank-sub">Pi 86.3 · Rd 54.3</text>
+</g><g>
+<text x="66" y="540" text-anchor="end" class="rank-code">DCC020</text>
+<rect x="74" y="531" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="531" width="420.4" height="13" rx="3" fill="var(--warn)"><title>DCC020 — 56.4% uptime</title></rect>
+<text x="828" y="541" class="rank-val">56.4%</text>
+<text x="864" y="541" class="rank-sub">Pi 64.0 · Rd 64.0</text>
+</g><g>
+<text x="66" y="559" text-anchor="end" class="rank-code">DCC015</text>
+<rect x="74" y="550" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="550" width="536.5" height="13" rx="3" fill="var(--warn)"><title>DCC015 — 71.9% uptime</title></rect>
+<text x="828" y="560" class="rank-val">71.9%</text>
+<text x="864" y="560" class="rank-sub">Pi 71.9 · Rd 99.1</text>
+</g><g>
+<text x="66" y="578" text-anchor="end" class="rank-code">DCC018</text>
+<rect x="74" y="569" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="569" width="536.5" height="13" rx="3" fill="var(--warn)"><title>DCC018 — 71.9% uptime</title></rect>
+<text x="828" y="579" class="rank-val">71.9%</text>
+<text x="864" y="579" class="rank-sub">Pi 78.7 · Rd 76.6</text>
+</g><g>
+<text x="66" y="597" text-anchor="end" class="rank-code">DCC028</text>
+<rect x="74" y="588" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="588" width="589.8" height="13" rx="3" fill="var(--warn)"><title>DCC028 — 79.1% uptime</title></rect>
+<text x="828" y="598" class="rank-val">79.1%</text>
+<text x="864" y="598" class="rank-sub">Pi 98.3 · Rd 79.9</text>
+</g><g>
+<text x="66" y="616" text-anchor="end" class="rank-code">DCC016</text>
+<rect x="74" y="607" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="607" width="605.7" height="13" rx="3" fill="var(--warn)"><title>DCC016 — 81.2% uptime</title></rect>
+<text x="828" y="617" class="rank-val">81.2%</text>
+<text x="864" y="617" class="rank-sub">Pi 83.3 · Rd 89.7</text>
+</g><g>
+<text x="66" y="635" text-anchor="end" class="rank-code">DCC014</text>
+<rect x="74" y="626" width="746" height="13" rx="3" class="rank-track" />
+<rect x="74" y="626" width="606.3" height="13" rx="3" fill="var(--warn)"><title>DCC014 — 81.3% uptime</title></rect>
+<text x="828" y="636" class="rank-val">81.3%</text>
+<text x="864" y="636" class="rank-sub">Pi 81.7 · Rd 85.5</text>
+</g>
+</svg>
+  <div class="legend-inline" style="margin-top:10px">
+    <span><i style="background:var(--bad)"></i> Critical (&lt;50%)</span>
+    <span><i style="background:var(--warn)"></i> Unstable (50&ndash;95%)</span>
+    <span><i style="background:var(--ok)"></i> Stable (&ge;95%)</span>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">5</span> Per-DCC detail</h2>
+  <p class="lede">Click a column header to sort. 7,507 checks in total, worst first.</p>
+  <div class="table-wrap">
+    <table id="dtab">
+      <thead>
+        <tr>
+          <th class="num" data-t="n">#</th>
+          <th data-t="s">DCC</th>
+          <th data-t="s">Station</th>
+          <th data-t="s">Pi IP</th>
+          <th data-t="s">Reader IP</th>
+          <th class="num" data-t="n">Checks</th>
+          <th class="num" data-t="n">Uptime</th>
+          <th class="num" data-t="n">Pi&nbsp;%</th>
+          <th class="num" data-t="n">Reader&nbsp;%</th>
+          <th class="num" data-t="n">Outages</th>
+          <th class="num" data-t="n">Longest outage</th>
+          <th data-t="s">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr>
+<td class="num">1</td>
+<td class="mono strong">DCC029</td>
+<td>Paint Buffing</td>
+<td class="mono">172.18.6.61</td>
+<td class="mono">172.18.6.29</td>
+<td class="num">239</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">2</td>
+<td class="mono strong">DCC006</td>
+<td>Hand Lamination</td>
+<td class="mono">172.18.6.38</td>
+<td class="mono">172.18.6.6</td>
+<td class="num">236</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">3</td>
+<td class="mono strong">DCC001</td>
+<td>Mold Staging</td>
+<td class="mono">172.18.6.33</td>
+<td class="mono">172.18.6.1</td>
+<td class="num">235</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">4</td>
+<td class="mono strong">DCC004</td>
+<td>Closed Molding Laminate Cure- VI</td>
+<td class="mono">172.18.6.36</td>
+<td class="mono">172.18.6.4</td>
+<td class="num">235</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">5</td>
+<td class="mono strong">DCC011</td>
+<td>Drilling</td>
+<td class="mono">172.18.6.43</td>
+<td class="mono">172.18.6.11</td>
+<td class="num">235</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">6</td>
+<td class="mono strong">DCC017</td>
+<td>Super Market before primer</td>
+<td class="mono">172.18.6.49</td>
+<td class="mono">172.18.6.17</td>
+<td class="num">235</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num ">96.2%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">7</td>
+<td class="mono strong">DCC002</td>
+<td>Mold Preparation</td>
+<td class="mono">172.18.6.34</td>
+<td class="mono">172.18.6.2</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">8</td>
+<td class="mono strong">DCC007</td>
+<td>Hand Lamination</td>
+<td class="mono">172.18.6.39</td>
+<td class="mono">172.18.6.7</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">9</td>
+<td class="mono strong">DCC008</td>
+<td>Hand Lamination- Laminate Curing</td>
+<td class="mono">172.18.6.40</td>
+<td class="mono">172.18.6.8</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">10</td>
+<td class="mono strong">DCC009</td>
+<td>Demolding- Open Molding</td>
+<td class="mono">172.18.6.41</td>
+<td class="mono">172.18.6.9</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">11</td>
+<td class="mono strong">DCC010</td>
+<td>Trimming</td>
+<td class="mono">172.18.6.42</td>
+<td class="mono">172.18.6.10</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">11.5%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">12</td>
+<td class="mono strong">DCC012</td>
+<td>Super Market After demolding</td>
+<td class="mono">172.18.6.44</td>
+<td class="mono">172.18.6.12</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">13</td>
+<td class="mono strong">DCC021</td>
+<td>Super Market before final assembly</td>
+<td class="mono">172.18.6.53</td>
+<td class="mono">172.18.6.21</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num ">60.3%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">14</td>
+<td class="mono strong">DCC023</td>
+<td>Gelcoating</td>
+<td class="mono">172.18.6.55</td>
+<td class="mono">172.18.6.23</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num ">73.5%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">15</td>
+<td class="mono strong">DCC024</td>
+<td>Vacuum Infusion- Consumable- Fiber Loading</td>
+<td class="mono">172.18.6.56</td>
+<td class="mono">172.18.6.24</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">13.2%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">16</td>
+<td class="mono strong">DCC031</td>
+<td>Final Assembly (FA)</td>
+<td class="mono">172.18.6.63</td>
+<td class="mono">172.18.6.31</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">17</td>
+<td class="mono strong">DCC032</td>
+<td>Final Assembly (FA)</td>
+<td class="mono">172.18.6.64</td>
+<td class="mono">172.18.6.32</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.0%"></span></div><span class="bar-val">0.0%</span></td>
+<td class="num bad-text">0.0%</td>
+<td class="num bad-text">0.0%</td>
+<td class="num">1</td>
+<td class="num">7 h 03 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">18</td>
+<td class="mono strong">DCC027</td>
+<td>Primer Booth</td>
+<td class="mono">172.18.6.59</td>
+<td class="mono">172.18.6.27</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:0.4%"></span></div><span class="bar-val">0.4%</span></td>
+<td class="num bad-text">0.9%</td>
+<td class="num ">76.9%</td>
+<td class="num">2</td>
+<td class="num">6 h 48 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">19</td>
+<td class="mono strong">DCC003</td>
+<td>Gelcoat Curing</td>
+<td class="mono">172.18.6.35</td>
+<td class="mono">172.18.6.3</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:8.1%"></span></div><span class="bar-val">8.1%</span></td>
+<td class="num bad-text">27.4%</td>
+<td class="num bad-text">33.8%</td>
+<td class="num">13</td>
+<td class="num">3 h 30 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">20</td>
+<td class="mono strong">DCC026</td>
+<td>Vacuum Infusion- Consumable- Leak Test +Infusion</td>
+<td class="mono">172.18.6.58</td>
+<td class="mono">172.18.6.26</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:14.5%"></span></div><span class="bar-val">14.5%</span></td>
+<td class="num bad-text">15.4%</td>
+<td class="num ">77.4%</td>
+<td class="num">16</td>
+<td class="num">4 h 38 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">21</td>
+<td class="mono strong">DCC030</td>
+<td>Paint Buffing</td>
+<td class="mono">172.18.6.62</td>
+<td class="mono">172.18.6.30</td>
+<td class="num">235</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:17.4%"></span></div><span class="bar-val">17.4%</span></td>
+<td class="num ">63.4%</td>
+<td class="num bad-text">17.4%</td>
+<td class="num">26</td>
+<td class="num">1 h 49 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">22</td>
+<td class="mono strong">DCC025</td>
+<td>Vacuum Infusion- Consumable- Laying</td>
+<td class="mono">172.18.6.57</td>
+<td class="mono">172.18.6.25</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:20.9%"></span></div><span class="bar-val">20.9%</span></td>
+<td class="num bad-text">41.5%</td>
+<td class="num bad-text">20.9%</td>
+<td class="num">14</td>
+<td class="num">1 h 34 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">23</td>
+<td class="mono strong">DCC005</td>
+<td>Demolding- Closed Molding</td>
+<td class="mono">172.18.6.37</td>
+<td class="mono">172.18.6.5</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:29.9%"></span></div><span class="bar-val">29.9%</span></td>
+<td class="num bad-text">31.6%</td>
+<td class="num ">79.1%</td>
+<td class="num">12</td>
+<td class="num">3 h 19 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">24</td>
+<td class="mono strong">DCC022</td>
+<td>Finished Goods</td>
+<td class="mono">172.18.6.54</td>
+<td class="mono">172.18.6.22</td>
+<td class="num">235</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill critical" style="width:45.5%"></span></div><span class="bar-val">45.5%</span></td>
+<td class="num bad-text">45.5%</td>
+<td class="num ">66.8%</td>
+<td class="num">22</td>
+<td class="num">1 h 50 m</td>
+<td><span class="chip critical">Critical</span></td>
+</tr>
+<tr>
+<td class="num">25</td>
+<td class="mono strong">DCC019</td>
+<td>Super Market before painting</td>
+<td class="mono">172.18.6.51</td>
+<td class="mono">172.18.6.19</td>
+<td class="num">235</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill unstable" style="width:53.2%"></span></div><span class="bar-val">53.2%</span></td>
+<td class="num ">80.9%</td>
+<td class="num ">56.6%</td>
+<td class="num">24</td>
+<td class="num">48 min</td>
+<td><span class="chip unstable">Unstable</span></td>
+</tr>
+<tr>
+<td class="num">26</td>
+<td class="mono strong">DCC013</td>
+<td>In-Mold Bonding</td>
+<td class="mono">172.18.6.45</td>
+<td class="mono">172.18.6.13</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill unstable" style="width:53.4%"></span></div><span class="bar-val">53.4%</span></td>
+<td class="num ">86.3%</td>
+<td class="num ">54.3%</td>
+<td class="num">25</td>
+<td class="num">46 min</td>
+<td><span class="chip unstable">Unstable</span></td>
+</tr>
+<tr>
+<td class="num">27</td>
+<td class="mono strong">DCC020</td>
+<td>Paint Curing Inside the Booth</td>
+<td class="mono">172.18.6.52</td>
+<td class="mono">172.18.6.20</td>
+<td class="num">236</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill unstable" style="width:56.4%"></span></div><span class="bar-val">56.4%</span></td>
+<td class="num ">64.0%</td>
+<td class="num ">64.0%</td>
+<td class="num">29</td>
+<td class="num">1 h 34 m</td>
+<td><span class="chip unstable">Unstable</span></td>
+</tr>
+<tr>
+<td class="num">28</td>
+<td class="mono strong">DCC015</td>
+<td>Over Lamination</td>
+<td class="mono">172.18.6.47</td>
+<td class="mono">172.18.6.15</td>
+<td class="num">235</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill unstable" style="width:71.9%"></span></div><span class="bar-val">71.9%</span></td>
+<td class="num ">71.9%</td>
+<td class="num ">99.1%</td>
+<td class="num">21</td>
+<td class="num">51 min</td>
+<td><span class="chip unstable">Unstable</span></td>
+</tr>
+<tr>
+<td class="num">29</td>
+<td class="mono strong">DCC018</td>
+<td>Primer Oven Curing</td>
+<td class="mono">172.18.6.50</td>
+<td class="mono">172.18.6.18</td>
+<td class="num">235</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill unstable" style="width:71.9%"></span></div><span class="bar-val">71.9%</span></td>
+<td class="num ">78.7%</td>
+<td class="num ">76.6%</td>
+<td class="num">12</td>
+<td class="num">31 min</td>
+<td><span class="chip unstable">Unstable</span></td>
+</tr>
+<tr>
+<td class="num">30</td>
+<td class="mono strong">DCC028</td>
+<td>Painting Booth (Includes Flash Off)</td>
+<td class="mono">172.18.6.60</td>
+<td class="mono">172.18.6.28</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill unstable" style="width:79.1%"></span></div><span class="bar-val">79.1%</span></td>
+<td class="num ">98.3%</td>
+<td class="num ">79.9%</td>
+<td class="num">19</td>
+<td class="num">28 min</td>
+<td><span class="chip unstable">Unstable</span></td>
+</tr>
+<tr>
+<td class="num">31</td>
+<td class="mono strong">DCC016</td>
+<td>Paint Preparation</td>
+<td class="mono">172.18.6.48</td>
+<td class="mono">172.18.6.16</td>
+<td class="num">234</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill unstable" style="width:81.2%"></span></div><span class="bar-val">81.2%</span></td>
+<td class="num ">83.3%</td>
+<td class="num ">89.7%</td>
+<td class="num">16</td>
+<td class="num">25 min</td>
+<td><span class="chip unstable">Unstable</span></td>
+</tr>
+<tr>
+<td class="num">32</td>
+<td class="mono strong">DCC014</td>
+<td>Bonding</td>
+<td class="mono">172.18.6.46</td>
+<td class="mono">172.18.6.14</td>
+<td class="num">235</td>
+<td class="bar-cell"><div class="bar"><span class="bar-fill unstable" style="width:81.3%"></span></div><span class="bar-val">81.3%</span></td>
+<td class="num ">81.7%</td>
+<td class="num ">85.5%</td>
+<td class="num">7</td>
+<td class="num">32 min</td>
+<td><span class="chip unstable">Unstable</span></td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lede" style="margin-top:10px">
+    <strong>Longest continuous outage</strong> reached <strong>7 h 03 m</strong>;
+    stations averaged <strong>8.6</strong> separate outage episodes each.
+    14 DCCs never answered from the Pi side and 15 never answered from the reader side
+    during the whole window.
+  </p>
+</section>
+
+<section>
+  <h2><span class="n">6</span> Findings</h2>
+  <ol class="findings">
+    <li><strong>Neither the DCCs nor the card readers are stable.</strong> Overall uptime was
+      <strong>21.4%</strong> (1,608 of 7,507 checks passed). The DCC/Pi side
+      answered in only 32.9% of checks and the card readers in 32.8%.</li>
+    <li><strong>Half the fleet is completely dead from a monitoring point of view.</strong>
+      <strong>17 of 32 DCCs recorded 0% uptime</strong> &mdash; not a single check passed &mdash;
+      and 24 of 32 sit below 50%. Only <strong>0 DCC reached &ge;99%</strong>
+      (target for rollout: all 32).</li>
+    <li><strong>Failures are mostly shared-path, not single-device.</strong>
+      55.7% of checks had <em>both</em> devices down (4,181 checks),
+      which points to the station uplink / switch / access point / power rather than one faulty peripheral.</li>
+    <li><strong>The card readers (WiFi) are a distinct weak point.</strong>
+      15 DCCs never once answered from the reader. On <strong>DCC017</strong> the Pi answered
+      96.2% of checks while the reader answered
+      0.0% &mdash; the reader path alone was broken.
+      The same pattern appears on DCC023 (Pi 73.5%,
+      reader 0.0%) and DCC024
+      (Pi 13.2%,
+      reader 0.0%).</li>
+    <li><strong>The DCC side is unstable too &mdash; it is not only WiFi.</strong>
+      14 DCCs never answered from the Pi side, and on DCC021 the reader answered
+      60.3% while the Pi answered
+      0.0%. Power, cabling or switch ports on the
+      cabinet side must be checked as well.</li>
+    <li><strong>Outages are long, not momentary blips.</strong> The longest single outage lasted
+      <strong>7 h 03 m</strong> &mdash; stations that failed stayed failed for the entire window &mdash;
+      and stations averaged 8.6 outage episodes each. Flapping is not the problem;
+      sustained loss of connectivity is.</li>
+    <li><strong>Ping quality is poor: only 4 of the 2,472 "reachable" results
+      (0.16%) carried a measurable round-trip time</strong>, and no reader reply ever recorded a
+      latency. A reply without a round-trip time should not count as reachable, so the reachability figures above
+      are optimistic &mdash; real stable connectivity is <em>no better, and possibly worse</em>. Fix this before the
+      next measurement round (recommendation E).</li>
+    <li><strong>Monitoring coverage itself was incomplete.</strong> Checks exist in only
+      7 of the 24 hours of 10&nbsp;Sep (29.2%) &mdash; first check
+      10 Sep 2026, 06:36, last 10 Sep 2026, 13:39. The remaining
+      17 hours of the day are unmeasured, so the true daily figure may differ.</li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="n">7</span> Possible solutions to be considered</h2>
+  <p class="lede">Options to close the gap found in this window. Each carries a cost or an operational trade-off
+     that has to be accepted before choosing one &mdash; none of them is free of change.</p>
+
+  <div class="reco">
+    <h4>A. Card reader: connect it directly to the Raspberry Pi over the same power cable
+      <span class="prio p0">Priority 0</span></h4>
+    <ul>
+      <li><strong>The solution:</strong> wire each card reader directly to its own Raspberry Pi using the cable that
+        already carries power &mdash; one path delivers <strong>power and data together</strong>, so the reader
+        stops depending on plant WiFi entirely and gets a direct data transfer.</li>
+      <li><strong>What it requires:</strong> all 32 card readers must be <strong>re-configured to work in
+        this direct mode</strong> (addressing, protocol and reader settings) before the link can be used &mdash; a
+        fleet-wide change, not a per-station tweak, so it needs a pilot on one station first.</li>
+
+    </ul>
+    <div class="why">Evidence: readers answered in only 32.8% of checks, 15 DCCs never
+      answered at all, and on several stations the Pi worked while the reader did not.</div>
+  </div>
+
+  <div class="reco">
+    <h4>B. DCC (Raspberry Pi): direct Ethernet, or an antenna with a USB cable
+      <span class="prio p0">Priority 0</span></h4>
+    <ul>
+      <li><strong>A possible solution:</strong> connect every Raspberry Pi directly to the plant network with an
+        Ethernet cable instead of WiFi, so the station link is no longer shared with the readers or with radio
+        conditions on the floor.</li>
+      <li><strong>Trade-offs to accept:</strong> it requires <strong>installing cables to all 32
+        locations in the factory</strong>, and it <strong>will limit the movement of the DCC</strong> &mdash; a
+        station becomes tied to its cable run and can no longer be moved around freely.</li>
+      <li><strong>Other possible solution &mdash; buy an antenna with a USB cable:</strong> fit each
+        Raspberry&nbsp;Pi with an <strong>external USB WiFi antenna on a USB extension cable</strong>, so the antenna
+        can be positioned outside the metal cabinet and away from the equipment that blocks the signal. Quicker and
+        cheaper than cabling the whole factory and it <strong>keeps the DCC mobile</strong>, but the station still
+        depends on WiFi and on the access-point coverage, so it is a signal fix rather than a link fix.</li>
+    </ul>
+    <div class="why">Evidence: DCC/Pi reachable in 32.9% of checks; 14 DCCs at 0% on the Pi side.</div>
+  </div>
+
+  <div class="reco">
+    <h4>C. Live kiosk software has to be updated as well
+      <span class="prio p0">Priority 0</span></h4>
+    <ul>
+      <li>If solution&nbsp;A and/or&nbsp;B are implemented, the <strong>live kiosk software must be updated to work
+        with the new topology</strong> &mdash; endpoint/address configuration, how it talks to the reader through
+        the Pi, connection handling, reconnection and fallback behaviour.</li>
+      <li>Regression-test the full flow on the kiosk after the change: badge read &rarr; card reader &rarr;
+        Raspberry&nbsp;Pi &rarr; application, including what happens when the link drops and recovers.</li>
+      <li>Update the floor runbook and the DCC dashboard/alerts to match the new wiring, and brief the operators on
+        any new recovery steps.</li>
+    </ul>
+    <div class="why">Why it matters: hardware changes alone will not help if the kiosk software still assumes the old
+      WiFi path &mdash; the software and the wiring have to move together.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">8</span> Rollout gate</h2>
+  
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Criterion</th><th>Target</th><th class="num">Measured (10 Sep)</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Overall uptime (both devices up)</td><td>&ge; 95%</td><td class="num">21.4%</td><td><span class="chip fail">Fail</span></td></tr>
+        <tr><td>DCC / Raspberry Pi reachability</td><td>&ge; 95%</td><td class="num">32.9%</td><td><span class="chip fail">Fail</span></td></tr>
+        <tr><td>Card reader reachability</td><td>&ge; 95%</td><td class="num">32.8%</td><td><span class="chip fail">Fail</span></td></tr>
+        <tr><td>DCCs at &ge;95% uptime</td><td>32 of 32</td><td class="num">0 of 32</td><td><span class="chip fail">Fail</span></td></tr>
+        <tr><td>DCCs with 0% uptime</td><td>0</td><td class="num">17</td><td><span class="chip fail">Fail</span></td></tr>
+        <tr><td>Monitoring coverage of the window</td><td>100% of hours</td><td class="num">29.2% (7/24 h)</td><td><span class="chip fail">Fail</span></td></tr>
+        <tr><td>Latency recorded on successful pings</td><td>&ge; 95%</td><td class="num">0.16% (4/2472)</td><td><span class="chip fail">Fail</span></td></tr>
+        <tr><td>Longest outage per station</td><td>&le; 5 min</td><td class="num">7 h 03 m</td><td><span class="chip fail">Fail</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</div>
+<script>
+(()=> {
+  var table=document.getElementById('dtab');
+  if(!table) return;
+  var tbody=table.tBodies[0];
+  var dirs={};
+  table.tHead.addEventListener('click',(e)=> {
+    var th=e.target.closest('th'); if(!th) return;
+    var idx=Array.prototype.indexOf.call(th.parentNode.children,th);
+    var type=th.getAttribute('data-t')||'s';
+    var dir=dirs[idx]=(dirs[idx]==='asc')?'desc':'asc';
+    var rows=Array.prototype.slice.call(tbody.rows);
+    rows.sort((a,b)=> {
+      var av=a.cells[idx].textContent.trim(), bv=b.cells[idx].textContent.trim();
+      var r = type==='n' ? (parseFloat(av.replace(/[^0-9.-]/g,''))||0)-(parseFloat(bv.replace(/[^0-9.-]/g,''))||0)
+                         : av.localeCompare(bv);
+      return dir==='asc'? r : -r;
+    });
+    rows.forEach((r)=> { tbody.appendChild(r); });
+  });
+})();
+</script>
+</body>
+</html>

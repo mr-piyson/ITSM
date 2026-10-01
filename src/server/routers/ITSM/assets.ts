@@ -270,10 +270,11 @@ export const assetsRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const { id, data } = input;
+			let deviceStatusSync: string | null | undefined;
 
 			if (data.emplCode !== undefined) {
 				const [oldRows] = await ctx.db.iss.execute<AssetRow[]>(
-					`SELECT emplCode FROM assets WHERE id = ? LIMIT 1`,
+					`SELECT emplCode, deviceStatus FROM assets WHERE id = ? LIMIT 1`,
 					[id],
 				);
 				const oldEmplCode = oldRows[0] ? toString(oldRows[0].emplCode) : null;
@@ -293,11 +294,28 @@ export const assetsRouter = router({
 						],
 					);
 				}
+				// Keep deviceStatus in sync with ownership: an asset without an
+				// owner sits in the IT pool (Available), an assigned one is In Use.
+				if (data.deviceStatus === undefined) {
+					const currentStatus = oldRows[0]
+						? toString(oldRows[0].deviceStatus)
+						: null;
+					if (!newEmplCode) {
+						if (!currentStatus || currentStatus === "In Use") {
+							deviceStatusSync = "Available";
+						}
+					} else if (!currentStatus || currentStatus === "Available") {
+						deviceStatusSync = "In Use";
+					}
+				}
 			}
 
 			const entries = Object.entries(data).filter(
 				([, value]) => value !== undefined,
 			);
+			if (deviceStatusSync !== undefined) {
+				entries.push(["deviceStatus", deviceStatusSync]);
+			}
 
 			if (entries.length === 0) {
 				return { success: true, affectedRows: 0 };
@@ -342,8 +360,8 @@ export const assetsRouter = router({
 				`INSERT INTO assets
 				 (code, serialNumber, deviceName, type, location, manufacturer, model,
 				  processor, os, memory, hdd, ip, emplCode, specification, inActive,
-				  department, firmwareVer, image)
-				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+				  department, firmwareVer, image, deviceStatus)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
 				[
 					input.code,
 					input.serialNumber,
@@ -362,6 +380,7 @@ export const assetsRouter = router({
 					input.department ?? null,
 					input.firmwareVer ?? null,
 					input.image ?? null,
+					input.emplCode ? "In Use" : "Available",
 				],
 			);
 
