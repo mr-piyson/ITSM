@@ -483,7 +483,15 @@ function AssetFormContent({
 
 					<div className="space-y-2">
 						<Label>Owner</Label>
-						<Popover open={ownerOpen} onOpenChange={setOwnerOpen}>
+						<Popover
+							open={ownerOpen}
+							onOpenChange={(next) => {
+								setOwnerOpen(next);
+								if (next) {
+									setOwnerSearch("");
+								}
+							}}
+						>
 							<PopoverTrigger
 								render={
 									<Button
@@ -519,23 +527,23 @@ function AssetFormContent({
 										value={ownerSearch}
 										onValueChange={setOwnerSearch}
 									/>
+									<CommandGroup className="border-b bg-popover">
+										<CommandItem
+											value="__in_it__"
+											data-checked={form.state.values.emplCode === ""}
+											onSelect={() => {
+												form.setFieldValue("emplCode", "");
+												form.setFieldValue("ownerName", "");
+												setOwnerOpen(false);
+											}}
+										>
+											<span className="truncate">In IT (no owner)</span>
+											<span className="ml-auto shrink-0 text-muted-foreground">
+												IT pool
+											</span>
+										</CommandItem>
+									</CommandGroup>
 									<CommandList>
-										<CommandGroup>
-											<CommandItem
-												value="__in_it__"
-												data-checked={form.state.values.emplCode === ""}
-												onSelect={() => {
-													form.setFieldValue("emplCode", "");
-													form.setFieldValue("ownerName", "");
-													setOwnerOpen(false);
-												}}
-											>
-												<span className="truncate">In IT (no owner)</span>
-												<span className="ml-auto shrink-0 text-muted-foreground">
-													IT pool
-												</span>
-											</CommandItem>
-										</CommandGroup>
 										{ownerList.length === 0 ? (
 											<p className="py-6 text-center text-sm text-muted-foreground">
 												No employee found
