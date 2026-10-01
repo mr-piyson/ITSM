@@ -13,7 +13,20 @@ import {
 } from "@/components/ui/input-group";
 import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react";
 
-const Combobox = ComboboxPrimitive.Root;
+const Combobox = ComboboxPrimitive.Root as <
+	Value,
+	Multiple extends boolean | undefined = false,
+>(
+	props: Omit<
+		ComboboxPrimitive.Root.Props<Value, Multiple>,
+		"autoHighlight"
+	> & {
+		// `AriaCombobox` supports `"always"` at runtime, but `ComboboxRoot`'s
+		// declaration narrows this prop to `boolean`. Needed for async item lists,
+		// where `"always"` re-highlights the first item once items arrive.
+		autoHighlight?: boolean | "always" | undefined;
+	},
+) => React.JSX.Element;
 
 function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
 	return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />;

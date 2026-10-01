@@ -184,6 +184,7 @@ export function AttendancePage() {
 						itemToStringLabel={(employee) =>
 							`${employee.name} ${employee.empCode}`
 						}
+						autoHighlight="always"
 					>
 						<ComboboxInput
 							value={employeeSearch}
