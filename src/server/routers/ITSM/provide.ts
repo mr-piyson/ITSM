@@ -11,6 +11,7 @@ export type ProvideLineItem = {
 	itemID: number;
 	itemName: string;
 	itemBrand: string;
+	itemImg: string;
 	quantity: number;
 };
 
@@ -98,6 +99,7 @@ function mapProvideRows(
 			itemID: Number(row.itemID),
 			itemName: String(row.itemName ?? ""),
 			itemBrand: String(row.itemBrand ?? ""),
+			itemImg: String(row.itemImg ?? ""),
 			quantity: Number(row.quantity),
 		});
 		itemsByProvide.set(provideID, list);
@@ -145,7 +147,8 @@ const PROVIDE_ITEMS_SELECT = `
 		pi.itemID,
 		pi.quantity,
 		i.name AS itemName,
-		i.brand AS itemBrand
+		i.brand AS itemBrand,
+		i.img AS itemImg
 	FROM provideItems pi
 	INNER JOIN items i ON i.id = pi.itemID
 `;

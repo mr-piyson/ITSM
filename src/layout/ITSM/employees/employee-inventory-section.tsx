@@ -24,6 +24,7 @@ import {
 	assetImageUrl,
 	assetTypeBadge,
 } from "@/lib/assets-constants";
+import { itemImageUrl } from "@/lib/stock-constants";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/react";
 
@@ -235,28 +236,46 @@ export function EmployeeInventorySection({
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{providedLines.map(({ provide, item }) => (
-								<TableRow key={item.id}>
-									<TableCell className="font-medium">
-										{item.itemName || "-"}
-									</TableCell>
-									<TableCell className="text-xs text-muted-foreground">
-										{item.itemBrand || "-"}
-									</TableCell>
-									<TableCell className="font-mono text-xs">
-										{item.quantity}
-									</TableCell>
-									<TableCell className="whitespace-nowrap text-xs">
-										{provide.date || "-"}
-									</TableCell>
-									<TableCell className="text-xs">
-										{provide.provideBy || "-"}
-									</TableCell>
-									<TableCell className="max-w-48 truncate text-xs text-muted-foreground">
-										{provide.notes || "-"}
-									</TableCell>
-								</TableRow>
-							))}
+							{providedLines.map(({ provide, item }) => {
+								const image = itemImageUrl(item.itemImg);
+								return (
+									<TableRow key={item.id}>
+										<TableCell>
+											<div className="flex items-center gap-2">
+												{image ? (
+													<img
+														src={image}
+														alt={item.itemName}
+														className="h-8 w-11 shrink-0 object-cover"
+													/>
+												) : (
+													<span className="flex h-8 w-11 shrink-0 items-center justify-center border bg-muted text-[10px] text-muted-foreground">
+														No img
+													</span>
+												)}
+												<span className="font-medium">
+													{item.itemName || "-"}
+												</span>
+											</div>
+										</TableCell>
+										<TableCell className="text-xs text-muted-foreground">
+											{item.itemBrand || "-"}
+										</TableCell>
+										<TableCell className="font-mono text-xs">
+											{item.quantity}
+										</TableCell>
+										<TableCell className="whitespace-nowrap text-xs">
+											{provide.date || "-"}
+										</TableCell>
+										<TableCell className="text-xs">
+											{provide.provideBy || "-"}
+										</TableCell>
+										<TableCell className="max-w-48 truncate text-xs text-muted-foreground">
+											{provide.notes || "-"}
+										</TableCell>
+									</TableRow>
+								);
+							})}
 						</TableBody>
 					</Table>
 				</div>
