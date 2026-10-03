@@ -1,4 +1,5 @@
 import { router } from "@/server/trpc";
+import { acRouter } from "./ac";
 import { assetsRouter } from "./assets";
 import { attendanceRouter } from "./attendance";
 import { authRouter } from "./auth";
@@ -24,6 +25,7 @@ import { vendorsRouter } from "./vendors";
 export const issRouter = {
 	health: healthRouter,
 	auth: authRouter,
+	ac: acRouter,
 	assets: assetsRouter,
 	attendance: attendanceRouter,
 	employees: employeesRouter,

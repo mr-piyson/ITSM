@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SearchIcon } from "lucide-react";
 
 import { routes } from "@/lib/routes";
+import { useAcAccess } from "@/lib/ac/use-ac-access";
 import { cn } from "@/lib/utils";
 
 export function SettingsSidebar() {
@@ -15,11 +16,12 @@ export function SettingsSidebar() {
 	const [query, setQuery] = useState("");
 	const [activeIndex, setActiveIndex] = useState(-1);
 	const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+	const canAccessControl = useAcAccess();
 
 	const filtered = useMemo(() => {
 		const items = routes.settings.filter(
 			(r): r is (typeof routes.settings)[number] & { href: string } =>
-				Boolean(r.href),
+				Boolean(r.href) && (!r.requiresAc || canAccessControl === true),
 		);
 		if (!query.trim()) return items;
 		const q = query.toLowerCase();
@@ -28,7 +30,7 @@ export function SettingsSidebar() {
 				r.title.toLowerCase().includes(q) ||
 				r.description?.toLowerCase().includes(q),
 		);
-	}, [query]);
+	}, [canAccessControl, query]);
 
 	useEffect(() => {
 		setActiveIndex(-1);

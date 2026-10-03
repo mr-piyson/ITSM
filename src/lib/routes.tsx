@@ -19,6 +19,7 @@ import {
 	Printer,
 	RadioTower,
 	Server,
+	ShieldCheck,
 	ShoppingCart,
 	Store,
 	User,
@@ -38,6 +39,8 @@ export type RouteItem = {
 	icon: LucideIcon; // Component type instead of string
 	description?: string;
 	dev?: boolean;
+	/** Only shown to users with access control permission. */
+	requiresAc?: boolean;
 	children?: RouteItem[];
 };
 
@@ -205,6 +208,13 @@ export const routes: {
 			href: "/app/settings/users",
 			icon: Users,
 			description: "Manage system users and access",
+		},
+		{
+			title: "Access Control",
+			href: "/app/settings/access-control",
+			icon: ShieldCheck,
+			description: "Hikvision users, groups and devices",
+			requiresAc: true,
 		},
 		{
 			title: "Security",
