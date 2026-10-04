@@ -1,6 +1,7 @@
 "use client";
 
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { Toaster as SonnerToaster } from "sonner";
 
 import { Toaster } from "@/components/ui/toast";
 import { TRPCProvider } from "@/trpc/provider";
@@ -18,6 +19,16 @@ export function RootProviders({ children }: { children: React.ReactNode }) {
 			<NuqsAdapter>
 				<TRPCProvider>{children}</TRPCProvider>
 				<Toaster />
+				<SonnerToaster
+					richColors
+					position="top-right"
+					toastOptions={{
+						style: {
+							zIndex: 100000,
+						},
+					}}
+					style={{ zIndex: 100000 }}
+				/>
 			</NuqsAdapter>
 		</ThemeProvider>
 	);
