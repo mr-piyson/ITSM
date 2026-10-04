@@ -273,17 +273,17 @@ export const routes: {
 						{
 							title: "Asset Collector — Windows",
 							icon: WindowsIcon,
-							href: "downloads/ITSM-AssetCollector.exe",
+							href: "downloads/ITSM-AssetCollector-Go.exe",
 						},
 						{
 							title: "Asset Collector — macOS",
 							icon: MacIcon,
-							href: "downloads/itsm-asset-collector-macos-arm64",
+							href: "downloads/itsm-asset-collector-go-macos-arm64",
 						},
 						{
 							title: "Asset Collector — Linux",
 							icon: LinuxIcon,
-							href: "downloads/itsm-asset-collector-linux-x64",
+							href: "downloads/itsm-asset-collector-go-linux-x64",
 						},
 					],
 				},

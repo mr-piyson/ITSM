@@ -22,6 +22,30 @@ import { trpc } from "@/trpc/react";
 import { useAzureStatus } from "@/hooks/use-azure-status";
 import { summarizeAzureAccess } from "@/lib/azure-license-summary";
 
+import { ShieldCheck, ShieldAlert } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { parseCsvInts, readCards } from "@/lib/ac/csv";
+import { acEmpSourceLabel, acVerifyModeLabel } from "@/lib/ac/labels";
+import { formatAcDate, formatAcDateTime } from "@/lib/ac/format";
+import { useAcAccess } from "@/lib/ac/use-ac-access";
+import { AcUserPhoto } from "../settings/access-control/ac-photo";
+import {
+	AccessBadge,
+	AdminBadge,
+	ValidityBadge,
+	VerifyModeBadge,
+	GroupBadges,
+	CardTypeBadge,
+} from "../settings/access-control/ac-badges";
 import { EmployeeInventorySection } from "./employee-inventory-section";
 
 type EmployeeDetailPageProps = {
@@ -45,6 +69,11 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 	);
 	const { azure, isLoading: azureLoading } = useAzureStatus(
 		employee?.email ?? null,
+	);
+	const canAccessControl = useAcAccess();
+	const { data: acUserData } = trpc.ac.user.useQuery(
+		{ personId: employee?.emplCode ?? "" },
+		{ enabled: canAccessControl === true && !!employee?.emplCode },
 	);
 
 	const imageUrl = employee ? employeeImageUrl(employee.picPath) : null;
@@ -212,6 +241,180 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 
 						{/* What he has */}
 						<EmployeeInventorySection code={employee.emplCode} />
+
+
+						<Separator />
+
+						{/* Access Control */}
+						<div className="space-y-3">
+							<div className="flex items-center gap-2">
+								<ShieldCheck className="size-4 text-muted-foreground" />
+								<h3 className="text-sm font-semibold">Access Control</h3>
+							</div>
+							{canAccessControl === undefined ? (
+								<div className="flex items-center gap-2 rounded-none border p-4">
+									<Loader2 className="size-4 animate-spin text-muted-foreground" />
+									<span className="text-sm text-muted-foreground">
+										Checking access control permission...
+									</span>
+								</div>
+							) : !canAccessControl ? (
+								<div className="rounded-none border border-dashed p-4 text-center">
+									<div className="flex flex-col items-center justify-center gap-2">
+										<ShieldAlert className="size-5 text-muted-foreground" />
+										<p className="text-sm text-muted-foreground">
+											Access control permission required
+										</p>
+									</div>
+								</div>
+							) : !acUserData ? (
+								<div className="rounded-none border border-dashed p-4 text-center">
+									<p className="text-sm text-muted-foreground">
+										No access control account found for this employee (Person ID: {employee?.emplCode})
+									</p>
+								</div>
+							) : (
+								<div className="space-y-4">
+									<div className="flex flex-wrap items-start gap-4">
+										<AcUserPhoto
+											name={acUserData.user.name}
+											personId={acUserData.user.personId}
+											photo={acUserData.photo}
+											variant="full"
+											size="lg"
+											className="size-24 rounded-none"
+										/>
+										<div className="flex-1 space-y-3">
+											<div className="flex flex-wrap items-center gap-1">
+												<AccessBadge access={acUserData.user.access} />
+												{acUserData.user.isAdmin === 1 && <AdminBadge />}
+												<ValidityBadge endTime={acUserData.user.endTime} />
+												<VerifyModeBadge mode={acUserData.user.verifyMode} />
+											</div>
+
+											<div>
+												<p className="text-xs text-muted-foreground">Groups</p>
+												<div className="mt-1 flex flex-wrap gap-1">
+													{acUserData.groups.length > 0 ? (
+														acUserData.groups.map((group) => (
+															<span
+																key={group.id}
+																className="inline-flex items-center border px-2 py-0.5 text-xs font-medium"
+															>
+																{group.name}
+															</span>
+														))
+													) : (
+														<span className="text-xs text-muted-foreground">
+															No group assigned
+														</span>
+													)}
+												</div>
+											</div>
+
+											<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+												<div className="rounded-none border p-3">
+													<Row
+														label="Person ID"
+														value={acUserData.user.personId}
+													/>
+												</div>
+												<div className="rounded-none border p-3">
+													<Row
+														label="Employee ID"
+														value={
+															acUserData.user.employeeId === null
+																? "-"
+																: String(acUserData.user.employeeId)
+														}
+													/>
+												</div>
+												<div className="rounded-none border p-3">
+													<Row
+														label="Employee Source"
+														value={acEmpSourceLabel(acUserData.user.empSource)}
+													/>
+												</div>
+												<div className="rounded-none border p-3">
+													<Row
+														label="Model"
+														value={acUserData.user.model ?? "-"}
+													/>
+												</div>
+												<div className="rounded-none border p-3">
+													<Row
+														label="Device IP"
+														value={acUserData.user.deviceIp ?? "-"}
+													/>
+												</div>
+												<div className="rounded-none border p-3">
+													<Row
+														label="Verify Mode"
+														value={acVerifyModeLabel(acUserData.user.verifyMode)}
+													/>
+												</div>
+												<div className="rounded-none border p-3">
+													<Row
+														label="Begin Time"
+														value={formatAcDateTime(acUserData.user.beginTime)}
+													/>
+												</div>
+												<div className="rounded-none border p-3">
+													<Row
+														label="End Time"
+														value={formatAcDateTime(acUserData.user.endTime)}
+													/>
+												</div>
+												<div className="rounded-none border p-3">
+													<Row
+														label="Synced At"
+														value={formatAcDateTime(acUserData.user.syncDatetime)}
+													/>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									{(() => {
+										const cards = readCards(acUserData.user.cards);
+										return (
+											<div>
+												<p className="mb-2 text-xs font-semibold">
+													Cards ({cards.length})
+												</p>
+												{cards.length === 0 ? (
+													<p className="text-xs text-muted-foreground">
+														No cards stored for this user.
+													</p>
+												) : (
+													<Table className="border">
+														<TableHeader>
+															<TableRow>
+																<TableHead>Card No</TableHead>
+																<TableHead>Type</TableHead>
+															</TableRow>
+														</TableHeader>
+														<TableBody>
+															{cards.map((card) => (
+																<TableRow key={card.cardNo}>
+																	<TableCell className="font-mono text-xs">
+																		{card.cardNo}
+																	</TableCell>
+																	<TableCell>
+																		<CardTypeBadge type={card.cardType} />
+																	</TableCell>
+																</TableRow>
+															))}
+														</TableBody>
+													</Table>
+												)}
+											</div>
+										);
+									})()}
+								</div>
+							)}
+						</div>
+
 
 						<Separator />
 
