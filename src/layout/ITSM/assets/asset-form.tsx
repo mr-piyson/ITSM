@@ -457,17 +457,21 @@ function AssetFormContent({
 
 					<div className="space-y-2">
 						<Label>Owner</Label>
-						<EmployeeCombobox
-							value={form.state.values.emplCode || null}
-							onSelect={(employee) => {
-								form.setFieldValue("emplCode", employee?.emplCode ?? "");
-								form.setFieldValue("ownerName", employee?.name ?? "");
-							}}
-							employees={employees}
-							allowNone
-							noneLabel="In IT (no owner)"
-							noneHint="IT pool"
-						/>
+						<form.Subscribe selector={(state) => state.values.emplCode}>
+							{(emplCode) => (
+								<EmployeeCombobox
+									value={emplCode || null}
+									onSelect={(employee) => {
+										form.setFieldValue("emplCode", employee?.emplCode ?? "");
+										form.setFieldValue("ownerName", employee?.name ?? "");
+									}}
+									employees={employees}
+									allowNone
+									noneLabel="In IT (no owner)"
+									noneHint="IT pool"
+								/>
+							)}
+						</form.Subscribe>
 					</div>
 				</div>
 			</div>

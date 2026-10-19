@@ -198,18 +198,22 @@ function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 			{/* Employee */}
 			<div className="space-y-2">
 				<Label>Employee *</Label>
-				<EmployeeCombobox
-					value={form.state.values.emplCode || null}
-					onSelect={(employee) => {
-						if (!employee) {
-							return;
-						}
-						form.setFieldValue("emplCode", employee.emplCode);
-						form.setFieldValue("empName", employee.name);
-					}}
-					employees={employees}
-					placeholder="Search employee…"
-				/>
+				<form.Subscribe selector={(state) => state.values.emplCode}>
+					{(emplCode) => (
+						<EmployeeCombobox
+							value={emplCode || null}
+							onSelect={(employee) => {
+								if (!employee) {
+									return;
+								}
+								form.setFieldValue("emplCode", employee.emplCode);
+								form.setFieldValue("empName", employee.name);
+							}}
+							employees={employees}
+							placeholder="Search employee…"
+						/>
+					)}
+				</form.Subscribe>
 			</div>
 
 			{/* Asset */}
