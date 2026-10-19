@@ -236,8 +236,14 @@ export const attendanceRouter = router({
 						}
 					: null;
 
-			const { workStartHour, workStartMinute, workEndHour, workEndMinute } =
-				ATTENDANCE_RULES;
+			const {
+				workStartHour,
+				workStartMinute,
+				lateThresholdHour,
+				lateThresholdMinute,
+				workEndHour,
+				workEndMinute,
+			} = ATTENDANCE_RULES;
 
 			const byDate = new Map<string, AttendanceLog[]>();
 			for (const log of logs) {
@@ -330,20 +336,22 @@ export const attendanceRouter = router({
 
 				const workStart = new Date(cursor);
 				workStart.setHours(workStartHour, workStartMinute, 0, 0);
+				const lateThreshold = new Date(cursor);
+				lateThreshold.setHours(lateThresholdHour, lateThresholdMinute, 0, 0);
 				const workEnd = new Date(cursor);
 				workEnd.setHours(workEndHour, workEndMinute, 0, 0);
 
-				let lateMinutes = 0;
-				if (checkInTime > workStart) {
-					lateMinutes = minutesBetween(workStart, checkInTime);
-				}
+				// Late if check-in is after the threshold (8:10),
+				// but late minutes are counted from the work start (8:00)
+				const isLate = checkInTime > lateThreshold;
+				const lateMinutes = isLate
+					? Math.max(0, minutesBetween(workStart, checkInTime))
+					: 0;
 
 				let extraMinutes = 0;
 				if (checkOutTime > workEnd) {
 					extraMinutes = minutesBetween(workEnd, checkOutTime);
 				}
-
-				const isLate = lateMinutes > 0;
 
 				days.push({
 					date: dateStr,
