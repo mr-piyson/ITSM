@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
+import Link from "next/link";
 
 const EmblaCarousel = () => {
 	const [currentSlide, setCurrentSlide] = useState(0);
@@ -162,13 +163,15 @@ export function LandingHero() {
 							IT Operations
 						</span>
 					</h1>
+					<Link href="/auth">
+						<Button className={"p-4 text-xl mb-2 lg:hidden"}>Sign in</Button>
+					</Link>
 					<p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
 						Revolutionize your IT service management with intelligent
 						automation, seamless workflows, and exceptional user experience.
 						Designed for modern enterprises.
 					</p>
 				</div>
-
 				<div className="mb-20">
 					<EmblaCarousel />
 				</div>
