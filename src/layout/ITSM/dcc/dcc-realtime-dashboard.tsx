@@ -26,11 +26,7 @@ function formatTime(value: string | null): string {
 	});
 }
 
-function DccMiniChart({
-	logs,
-}: {
-	logs: DccLogItem[];
-}) {
+function DccMiniChart({ logs }: { logs: DccLogItem[] }) {
 	const reversed = logs.slice().reverse();
 
 	if (reversed.length === 0) {

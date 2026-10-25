@@ -124,9 +124,7 @@ export function EmployeesPage() {
 					</div>
 				) : filtered.length === 0 ? (
 					<div className="flex flex-1 flex-col items-center justify-center gap-2 border border-dashed py-16 text-center">
-						<p className="text-sm text-muted-foreground">
-							No employees found
-						</p>
+						<p className="text-sm text-muted-foreground">No employees found</p>
 					</div>
 				) : view === "table" ? (
 					<EmployeesTable

@@ -37,8 +37,6 @@ const EXPIRY_CONFIG: ChartConfig = {
 	daysLeft: { label: "Days left", color: "var(--chart-1)" },
 };
 
-
-
 export function AssetsByTypeCard({
 	data,
 	total,
@@ -146,7 +144,9 @@ function ContractTooltip({
 	return (
 		<div className="grid min-w-32 items-start gap-1.5 rounded-none border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
 			<div className="font-medium">{entry.productName}</div>
-			<Badge variant="outline" className={tone}>{label}</Badge>
+			<Badge variant="outline" className={tone}>
+				{label}
+			</Badge>
 		</div>
 	);
 }

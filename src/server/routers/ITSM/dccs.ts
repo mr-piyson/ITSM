@@ -282,10 +282,7 @@ export const dccsRouter = router({
 					logParams.push(...ids, logLimit);
 				}
 
-				const [logRows] = await ctx.db.iss.execute<Row[]>(
-					logSql,
-					logParams,
-				);
+				const [logRows] = await ctx.db.iss.execute<Row[]>(logSql, logParams);
 
 				const logsByDcc = new Map<number, DccLogItem[]>();
 				for (const logRow of logRows) {

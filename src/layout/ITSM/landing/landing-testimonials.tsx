@@ -31,5 +31,3 @@ const testimonials = [
 		rating: 5,
 	},
 ];
-
-

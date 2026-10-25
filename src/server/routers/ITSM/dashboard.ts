@@ -430,19 +430,23 @@ export const dashboardRouter = router({
 						emplOnPayroll: toString(row[4]),
 						empPicPath: toString(row[5]),
 					}));
-			return {
-				empLeft: mapRows(empLeftResult),
-				newJoiners: mapRows(newJoinerResult),
-			};
-		} finally {
-			await oracleConn.release();
-		}
-	}),
+				return {
+					empLeft: mapRows(empLeftResult),
+					newJoiners: mapRows(newJoinerResult),
+				};
+			} finally {
+				await oracleConn.release();
+			}
+		}),
 	upsTemperature: protectedProcedure.query(async () => {
 		try {
 			const html = await fetchUpsPage(UPS_URL);
 			const match = html.match(/Temperature<\/td><td[^>]*>([^<]+)/i);
-			if (!match) return { temperature: null as number | null, raw: null as string | null };
+			if (!match)
+				return {
+					temperature: null as number | null,
+					raw: null as string | null,
+				};
 			const text = match[1].replace(/\s+/g, " ").trim();
 			const tempMatch = text.match(/([\d.]+)/);
 			const temperature = tempMatch ? Number.parseFloat(tempMatch[1]) : null;

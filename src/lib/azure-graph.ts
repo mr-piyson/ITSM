@@ -64,7 +64,9 @@ export async function getGraphAccessToken(): Promise<string> {
 
 	if (!response.ok) {
 		const text = await response.text();
-		throw new Error(`Failed to get Graph access token: ${response.status} ${text}`);
+		throw new Error(
+			`Failed to get Graph access token: ${response.status} ${text}`,
+		);
 	}
 
 	const data = (await response.json()) as {
@@ -97,7 +99,10 @@ const SELECT_FIELDS = [
 	"isResourceAccount",
 ].join(",");
 
-async function fetchUserDetails(email: string, token: string): Promise<Record<string, unknown> | null> {
+async function fetchUserDetails(
+	email: string,
+	token: string,
+): Promise<Record<string, unknown> | null> {
 	const response = await fetch(
 		`${GRAPH_BASE}/users/${encodeURIComponent(email)}?$select=${SELECT_FIELDS}`,
 		{
@@ -109,14 +114,19 @@ async function fetchUserDetails(email: string, token: string): Promise<Record<st
 	);
 
 	if (!response.ok) {
-		console.error(`[azure-graph] User ${response.status} for ${email}: ${await response.text()}`);
+		console.error(
+			`[azure-graph] User ${response.status} for ${email}: ${await response.text()}`,
+		);
 		return null;
 	}
 
 	return (await response.json()) as Record<string, unknown>;
 }
 
-async function fetchUserAccountEnabled(email: string, token: string): Promise<boolean | null> {
+async function fetchUserAccountEnabled(
+	email: string,
+	token: string,
+): Promise<boolean | null> {
 	try {
 		const response = await fetch(
 			`${GRAPH_BASE}/users/${encodeURIComponent(email)}?$select=accountEnabled`,
@@ -129,7 +139,9 @@ async function fetchUserAccountEnabled(email: string, token: string): Promise<bo
 		);
 
 		if (!response.ok) {
-			console.error(`[azure-graph] Account status ${response.status} for ${email}`);
+			console.error(
+				`[azure-graph] Account status ${response.status} for ${email}`,
+			);
 			return null;
 		}
 
@@ -147,18 +159,24 @@ async function mapWithConcurrency<T, R>(
 ): Promise<R[]> {
 	const results = new Array<R>(items.length);
 	let index = 0;
-	const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-		while (index < items.length) {
-			const i = index;
-			index += 1;
-			results[i] = await fn(items[i]);
-		}
-	});
+	const workers = Array.from(
+		{ length: Math.min(limit, items.length) },
+		async () => {
+			while (index < items.length) {
+				const i = index;
+				index += 1;
+				results[i] = await fn(items[i]);
+			}
+		},
+	);
 	await Promise.all(workers);
 	return results;
 }
 
-async function fetchLicenseDetails(email: string, token: string): Promise<AzureLicenseDetail[]> {
+async function fetchLicenseDetails(
+	email: string,
+	token: string,
+): Promise<AzureLicenseDetail[]> {
 	try {
 		const response = await fetch(
 			`${GRAPH_BASE}/users/${encodeURIComponent(email)}/licenseDetails`,
@@ -200,7 +218,10 @@ async function fetchLicenseDetails(email: string, token: string): Promise<AzureL
 	}
 }
 
-async function fetchMailboxSettings(email: string, token: string): Promise<AzureMailboxSettings | null> {
+async function fetchMailboxSettings(
+	email: string,
+	token: string,
+): Promise<AzureMailboxSettings | null> {
 	try {
 		const response = await fetch(
 			`${GRAPH_BASE}/users/${encodeURIComponent(email)}/mailboxSettings`,
@@ -225,7 +246,9 @@ async function fetchMailboxSettings(email: string, token: string): Promise<Azure
 	}
 }
 
-export async function getAzureUserDetails(email: string): Promise<AzureUserDetails | null> {
+export async function getAzureUserDetails(
+	email: string,
+): Promise<AzureUserDetails | null> {
 	if (!email) return null;
 
 	try {
@@ -272,21 +295,25 @@ export async function getAzureAccessSummaries(
 	try {
 		const token = await getGraphAccessToken();
 
-		const results = await mapWithConcurrency(unique, BATCH_CONCURRENCY, async (email) => {
-			const [accountEnabled, licenses] = await Promise.all([
-				fetchUserAccountEnabled(email, token),
-				fetchLicenseDetails(email, token),
-			]);
+		const results = await mapWithConcurrency(
+			unique,
+			BATCH_CONCURRENCY,
+			async (email) => {
+				const [accountEnabled, licenses] = await Promise.all([
+					fetchUserAccountEnabled(email, token),
+					fetchLicenseDetails(email, token),
+				]);
 
-			if (accountEnabled == null) return null;
+				if (accountEnabled == null) return null;
 
-			const summary = summarizeAzureAccess({
-				accountEnabled,
-				licenses,
-				mailboxSettings: null,
-			});
-			return { email, summary };
-		});
+				const summary = summarizeAzureAccess({
+					accountEnabled,
+					licenses,
+					mailboxSettings: null,
+				});
+				return { email, summary };
+			},
+		);
 
 		const out: Record<string, AzureAccessSummary> = {};
 		for (const result of results) {
@@ -294,7 +321,10 @@ export async function getAzureAccessSummaries(
 		}
 		return out;
 	} catch (err) {
-		console.error(`[azure-graph] Error fetching summaries for ${emails.length} emails:`, err);
+		console.error(
+			`[azure-graph] Error fetching summaries for ${emails.length} emails:`,
+			err,
+		);
 		return {};
 	}
 }

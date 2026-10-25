@@ -51,7 +51,9 @@ function provisioningSucceeded(status: string): boolean {
 	return status === "Success";
 }
 
-export function summarizeAzureAccess(azure: AzureAccessUser): AzureAccessSummary {
+export function summarizeAzureAccess(
+	azure: AzureAccessUser,
+): AzureAccessSummary {
 	const skus = new Set<string>();
 	let hasArchive = false;
 	let hasProvisionedExchange = false;
@@ -61,17 +63,24 @@ export function summarizeAzureAccess(azure: AzureAccessUser): AzureAccessSummary
 			skus.add(license.skuPartNumber);
 		}
 		for (const sp of license.servicePlans) {
-			if (ARCHIVE_PLAN_NAMES.has(sp.servicePlanName) && provisioningSucceeded(sp.provisioningStatus)) {
+			if (
+				ARCHIVE_PLAN_NAMES.has(sp.servicePlanName) &&
+				provisioningSucceeded(sp.provisioningStatus)
+			) {
 				hasArchive = true;
 			}
-			if (EXCHANGE_PLAN_NAMES.has(sp.servicePlanName) && provisioningSucceeded(sp.provisioningStatus)) {
+			if (
+				EXCHANGE_PLAN_NAMES.has(sp.servicePlanName) &&
+				provisioningSucceeded(sp.provisioningStatus)
+			) {
 				hasProvisionedExchange = true;
 			}
 		}
 	}
 
 	const fromMailboxSettings =
-		azure.mailboxSettings?.archiveStatus != null && azure.mailboxSettings.archiveStatus !== "none";
+		azure.mailboxSettings?.archiveStatus != null &&
+		azure.mailboxSettings.archiveStatus !== "none";
 	hasArchive = hasArchive || fromMailboxSettings;
 
 	const emailActive =

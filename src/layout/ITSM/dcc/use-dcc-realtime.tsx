@@ -174,9 +174,7 @@ export function PollingControls({
 					onClick={checkNow}
 					className="h-7 gap-1 text-xs"
 				>
-					<RefreshCw
-						className={cn("size-3", isChecking && "animate-spin")}
-					/>
+					<RefreshCw className={cn("size-3", isChecking && "animate-spin")} />
 					Check now
 				</Button>
 				{lastChecked && (
@@ -224,9 +222,7 @@ export function PollingControls({
 				onClick={checkNow}
 				className="h-7 gap-1 text-xs"
 			>
-				<RefreshCw
-					className={cn("size-3", isChecking && "animate-spin")}
-				/>
+				<RefreshCw className={cn("size-3", isChecking && "animate-spin")} />
 				Check now
 			</Button>
 			{lastChecked && (

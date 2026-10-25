@@ -68,5 +68,6 @@ function parseFilterModel(value: unknown): Record<string, TextFilter> | null {
 	return value as Record<string, TextFilter>;
 }
 
-export const filterModelParser = parseAsJson(parseFilterModel)
-	.withOptions({ history: "replace" });
+export const filterModelParser = parseAsJson(parseFilterModel).withOptions({
+	history: "replace",
+});

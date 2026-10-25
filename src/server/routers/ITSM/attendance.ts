@@ -98,22 +98,12 @@ function pad(n: number): string {
 }
 
 function formatUtc(date: Date): string {
-	return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(
-		date.getUTCDate(),
-	)} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(
-		date.getUTCSeconds(),
-	)}`;
+	return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
 }
 
 function formatLocalOffset(date: Date, offsetMinutes: number): string {
 	const shifted = new Date(date.getTime() + offsetMinutes * 60000);
-	return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(
-		shifted.getUTCDate(),
-	)}T${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(
-		shifted.getUTCSeconds(),
-	)}${offsetMinutes >= 0 ? "+" : "-"}${pad(
-		Math.floor(Math.abs(offsetMinutes) / 60),
-	)}:${pad(Math.abs(offsetMinutes) % 60)}`;
+	return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}T${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}${offsetMinutes >= 0 ? "+" : "-"}${pad(Math.floor(Math.abs(offsetMinutes) / 60))}:${pad(Math.abs(offsetMinutes) % 60)}`;
 }
 
 function normalizeLocalDateTime(value: string): string {
@@ -161,14 +151,10 @@ function parseAttendanceTime(data: AttendanceLogInput): {
 		const shifted = new Date(date.getTime() + 3 * 3600 * 1000);
 		const year = shifted.getUTCFullYear();
 		const month = shifted.getUTCMonth() + 1;
-		const timeSql = `${year}-${pad(month)}-${pad(shifted.getUTCDate())} ${pad(
-			shifted.getUTCHours(),
-		)}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}`;
+		const timeSql = `${year}-${pad(month)}-${pad(shifted.getUTCDate())} ${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}`;
 		const raw =
 			data.timeRaw ??
-			`${year}-${pad(month)}-${pad(shifted.getUTCDate())}T${pad(
-				shifted.getUTCHours(),
-			)}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}+03:00`;
+			`${year}-${pad(month)}-${pad(shifted.getUTCDate())}T${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}+03:00`;
 
 		return { timeSql, raw, year, month };
 	}

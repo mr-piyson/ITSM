@@ -242,7 +242,6 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 						{/* What he has */}
 						<EmployeeInventorySection code={employee.emplCode} />
 
-
 						<Separator />
 
 						{/* Access Control */}
@@ -270,7 +269,8 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 							) : !acUserData ? (
 								<div className="rounded-none border border-dashed p-4 text-center">
 									<p className="text-sm text-muted-foreground">
-										No access control account found for this employee (Person ID: {employee?.emplCode})
+										No access control account found for this employee (Person
+										ID: {employee?.emplCode})
 									</p>
 								</div>
 							) : (
@@ -350,7 +350,9 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 												<div className="rounded-none border p-3">
 													<Row
 														label="Verify Mode"
-														value={acVerifyModeLabel(acUserData.user.verifyMode)}
+														value={acVerifyModeLabel(
+															acUserData.user.verifyMode,
+														)}
 													/>
 												</div>
 												<div className="rounded-none border p-3">
@@ -368,7 +370,9 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 												<div className="rounded-none border p-3">
 													<Row
 														label="Synced At"
-														value={formatAcDateTime(acUserData.user.syncDatetime)}
+														value={formatAcDateTime(
+															acUserData.user.syncDatetime,
+														)}
 													/>
 												</div>
 											</div>
@@ -414,7 +418,6 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 								</div>
 							)}
 						</div>
-
 
 						<Separator />
 
