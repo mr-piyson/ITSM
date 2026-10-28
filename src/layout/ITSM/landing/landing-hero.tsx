@@ -148,28 +148,28 @@ export function LandingHero() {
 	return (
 		<section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8">
 			<div className="max-w-7xl mx-auto">
-				<div className="text-center mb-12">
-					<Badge
-						variant="secondary"
-						className="px-2 py-3 mb-6 border-[#3BB7B0]"
-					>
-						<Image src={Logo} alt="BFG International" width={40} height={40} />
-						BFG International
-					</Badge>
+				<div className="flex flex-col items-center text-center mb-12">
+					<Image
+						src={Logo}
+						className="mb-10"
+						alt="BFG International"
+						width={120}
+						height={120}
+					/>
 					<h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
-						Transform Your
+						IT
 						<span className="bg-linear-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-							{" "}
-							IT Operations
+							SM
 						</span>
 					</h1>
 					<Link href="/auth">
 						<Button className={"p-4 text-xl mb-2 lg:hidden"}>Sign in</Button>
 					</Link>
 					<p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-						Revolutionize your IT service management with intelligent
-						automation, seamless workflows, and exceptional user experience.
-						Designed for modern enterprises.
+						Streamline your IT operations with our comprehensive IT Service
+						Management platform. From incident management to self-service
+						portals, we provide the tools you need to enhance efficiency and
+						improve user satisfaction.
 					</p>
 				</div>
 				<div className="mb-20">
