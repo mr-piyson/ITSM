@@ -1,3 +1,5 @@
+import { TRPCError } from "@trpc/server";
+import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "@/server/trpc";
@@ -15,6 +17,16 @@ import {
 type Row = unknown[];
 
 export type { PickEmployee };
+
+export type EmployeeTargetResult = {
+	status: "updated" | "skipped" | "failed";
+	message?: string;
+};
+
+export type EmployeeUpdateResults = {
+	oracle: EmployeeTargetResult;
+	iss: EmployeeTargetResult;
+};
 
 export type EmployeeItem = {
 	emplCode: string;
@@ -117,4 +129,112 @@ export const employeesRouter = router({
 	pickList: protectedProcedure.query(
 		async (): Promise<PickEmployee[]> => listPickableEmployees(),
 	),
+
+	/**
+	 * Update an employee's email across databases:
+	 * - Oracle T633_EMPL_MASTER (master record): EMAIL_ID.
+	 * - ISS users (app account): email.
+	 * Writes are best-effort; each database result is reported separately.
+	 */
+	update: protectedProcedure
+		.input(
+			z.object({
+				code: z.string().min(1),
+				email: z
+					.string()
+					.trim()
+					.max(200)
+					.refine(
+						(v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+						"Enter a valid email address",
+					),
+			}),
+		)
+		.mutation(async ({ ctx, input }): Promise<EmployeeUpdateResults> => {
+			if (ctx.user.type !== "admin") {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Only admins can edit employees",
+				});
+			}
+
+			const email = input.email === "" ? null : input.email;
+
+			const failed = (message: string): EmployeeTargetResult => ({
+				status: "failed",
+				message,
+			});
+			const skipped = (message: string): EmployeeTargetResult => ({
+				status: "skipped",
+				message,
+			});
+
+			// Oracle master record.
+			let oracleResult: EmployeeTargetResult;
+			try {
+				const oraclePool = await ctx.db.mis;
+				const conn = await oraclePool.getConnection();
+				try {
+					const result = await conn.execute(
+						`UPDATE T633_EMPL_MASTER
+						 SET EMAIL_ID = :1
+						 WHERE EMPL_CODE = :2`,
+						[email, input.code],
+						{ autoCommit: true },
+					);
+					if ((result.rowsAffected ?? 0) === 0) {
+						oracleResult = failed("Employee not found in Oracle");
+					} else {
+						oracleResult = { status: "updated" };
+					}
+				} finally {
+					await conn.release();
+				}
+			} catch (error) {
+				oracleResult = failed(
+					error instanceof Error ? error.message : "Oracle update failed",
+				);
+			}
+
+			// ISS app account (email).
+			let issResult: EmployeeTargetResult;
+			if (email === null) {
+				issResult = skipped("No email set");
+			} else {
+				const empCode = Number(input.code);
+				if (!Number.isFinite(empCode) || empCode <= 0) {
+					issResult = skipped("No ISS user link");
+				} else {
+					try {
+						const [rows] = await ctx.db.iss.execute<RowDataPacket[]>(
+							`SELECT id FROM users WHERE email = ? AND empCode != ? LIMIT 1`,
+							[email, empCode],
+						);
+						if (rows.length > 0) {
+							issResult = failed("Email already used by another ISS user");
+						} else {
+							const [result] = await ctx.db.iss.execute<ResultSetHeader>(
+								`UPDATE users
+								 SET email = ?
+								 WHERE empCode = ?`,
+								[email, empCode],
+							);
+							issResult =
+								result.affectedRows === 0
+									? skipped("No ISS user account")
+									: { status: "updated" };
+						}
+					} catch (error) {
+						issResult = failed(
+							error instanceof Error ? error.message : "ISS update failed",
+						);
+					}
+				}
+			}
+
+			return {
+				oracle: oracleResult,
+				iss: issResult,
+			};
+		}),
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
 	ArrowLeft,
@@ -9,6 +10,7 @@ import {
 	Building2,
 	Key,
 	Inbox,
+	Pencil,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -47,6 +49,7 @@ import {
 	CardTypeBadge,
 } from "../settings/access-control/ac-badges";
 import { EmployeeInventorySection } from "./employee-inventory-section";
+import { EmployeeEditDialog } from "./employee-edit-dialog";
 
 type EmployeeDetailPageProps = {
 	code: string;
@@ -63,10 +66,13 @@ function Row({ label, value }: { label: string; value?: string | null }) {
 
 export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 	const router = useRouter();
+	const [isEditOpen, setIsEditOpen] = useState(false);
 	const { data: employee, isPending } = trpc.employees.byCode.useQuery(
 		{ code },
 		{ enabled: !!code },
 	);
+	const { data: me } = trpc.auth.me.useQuery();
+	const isAdmin = me?.type === "admin";
 	const { azure, isLoading: azureLoading } = useAzureStatus(
 		employee?.email ?? null,
 	);
@@ -95,16 +101,24 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 		<div className="flex h-full min-h-0 flex-col p-4 md:p-6">
 			<div className="mx-auto flex w-full max-w-4xl flex-1 min-h-0 flex-col space-y-6">
 				{/* Back + Title */}
-				<div className="flex items-center gap-3">
-					<Button variant="ghost" size="icon-sm" onClick={() => router.back()}>
-						<ArrowLeft />
-					</Button>
-					<div>
-						<h1 className="text-xl font-semibold tracking-tight">
-							Employee Details
-						</h1>
-						<p className="text-xs text-muted-foreground">{code}</p>
+				<div className="flex items-center justify-between gap-3">
+					<div className="flex items-center gap-3">
+						<Button variant="ghost" size="icon-sm" onClick={() => router.back()}>
+							<ArrowLeft />
+						</Button>
+						<div>
+							<h1 className="text-xl font-semibold tracking-tight">
+								Employee Details
+							</h1>
+							<p className="text-xs text-muted-foreground">{code}</p>
+						</div>
 					</div>
+					{isAdmin && (
+						<Button size="sm" onClick={() => setIsEditOpen(true)}>
+							<Pencil data-icon="inline-start" />
+							Edit
+						</Button>
+					)}
 				</div>
 
 				{isPending ? (
@@ -607,6 +621,12 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 					</div>
 				)}
 			</div>
+			{isEditOpen && employee && (
+				<EmployeeEditDialog
+					employee={employee}
+					onOpenChange={setIsEditOpen}
+				/>
+			)}
 		</div>
 	);
 }
