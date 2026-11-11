@@ -1,5 +1,17 @@
 import type { SyncPhotoEmployee } from "@/server/routers/ITSM/sync-photos";
 
+export const PHOTO_SYNC_SOURCE_VALUES = ["employee", "subcontract"] as const;
+
+export const SYNC_STATUS_FILTER_VALUES = [
+	"all",
+	"synced",
+	"different",
+	"not_in_oracle",
+	"no_photo",
+] as const;
+
+export type SyncStatusFilter = (typeof SYNC_STATUS_FILTER_VALUES)[number];
+
 export const SYNC_STATUS_LABELS: Record<
 	SyncPhotoEmployee["syncStatus"],
 	string
@@ -8,6 +20,11 @@ export const SYNC_STATUS_LABELS: Record<
 	different: "Different",
 	not_in_oracle: "Not in Oracle",
 	no_photo: "No Photo",
+};
+
+export const SYNC_STATUS_FILTER_LABELS: Record<SyncStatusFilter, string> = {
+	all: "All Statuses",
+	...SYNC_STATUS_LABELS,
 };
 
 export function syncStatusBadgeClass(

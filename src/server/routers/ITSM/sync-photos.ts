@@ -3,6 +3,11 @@ import type { RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import type { OracleConnection } from "@/lib/database";
+import {
+	PHOTO_SYNC_SOURCE_VALUES,
+	SYNC_STATUS_FILTER_VALUES,
+} from "@/lib/sync-photos";
+import type { Context } from "@/server/context";
 import { protectedProcedure, router } from "@/server/trpc";
 
 export type PhotoSyncSource = "employee" | "subcontract";
@@ -81,7 +86,8 @@ const PHOTO_SYNC_SOURCES: Record<PhotoSyncSource, PhotoSyncSourceConfig> = {
 	},
 };
 
-const photoSyncSourceSchema = z.enum(["employee", "subcontract"]);
+const photoSyncSourceSchema = z.enum(PHOTO_SYNC_SOURCE_VALUES);
+const photoSyncStatusFilterSchema = z.enum(SYNC_STATUS_FILTER_VALUES);
 
 function buildUpdatePicPathSql(source: PhotoSyncSourceConfig): string {
 	return `UPDATE ${source.oracleTable} SET EMP_PIC_PATH = :1 WHERE ${source.oracleCodeColumn} = :2`;
@@ -150,11 +156,89 @@ async function fetchEmpPicPaths(
 	return result;
 }
 
+type OraclePicPathResult = {
+	map: Map<string, string | null>;
+	poolElapsedMs: number;
+	connectionElapsedMs: number;
+	elapsedMs: number;
+};
+
+async function fetchOraclePicPathMap(
+	db: Context["db"],
+	source: PhotoSyncSourceConfig,
+	employees: EmployeePhotoRow[],
+): Promise<OraclePicPathResult> {
+	const employeesWithPhotos = employees.filter((emp) => emp.image_url);
+	if (employeesWithPhotos.length === 0) {
+		return {
+			map: new Map<string, string | null>(),
+			poolElapsedMs: 0,
+			connectionElapsedMs: 0,
+			elapsedMs: 0,
+		};
+	}
+
+	const startedAt = performance.now();
+	const poolStartedAt = performance.now();
+	const pool = await db.mis;
+	const poolElapsedMs = Math.round(performance.now() - poolStartedAt);
+	const connectionStartedAt = performance.now();
+	const conn = await pool.getConnection();
+	const connectionElapsedMs = Math.round(
+		performance.now() - connectionStartedAt,
+	);
+	try {
+		const map = await fetchEmpPicPaths(
+			conn,
+			source,
+			employeesWithPhotos.map((e) => e.emp_code),
+		);
+		return {
+			map,
+			poolElapsedMs,
+			connectionElapsedMs,
+			elapsedMs: Math.round(performance.now() - startedAt),
+		};
+	} catch (error) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: `Failed to read Oracle EMP_PIC_PATH: ${
+				error instanceof Error ? error.message : "unknown error"
+			}`,
+		});
+	} finally {
+		await conn.release();
+	}
+}
+
+function toSyncPhotoEmployee(
+	emp: EmployeePhotoRow,
+	oraclePath: string | null,
+): SyncPhotoEmployee {
+	const imageUrl = emp.image_url || "";
+	let syncStatus: SyncPhotoEmployee["syncStatus"] = "no_photo";
+	if (imageUrl && oraclePath === imageUrl) syncStatus = "synced";
+	else if (imageUrl && oraclePath) syncStatus = "different";
+	else if (imageUrl) syncStatus = "not_in_oracle";
+
+	return {
+		id: emp.id,
+		empId: emp.emp_id,
+		empCode: emp.emp_code,
+		name: emp.name,
+		department: emp.department ?? "",
+		imageUrl,
+		oraclePicPath: oraclePath,
+		syncStatus,
+	};
+}
+
 export const syncPhotosRouter = router({
 	list: protectedProcedure
 		.input(
 			z.object({
 				source: photoSyncSourceSchema.default("employee"),
+				status: photoSyncStatusFilterSchema.default("all"),
 				q: z.string().max(100).default(""),
 				page: z.coerce.number().int().min(1).default(1),
 				pageSize: z.coerce.number().int().min(10).max(100).default(30),
@@ -177,6 +261,68 @@ export const syncPhotosRouter = router({
 			}
 
 			const startedAt = performance.now();
+
+			// A status filter needs the Oracle path of every matching row, so
+			// fetch all candidates and paginate the filtered rows in memory.
+			if (input.status !== "all") {
+				const mesStartedAt = performance.now();
+				const [rows] = await ctx.db.mes.query<EmployeePhotoRow[]>(
+					`SELECT e.id, e.emp_id, e.emp_code, e.name, e.department,
+						r.filename, ${PHOTO_URL_EXPR} AS image_url
+						${fromClause}
+						${whereClause}
+						ORDER BY e.emp_id ASC`,
+					params,
+				);
+				const mesElapsedMs = Math.round(performance.now() - mesStartedAt);
+				const employees = rows as EmployeePhotoRow[];
+
+				// The no_photo status is decided by MES alone, so skip Oracle.
+				const oracle =
+					input.status === "no_photo"
+						? {
+								map: new Map<string, string | null>(),
+								poolElapsedMs: 0,
+								connectionElapsedMs: 0,
+								elapsedMs: 0,
+							}
+						: await fetchOraclePicPathMap(ctx.db, source, employees);
+
+				const filtered = employees
+					.map((emp) =>
+						toSyncPhotoEmployee(emp, oracle.map.get(emp.emp_code) ?? null),
+					)
+					.filter((emp) => emp.syncStatus === input.status);
+
+				if (process.env.NODE_ENV === "development") {
+					console.debug("[syncPhotos.list] status-filtered page timing", {
+						source: input.source,
+						status: input.status,
+						page: input.page,
+						pageSize: input.pageSize,
+						search: Boolean(search),
+						rows: employees.length,
+						rowsWithPhotos: employees.filter((emp) => emp.image_url).length,
+						matched: filtered.length,
+						total: filtered.length,
+						mesElapsedMs,
+						oraclePoolElapsedMs: oracle.poolElapsedMs,
+						oracleConnectionElapsedMs: oracle.connectionElapsedMs,
+						oracleElapsedMs: oracle.elapsedMs,
+						timestamp: new Date().toISOString(),
+						elapsedMs: Math.round(performance.now() - startedAt),
+					});
+				}
+
+				return {
+					total: filtered.length,
+					rows: filtered.slice(
+						(input.page - 1) * input.pageSize,
+						input.page * input.pageSize,
+					),
+				};
+			}
+
 			const countStartedAt = performance.now();
 			const countPromise = ctx.db.mes
 				.query<CountRow[]>(
@@ -210,40 +356,8 @@ export const syncPhotosRouter = router({
 			const total = Number(countRows[0]?.total ?? 0);
 			const [rows] = pageResult;
 			const employees = rows as EmployeePhotoRow[];
-			const employeesWithPhotos = employees.filter((emp) => emp.image_url);
 
-			let oracleMap = new Map<string, string | null>();
-			let oracleElapsedMs = 0;
-			let oraclePoolElapsedMs = 0;
-			let oracleConnectionElapsedMs = 0;
-			if (employeesWithPhotos.length > 0) {
-				const oracleStartedAt = performance.now();
-				const poolStartedAt = performance.now();
-				const pool = await ctx.db.mis;
-				oraclePoolElapsedMs = Math.round(performance.now() - poolStartedAt);
-				const connectionStartedAt = performance.now();
-				const conn = await pool.getConnection();
-				oracleConnectionElapsedMs = Math.round(
-					performance.now() - connectionStartedAt,
-				);
-				try {
-					oracleMap = await fetchEmpPicPaths(
-						conn,
-						source,
-						employeesWithPhotos.map((e) => e.emp_code),
-					);
-				} catch (error) {
-					throw new TRPCError({
-						code: "INTERNAL_SERVER_ERROR",
-						message: `Failed to read Oracle EMP_PIC_PATH: ${
-							error instanceof Error ? error.message : "unknown error"
-						}`,
-					});
-				} finally {
-					await conn.release();
-				}
-				oracleElapsedMs = Math.round(performance.now() - oracleStartedAt);
-			}
+			const oracle = await fetchOraclePicPathMap(ctx.db, source, employees);
 
 			if (process.env.NODE_ENV === "development") {
 				console.debug("[syncPhotos.list] page timing", {
@@ -252,13 +366,13 @@ export const syncPhotosRouter = router({
 					pageSize: input.pageSize,
 					search: Boolean(search),
 					rows: employees.length,
-					rowsWithPhotos: employeesWithPhotos.length,
+					rowsWithPhotos: employees.filter((emp) => emp.image_url).length,
 					total,
 					countElapsedMs,
 					pageElapsedMs,
-					oraclePoolElapsedMs,
-					oracleConnectionElapsedMs,
-					oracleElapsedMs,
+					oraclePoolElapsedMs: oracle.poolElapsedMs,
+					oracleConnectionElapsedMs: oracle.connectionElapsedMs,
+					oracleElapsedMs: oracle.elapsedMs,
 					timestamp: new Date().toISOString(),
 					elapsedMs: Math.round(performance.now() - startedAt),
 				});
@@ -266,27 +380,9 @@ export const syncPhotosRouter = router({
 
 			return {
 				total,
-				rows: employees.map((emp) => {
-					const empCode = emp.emp_code;
-					const imageUrl = emp.image_url || "";
-					const oraclePath = oracleMap.get(empCode) ?? null;
-
-					let syncStatus: SyncPhotoEmployee["syncStatus"] = "no_photo";
-					if (imageUrl && oraclePath === imageUrl) syncStatus = "synced";
-					else if (imageUrl && oraclePath) syncStatus = "different";
-					else if (imageUrl) syncStatus = "not_in_oracle";
-
-					return {
-						id: emp.id,
-						empId: emp.emp_id,
-						empCode,
-						name: emp.name,
-						department: emp.department ?? "",
-						imageUrl,
-						oraclePicPath: oraclePath,
-						syncStatus,
-					};
-				}),
+				rows: employees.map((emp) =>
+					toSyncPhotoEmployee(emp, oracle.map.get(emp.emp_code) ?? null),
+				),
 			};
 		}),
 

@@ -3,8 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { GridApi, IDatasource } from "ag-grid-community";
-import { Camera, Loader2, RefreshCw, Search } from "lucide-react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import {
+	Camera,
+	HardHat,
+	Loader2,
+	RefreshCw,
+	Search,
+	Users,
+} from "lucide-react";
+import { parseAsInteger, parseAsStringEnum, useQueryState } from "nuqs";
 import { toast } from "sonner";
 
 import {
@@ -27,6 +34,20 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+	PHOTO_SYNC_SOURCE_VALUES,
+	SYNC_STATUS_FILTER_LABELS,
+	SYNC_STATUS_FILTER_VALUES,
+	type SyncStatusFilter,
+} from "@/lib/sync-photos";
 import type {
 	PhotoSyncSource,
 	SyncPhotoEmployee,
@@ -80,13 +101,24 @@ const SOURCE_META: Record<PhotoSyncSource, SourceMeta> = {
 	},
 };
 
-export function SyncPhotosPage({ source }: { source: PhotoSyncSource }) {
-	const meta = SOURCE_META[source];
+export function SyncPhotosPage() {
 	const utils = trpc.useUtils();
 	const [syncAllOpen, setSyncAllOpen] = useState(false);
 	const [syncProgress, setSyncProgress] = useState(0);
 	const [syncingId, setSyncingId] = useState<number | null>(null);
 
+	const [source, setSource] = useQueryState(
+		"source",
+		parseAsStringEnum([...PHOTO_SYNC_SOURCE_VALUES])
+			.withDefault("employee")
+			.withOptions({ history: "replace" }),
+	);
+	const [status, setStatus] = useQueryState(
+		"status",
+		parseAsStringEnum([...SYNC_STATUS_FILTER_VALUES])
+			.withDefault("all")
+			.withOptions({ history: "replace" }),
+	);
 	const [query, setQuery] = useQueryState("q", {
 		defaultValue: "",
 		history: "replace",
@@ -108,6 +140,8 @@ export function SyncPhotosPage({ source }: { source: PhotoSyncSource }) {
 	const syncOneMutation = trpc.syncPhotos.syncOne.useMutation();
 	const syncAllMutation = trpc.syncPhotos.syncAll.useMutation();
 
+	const meta = SOURCE_META[source];
+
 	useEffect(() => {
 		setSearchInput(query);
 	}, [query]);
@@ -116,7 +150,7 @@ export function SyncPhotosPage({ source }: { source: PhotoSyncSource }) {
 		setTotal(null);
 		setLoadError(null);
 		setIsLoading(true);
-	}, [query, source]);
+	}, [query, source, status]);
 
 	useEffect(() => {
 		const value = searchInput.trim();
@@ -142,6 +176,26 @@ export function SyncPhotosPage({ source }: { source: PhotoSyncSource }) {
 		return () => clearInterval(timer);
 	}, [syncAllMutation.isPending]);
 
+	const handleSourceChange = useCallback(
+		(value: string) => {
+			if ((PHOTO_SYNC_SOURCE_VALUES as readonly string[]).includes(value)) {
+				setSource(value as PhotoSyncSource);
+				setPage(0);
+			}
+		},
+		[setSource, setPage],
+	);
+
+	const handleStatusChange = useCallback(
+		(value: string) => {
+			if ((SYNC_STATUS_FILTER_VALUES as readonly string[]).includes(value)) {
+				setStatus(value as SyncStatusFilter);
+				setPage(0);
+			}
+		},
+		[setStatus, setPage],
+	);
+
 	const datasource = useMemo<IDatasource>(
 		() => ({
 			getRows: async (params) => {
@@ -151,6 +205,7 @@ export function SyncPhotosPage({ source }: { source: PhotoSyncSource }) {
 				try {
 					const data = await utils.syncPhotos.list.fetch({
 						source,
+						status,
 						q: query,
 						page: serverPage,
 						pageSize: PAGE_SIZE,
@@ -173,7 +228,7 @@ export function SyncPhotosPage({ source }: { source: PhotoSyncSource }) {
 				}
 			},
 		}),
-		[query, source, utils],
+		[query, source, status, utils],
 	);
 
 	const handleReady = useCallback((api: GridApi<SyncPhotoEmployee>) => {
@@ -236,6 +291,8 @@ export function SyncPhotosPage({ source }: { source: PhotoSyncSource }) {
 
 	const noResults = total === 0;
 	const searching = query.trim().length > 0;
+	const statusFiltered = status !== "all";
+	const filtered = searching || statusFiltered;
 
 	return (
 		<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
@@ -261,18 +318,51 @@ export function SyncPhotosPage({ source }: { source: PhotoSyncSource }) {
 				</Button>
 			</div>
 
-			<div className="relative w-full max-w-lg">
-				<Search
-					data-icon="inline-start"
-					className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-				/>
-				<Input
-					type="search"
-					value={searchInput}
-					onChange={(e) => setSearchInput(e.target.value)}
-					placeholder={meta.searchPlaceholder}
-					className="h-9 pl-8"
-				/>
+			<div className="flex flex-wrap items-center gap-3">
+				<Tabs value={source} onValueChange={handleSourceChange}>
+					<TabsList>
+						<TabsTrigger value="employee">
+							<Users />
+							Employees
+						</TabsTrigger>
+						<TabsTrigger value="subcontract">
+							<HardHat />
+							Subcontractors
+						</TabsTrigger>
+					</TabsList>
+				</Tabs>
+
+				<Select
+					value={status}
+					onValueChange={(value) => {
+						if (value) handleStatusChange(value);
+					}}
+				>
+					<SelectTrigger className="h-9 w-[170px]">
+						<SelectValue placeholder="Status" />
+					</SelectTrigger>
+					<SelectContent>
+						{SYNC_STATUS_FILTER_VALUES.map((value) => (
+							<SelectItem key={value} value={value}>
+								{SYNC_STATUS_FILTER_LABELS[value]}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+
+				<div className="relative min-w-0 flex-1 md:max-w-lg">
+					<Search
+						data-icon="inline-start"
+						className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+					/>
+					<Input
+						type="search"
+						value={searchInput}
+						onChange={(e) => setSearchInput(e.target.value)}
+						placeholder={meta.searchPlaceholder}
+						className="h-9 pl-8"
+					/>
+				</div>
 			</div>
 
 			{loadError ? (
@@ -296,11 +386,11 @@ export function SyncPhotosPage({ source }: { source: PhotoSyncSource }) {
 							<Camera />
 						</EmptyMedia>
 						<EmptyTitle>
-							{searching ? meta.emptySearchTitle : meta.emptyTitle}
+							{filtered ? meta.emptySearchTitle : meta.emptyTitle}
 						</EmptyTitle>
 						<EmptyDescription>
-							{searching
-								? "Try a different search term."
+							{filtered
+								? "Try a different search term or filter."
 								: meta.emptyDescription}
 						</EmptyDescription>
 					</EmptyHeader>
