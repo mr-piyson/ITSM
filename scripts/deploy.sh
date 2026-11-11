@@ -148,6 +148,12 @@ log "Building to staging directory (.next-deploy)..."
 rm -rf "${APP_DIR}/.next-deploy"
 rm -rf "${APP_DIR}/.env.local"
 
+# tsconfig.json includes .next/types, so the live build's generated route types
+# are typechecked during this build. They can reference routes deleted since that
+# build, which fails the build. Only .next-deploy/types is regenerated, so drop
+# the stale stubs (not used at runtime).
+rm -rf "${APP_DIR}/.next/types" "${APP_DIR}/.next/dev/types"
+
 NEXT_DIST_DIR=".next-deploy" "${BUN_BIN}" run build
 
 # --- Atomic swap & restart (downtime is only these three commands) ---
