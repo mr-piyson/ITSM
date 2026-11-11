@@ -36,6 +36,7 @@ type SyncPhotosTableProps = {
 	page: number;
 	loading: boolean;
 	syncingId: number | null;
+	codeHeader?: string;
 	onSyncOne: (emp: SyncPhotoEmployee) => void;
 	onPageChange: (page: number) => void;
 	onReady: (api: GridApi<SyncPhotoEmployee>) => void;
@@ -128,6 +129,7 @@ export function SyncPhotosTable({
 	page,
 	loading,
 	syncingId,
+	codeHeader = "Emp Code",
 	onSyncOne,
 	onPageChange,
 	onReady,
@@ -144,7 +146,7 @@ export function SyncPhotosTable({
 				cellClass: "text-muted-foreground text-xs",
 			},
 			{
-				headerName: "Emp Code",
+				headerName: codeHeader,
 				field: "empCode",
 				width: 100,
 				cellClass: "font-mono text-xs font-medium",
@@ -202,7 +204,7 @@ export function SyncPhotosTable({
 				cellRendererParams: { syncingId, onSyncOne },
 			},
 		],
-		[syncingId, onSyncOne],
+		[syncingId, codeHeader, onSyncOne],
 	);
 
 	const handleGridReady = useCallback(

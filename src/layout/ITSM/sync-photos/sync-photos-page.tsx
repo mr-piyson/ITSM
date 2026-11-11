@@ -27,14 +27,61 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
-import type { SyncPhotoEmployee } from "@/server/routers/ITSM/sync-photos";
+import type {
+	PhotoSyncSource,
+	SyncPhotoEmployee,
+} from "@/server/routers/ITSM/sync-photos";
 import { trpc } from "@/trpc/react";
 
 import { SyncPhotosTable } from "./sync-photos-table";
 
 const PAGE_SIZE = 30;
 
-export function SyncPhotosPage() {
+type SourceMeta = {
+	title: string;
+	unitLabel: string;
+	searchPlaceholder: string;
+	codeHeader: string;
+	emptyTitle: string;
+	emptySearchTitle: string;
+	emptyDescription: string;
+	dialogPendingDescription: string;
+	dialogDescription: string;
+	progressLabel: string;
+};
+
+const SOURCE_META: Record<PhotoSyncSource, SourceMeta> = {
+	employee: {
+		title: "Employee Photo Sync",
+		unitLabel: "employee(s)",
+		searchPlaceholder: "Search by Emp Code, name or department…",
+		codeHeader: "Emp Code",
+		emptyTitle: "No employees found",
+		emptySearchTitle: "No matching employees",
+		emptyDescription: "Employees with a photo in MES will appear here.",
+		dialogPendingDescription: "Updating employee photos in Oracle...",
+		dialogDescription:
+			"This will update the EMP_PIC_PATH in Oracle for all employees that have a photo in MES. Employees without a photo will be skipped.",
+		progressLabel: "Syncing employee photos",
+	},
+	subcontract: {
+		title: "Subcontractor Photo Sync",
+		unitLabel: "subcontractor(s)",
+		searchPlaceholder: "Search by SC Code or name…",
+		codeHeader: "SC Code",
+		emptyTitle: "No subcontractors found",
+		emptySearchTitle: "No matching subcontractors",
+		emptyDescription:
+			"Subcontract workers with a photo in MES will appear here.",
+		dialogPendingDescription: "Updating subcontractor photos in Oracle...",
+		dialogDescription:
+			"This will update the EMP_PIC_PATH in T690_SUB_CONTR_MAST for all subcontract workers that have a photo in MES. Workers without a photo will be skipped.",
+		progressLabel: "Syncing subcontractor photos",
+	},
+};
+
+export function SyncPhotosPage({ source }: { source: PhotoSyncSource }) {
+	const meta = SOURCE_META[source];
 	const utils = trpc.useUtils();
 	const [syncAllOpen, setSyncAllOpen] = useState(false);
 	const [syncProgress, setSyncProgress] = useState(0);
@@ -69,7 +116,7 @@ export function SyncPhotosPage() {
 		setTotal(null);
 		setLoadError(null);
 		setIsLoading(true);
-	}, [query]);
+	}, [query, source]);
 
 	useEffect(() => {
 		const value = searchInput.trim();
@@ -103,6 +150,7 @@ export function SyncPhotosPage() {
 				setIsLoading(true);
 				try {
 					const data = await utils.syncPhotos.list.fetch({
+						source,
 						q: query,
 						page: serverPage,
 						pageSize: PAGE_SIZE,
@@ -125,7 +173,7 @@ export function SyncPhotosPage() {
 				}
 			},
 		}),
-		[query, utils],
+		[query, source, utils],
 	);
 
 	const handleReady = useCallback((api: GridApi<SyncPhotoEmployee>) => {
@@ -150,6 +198,7 @@ export function SyncPhotosPage() {
 			setSyncingId(emp.id);
 			try {
 				await syncOneMutation.mutateAsync({
+					source,
 					empCode: emp.empCode,
 					imageUrl: emp.imageUrl,
 				});
@@ -164,12 +213,12 @@ export function SyncPhotosPage() {
 				setSyncingId(null);
 			}
 		},
-		[syncOneMutation, utils],
+		[syncOneMutation, source, utils],
 	);
 
 	const handleSyncAll = useCallback(async () => {
 		try {
-			const result = await syncAllMutation.mutateAsync();
+			const result = await syncAllMutation.mutateAsync({ source });
 			toast.success(
 				result.failed > 0
 					? `Synced ${result.succeeded}/${result.total} (${result.failed} failed)`
@@ -183,7 +232,7 @@ export function SyncPhotosPage() {
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "Sync all failed");
 		}
-	}, [syncAllMutation, utils]);
+	}, [syncAllMutation, source, utils]);
 
 	const noResults = total === 0;
 	const searching = query.trim().length > 0;
@@ -192,11 +241,9 @@ export function SyncPhotosPage() {
 		<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
-					<h1 className="text-xl font-semibold tracking-tight">
-						Employee Photo Sync
-					</h1>
+					<h1 className="text-xl font-semibold tracking-tight">{meta.title}</h1>
 					<p className="text-xs text-muted-foreground">
-						{total === null ? "…" : `${total} employee(s)`}
+						{total === null ? "…" : `${total} ${meta.unitLabel}`}
 					</p>
 				</div>
 				<Button
@@ -223,7 +270,7 @@ export function SyncPhotosPage() {
 					type="search"
 					value={searchInput}
 					onChange={(e) => setSearchInput(e.target.value)}
-					placeholder="Search by Emp Code, name or department…"
+					placeholder={meta.searchPlaceholder}
 					className="h-9 pl-8"
 				/>
 			</div>
@@ -249,12 +296,12 @@ export function SyncPhotosPage() {
 							<Camera />
 						</EmptyMedia>
 						<EmptyTitle>
-							{searching ? "No matching employees" : "No employees found"}
+							{searching ? meta.emptySearchTitle : meta.emptyTitle}
 						</EmptyTitle>
 						<EmptyDescription>
 							{searching
 								? "Try a different search term."
-								: "Employees with a photo in MES will appear here."}
+								: meta.emptyDescription}
 						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
@@ -266,6 +313,7 @@ export function SyncPhotosPage() {
 					page={page}
 					loading={isLoading}
 					syncingId={syncingId}
+					codeHeader={meta.codeHeader}
 					onSyncOne={handleSyncOne}
 					onPageChange={handlePageChange}
 					onReady={handleReady}
@@ -278,13 +326,13 @@ export function SyncPhotosPage() {
 						<AlertDialogTitle>Sync all photos to Oracle?</AlertDialogTitle>
 						<AlertDialogDescription>
 							{syncAllMutation.isPending
-								? "Updating employee photos in Oracle..."
-								: "This will update the EMP_PIC_PATH in Oracle for all employees that have a photo in MES. Employees without a photo will be skipped."}
+								? meta.dialogPendingDescription
+								: meta.dialogDescription}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					{syncAllMutation.isPending ? (
-						<Progress value={syncProgress} aria-label="Syncing employee photos">
-							<ProgressLabel>Syncing employee photos</ProgressLabel>
+						<Progress value={syncProgress} aria-label={meta.progressLabel}>
+							<ProgressLabel>{meta.progressLabel}</ProgressLabel>
 						</Progress>
 					) : null}
 					<AlertDialogFooter>

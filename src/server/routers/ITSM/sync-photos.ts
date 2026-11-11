@@ -5,6 +5,8 @@ import { z } from "zod";
 import type { OracleConnection } from "@/lib/database";
 import { protectedProcedure, router } from "@/server/trpc";
 
+export type PhotoSyncSource = "employee" | "subcontract";
+
 export type SyncPhotoEmployee = {
 	id: number;
 	empId: number;
@@ -55,28 +57,55 @@ type CountRow = RowDataPacket & {
 
 const PHOTO_URL_EXPR = `CONCAT('http://intranet.bfginternational.com:88/storage/employee/', MD5(e.id), '/', r.filename, '.jpg')`;
 
-const EMPLOYEE_PATH_TABLE = "T633_EMPL_MASTER";
 const ORACLE_READ_BATCH_SIZE = 1000;
 const MAX_IN_CLAUSES_PER_STATEMENT = 10;
 const SYNC_BATCH_SIZE = 500;
 
-const UPDATE_PIC_PATH_SQL = `UPDATE ${EMPLOYEE_PATH_TABLE} SET EMP_PIC_PATH = :1 WHERE EMPL_CODE = :2`;
+type PhotoSyncSourceConfig = {
+	oracleTable: string;
+	oracleCodeColumn: string;
+	mesWhereClause: string;
+};
 
-function buildBulkUpdateSql(rowCount: number): string {
+const PHOTO_SYNC_SOURCES: Record<PhotoSyncSource, PhotoSyncSourceConfig> = {
+	employee: {
+		oracleTable: "T633_EMPL_MASTER",
+		oracleCodeColumn: "EMPL_CODE",
+		mesWhereClause: "e.emp_id IS NOT NULL AND e.deleted_at IS NULL",
+	},
+	subcontract: {
+		oracleTable: "T690_SUB_CONTR_MAST",
+		oracleCodeColumn: "SC_CODE",
+		mesWhereClause:
+			"e.sync_source = 'T690_SUB_CONTR_MAST' AND e.deleted_at IS NULL",
+	},
+};
+
+const photoSyncSourceSchema = z.enum(["employee", "subcontract"]);
+
+function buildUpdatePicPathSql(source: PhotoSyncSourceConfig): string {
+	return `UPDATE ${source.oracleTable} SET EMP_PIC_PATH = :1 WHERE ${source.oracleCodeColumn} = :2`;
+}
+
+function buildBulkUpdateSql(
+	source: PhotoSyncSourceConfig,
+	rowCount: number,
+): string {
 	const rows: string[] = [];
 	for (let i = 0; i < rowCount; i++) {
 		rows.push(
-			`SELECT :${i * 2 + 1} AS EMPL_CODE, :${i * 2 + 2} AS EMP_PIC_PATH FROM DUAL`,
+			`SELECT :${i * 2 + 1} AS CODE, :${i * 2 + 2} AS EMP_PIC_PATH FROM DUAL`,
 		);
 	}
-	return `MERGE INTO ${EMPLOYEE_PATH_TABLE} t
+	return `MERGE INTO ${source.oracleTable} t
 		USING (${rows.join(" UNION ALL ")}) s
-		ON (t.EMPL_CODE = s.EMPL_CODE)
+		ON (t.${source.oracleCodeColumn} = s.CODE)
 		WHEN MATCHED THEN UPDATE SET t.EMP_PIC_PATH = s.EMP_PIC_PATH`;
 }
 
 async function fetchEmpPicPaths(
 	conn: OracleConnection,
+	source: PhotoSyncSourceConfig,
 	empCodes: string[],
 ): Promise<Map<string, string | null>> {
 	const result = new Map<string, string | null>();
@@ -99,7 +128,7 @@ async function fetchEmpPicPaths(
 			const batch = codes.slice(i, i + ORACLE_READ_BATCH_SIZE);
 			const placeholders = batch.map(() => `:${bindIndex++}`).join(",");
 			statements.push(
-				`SELECT EMPL_CODE, EMP_PIC_PATH FROM ${EMPLOYEE_PATH_TABLE} WHERE EMPL_CODE IN (${placeholders})`,
+				`SELECT ${source.oracleCodeColumn}, EMP_PIC_PATH FROM ${source.oracleTable} WHERE ${source.oracleCodeColumn} IN (${placeholders})`,
 			);
 		}
 
@@ -108,6 +137,7 @@ async function fetchEmpPicPaths(
 		if (process.env.NODE_ENV === "development") {
 			console.debug("[syncPhotos.list] Oracle path query", {
 				timestamp: new Date().toISOString(),
+				source: source.oracleTable,
 				codes: codes.length,
 				elapsedMs: Math.round(performance.now() - queryStartedAt),
 			});
@@ -124,18 +154,20 @@ export const syncPhotosRouter = router({
 	list: protectedProcedure
 		.input(
 			z.object({
+				source: photoSyncSourceSchema.default("employee"),
 				q: z.string().max(100).default(""),
 				page: z.coerce.number().int().min(1).default(1),
 				pageSize: z.coerce.number().int().min(10).max(100).default(30),
 			}),
 		)
 		.query(async ({ ctx, input }): Promise<SyncPhotoListResult> => {
+			const source = PHOTO_SYNC_SOURCES[input.source];
 			const search = input.q.trim();
 
 			const fromClause = `FROM mes.employees e
 				LEFT JOIN mes.resources r ON e.id = r.uid AND r.model = 'employee' AND r.attr = 'photo'`;
 
-			let whereClause = "WHERE e.emp_id IS NOT NULL AND e.deleted_at IS NULL";
+			let whereClause = `WHERE ${source.mesWhereClause}`;
 			const params: string[] = [];
 
 			if (search) {
@@ -197,6 +229,7 @@ export const syncPhotosRouter = router({
 				try {
 					oracleMap = await fetchEmpPicPaths(
 						conn,
+						source,
 						employeesWithPhotos.map((e) => e.emp_code),
 					);
 				} catch (error) {
@@ -214,6 +247,7 @@ export const syncPhotosRouter = router({
 
 			if (process.env.NODE_ENV === "development") {
 				console.debug("[syncPhotos.list] page timing", {
+					source: input.source,
 					page: input.page,
 					pageSize: input.pageSize,
 					search: Boolean(search),
@@ -259,17 +293,19 @@ export const syncPhotosRouter = router({
 	syncOne: protectedProcedure
 		.input(
 			z.object({
+				source: photoSyncSourceSchema.default("employee"),
 				empCode: z.string().min(1).max(50),
 				imageUrl: z.url(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const source = PHOTO_SYNC_SOURCES[input.source];
 			const pool = await ctx.db.mis;
 			const conn = await pool.getConnection();
 
 			try {
 				const result = await conn.execute(
-					UPDATE_PIC_PATH_SQL,
+					buildUpdatePicPathSql(source),
 					[input.imageUrl, input.empCode],
 					{ autoCommit: true },
 				);
@@ -297,8 +333,10 @@ export const syncPhotosRouter = router({
 			}
 		}),
 
-	syncAll: protectedProcedure.mutation(
-		async ({ ctx }): Promise<SyncAllResult> => {
+	syncAll: protectedProcedure
+		.input(z.object({ source: photoSyncSourceSchema.default("employee") }))
+		.mutation(async ({ ctx, input }): Promise<SyncAllResult> => {
+			const source = PHOTO_SYNC_SOURCES[input.source];
 			const pool = await ctx.db.mis;
 			const conn = await pool.getConnection();
 			const failures: SyncPhotoFailure[] = [];
@@ -313,7 +351,7 @@ export const syncPhotosRouter = router({
 						`SELECT e.emp_code, ${PHOTO_URL_EXPR} AS image_url
 						 FROM mes.employees e
 						 INNER JOIN mes.resources r ON r.uid = e.id AND r.model = 'employee' AND r.attr = 'photo'
-						 WHERE e.emp_id IS NOT NULL AND e.deleted_at IS NULL
+						 WHERE ${source.mesWhereClause}
 						 ORDER BY e.emp_id ASC
 						 LIMIT ? OFFSET ?`,
 						[SYNC_BATCH_SIZE, offset],
@@ -326,6 +364,7 @@ export const syncPhotosRouter = router({
 					total += employees.length;
 					const oracleMap = await fetchEmpPicPaths(
 						conn,
+						source,
 						employees.map((e) => e.emp_code),
 					);
 
@@ -343,12 +382,18 @@ export const syncPhotosRouter = router({
 					]);
 					if (binds.length > 0) {
 						try {
-							await conn.execute(buildBulkUpdateSql(pending.size), binds);
+							await conn.execute(
+								buildBulkUpdateSql(source, pending.size),
+								binds,
+							);
 							succeeded += pending.size;
 						} catch {
 							for (const [empCode, imageUrl] of pending) {
 								try {
-									await conn.execute(UPDATE_PIC_PATH_SQL, [imageUrl, empCode]);
+									await conn.execute(buildUpdatePicPathSql(source), [
+										imageUrl,
+										empCode,
+									]);
 									succeeded++;
 								} catch (error) {
 									failures.push({
@@ -386,6 +431,5 @@ export const syncPhotosRouter = router({
 				failed: failures.length,
 				failures,
 			};
-		},
-	),
+		}),
 });
