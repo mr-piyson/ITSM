@@ -26,7 +26,6 @@ import { summarizeAzureAccess } from "@/lib/azure-license-summary";
 
 import { ShieldCheck, ShieldAlert } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import {
 	Table,
 	TableBody,
@@ -103,7 +102,11 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 				{/* Back + Title */}
 				<div className="flex items-center justify-between gap-3">
 					<div className="flex items-center gap-3">
-						<Button variant="ghost" size="icon-sm" onClick={() => router.back()}>
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							onClick={() => router.back()}
+						>
 							<ArrowLeft />
 						</Button>
 						<div>
@@ -622,10 +625,7 @@ export function EmployeeDetailPage({ code }: EmployeeDetailPageProps) {
 				)}
 			</div>
 			{isEditOpen && employee && (
-				<EmployeeEditDialog
-					employee={employee}
-					onOpenChange={setIsEditOpen}
-				/>
+				<EmployeeEditDialog employee={employee} onOpenChange={setIsEditOpen} />
 			)}
 		</div>
 	);
