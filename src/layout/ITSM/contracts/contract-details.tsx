@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { formatDateLabel } from "@/lib/contract-constants";
+import { vendorImageUrl } from "@/lib/vendor-constants";
 import type { Contract } from "@/server/routers/ITSM/contracts";
 import { trpc } from "@/trpc/react";
 
@@ -136,9 +137,17 @@ export function ContractDetails({
 			{contract && (
 				<div className="space-y-4">
 					<div className="flex items-start gap-3">
-						<div className="flex size-11 shrink-0 items-center justify-center border bg-muted text-muted-foreground">
-							<FileSignature className="size-5" />
-						</div>
+						{vendorImageUrl(contract.vendorImage) ? (
+							<img
+								src={vendorImageUrl(contract.vendorImage) ?? undefined}
+								alt={contract.vendorName ?? "Vendor"}
+								className="size-11 shrink-0 border bg-muted object-contain p-1"
+							/>
+						) : (
+							<div className="flex size-11 shrink-0 items-center justify-center border bg-muted text-muted-foreground">
+								<FileSignature className="size-5" />
+							</div>
+						)}
 						<div className="min-w-0 flex-1 space-y-1.5">
 							<p className="text-sm font-medium break-words">
 								{contract.productName}

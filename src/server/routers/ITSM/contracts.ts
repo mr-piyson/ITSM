@@ -17,6 +17,7 @@ export type Contract = {
 	productName: string;
 	vendorID: number;
 	vendorName: string | null;
+	vendorImage: string | null;
 	startDate: string;
 	endDate: string;
 	notes: string;
@@ -82,6 +83,10 @@ function toContract(row: Row): Contract {
 			row.vendorName === null || row.vendorName === undefined
 				? null
 				: String(row.vendorName),
+		vendorImage:
+			row.vendorImage === null || row.vendorImage === undefined
+				? null
+				: String(row.vendorImage),
 		startDate: String(row.startDate ?? ""),
 		endDate: String(row.endDate ?? ""),
 		notes: String(row.notes ?? ""),
@@ -123,6 +128,7 @@ export const contractsRouter = router({
 	list: protectedProcedure.query(async ({ ctx }): Promise<Contract[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(
 			`SELECT c.id, c.productName, c.vendorID, v.name AS vendorName,
+				v.image AS vendorImage,
 				DATE_FORMAT(c.startDate, '%Y-%m-%d') AS startDate,
 				DATE_FORMAT(c.endDate, '%Y-%m-%d') AS endDate,
 				c.notes, c.support, c.account, c.cost, c.currency, c.bilingCycle, c.docslink

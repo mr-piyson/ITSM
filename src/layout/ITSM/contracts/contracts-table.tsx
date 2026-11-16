@@ -28,6 +28,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { formatDateLabel } from "@/lib/contract-constants";
+import { vendorImageUrl } from "@/lib/vendor-constants";
 import type { Contract } from "@/server/routers/ITSM/contracts";
 import { StatusBadge } from "./status-badge";
 
@@ -72,11 +73,22 @@ export function ContractsTable({
 				id: "vendor",
 				header: "Vendor",
 				size: 200,
-				cell: ({ row }) => (
-					<span className="block min-w-0 truncate">
-						{row.original.vendorName || "-"}
-					</span>
-				),
+				cell: ({ row }) => {
+					const image = vendorImageUrl(row.original.vendorImage);
+					return (
+						<span className="flex min-w-0 items-center gap-2">
+							{image && (
+								<img
+									src={image}
+									alt=""
+									loading="lazy"
+									className="h-7 w-10 shrink-0 object-contain"
+								/>
+							)}
+							<span className="truncate">{row.original.vendorName || "-"}</span>
+						</span>
+					);
+				},
 			},
 			{
 				id: "endDate",

@@ -1,15 +1,28 @@
-import { createReadStream, existsSync } from "node:fs";
-import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
+import {
+	mkdir,
+	readFile,
+	readdir,
+	rm,
+	stat,
+	writeFile,
+} from "node:fs/promises";
 import path from "node:path";
 
 import { env } from "@/lib/env";
 
 const DATA_ROOT = path.resolve(env.DATA_DIR || ".data");
 const UPLOAD_ROOT = path.join(DATA_ROOT, "uploads");
+const MANIFEST_PATH = path.join(DATA_ROOT, "migration-manifest.csv");
 
 // Legacy roots for read-compatibility during migration.
 const LEGACY_ROOT = path.resolve("public");
-const LEGACY_ISS_ITEMS = path.resolve(process.cwd(), "..", "ISS", "itemsImages");
+const LEGACY_ISS_ITEMS = path.resolve(
+	process.cwd(),
+	"..",
+	"ISS",
+	"itemsImages",
+);
 const LEGACY_ISS_PRINTERS = path.resolve(
 	process.cwd(),
 	"..",
@@ -26,6 +39,67 @@ function datePath(now = new Date()) {
 
 function normalizeStoragePath(storagePath: string) {
 	return storagePath.replace(/\\/g, "/").replace(/^\/+/, "");
+}
+
+function parseCsvLine(line: string): string[] {
+	const fields: string[] = [];
+	let current = "";
+	let quoted = false;
+	for (let i = 0; i < line.length; i += 1) {
+		const char = line[i];
+		if (char === '"') {
+			if (quoted && line[i + 1] === '"') {
+				current += '"';
+				i += 1;
+			} else {
+				quoted = !quoted;
+			}
+		} else if (char === "," && !quoted) {
+			fields.push(current);
+			current = "";
+		} else {
+			current += char;
+		}
+	}
+	fields.push(current);
+	return fields;
+}
+
+let manifestCache: { mtimeMs: number; map: Map<string, string> } | null = null;
+
+/**
+ * Legacy image files have been copied into `DATA_DIR/uploads` and the migration
+ * wrote `DATA_DIR/migration-manifest.csv` keyed by the old basename. Resolve
+ * those old names to their new storage paths so existing DB rows keep working.
+ */
+function manifestPathFor(storagePath: string): string | null {
+	let mtimeMs: number;
+	try {
+		mtimeMs = statSync(MANIFEST_PATH).mtimeMs;
+	} catch {
+		return null;
+	}
+
+	if (!manifestCache || manifestCache.mtimeMs !== mtimeMs) {
+		const map = new Map<string, string>();
+		try {
+			const lines = readFileSync(MANIFEST_PATH, "utf8").split(/\r?\n/);
+			for (let i = 1; i < lines.length; i += 1) {
+				if (!lines[i].trim()) continue;
+				const [, oldBasename, newStoragePath] = parseCsvLine(lines[i]);
+				if (oldBasename && newStoragePath) {
+					map.set(oldBasename, newStoragePath);
+				}
+			}
+		} catch {
+			return null;
+		}
+		manifestCache = { mtimeMs, map };
+	}
+
+	const basename = path.basename(normalizeStoragePath(storagePath));
+	if (!basename) return null;
+	return manifestCache.map.get(basename) ?? null;
 }
 
 export function toAbsolute(storagePath: string): string {
@@ -71,7 +145,16 @@ export async function readByStoragePath(
 		const abs = toAbsolute(storagePath);
 		if (existsSync(abs)) return await readFile(abs);
 	} catch {
-		// fall through to legacy
+		// fall through to migrated/legacy
+	}
+	const migrated = manifestPathFor(storagePath);
+	if (migrated) {
+		try {
+			const abs = toAbsolute(migrated);
+			if (existsSync(abs)) return await readFile(abs);
+		} catch {
+			// fall through to legacy
+		}
 	}
 	for (const candidate of legacyCandidates(storagePath)) {
 		try {
@@ -109,6 +192,14 @@ export async function exists(storagePath: string): Promise<boolean> {
 	} catch {
 		// ignore
 	}
+	const migrated = manifestPathFor(storagePath);
+	if (migrated) {
+		try {
+			if (existsSync(toAbsolute(migrated))) return true;
+		} catch {
+			// ignore
+		}
+	}
 	return legacyCandidates(storagePath).some((c) => existsSync(c));
 }
 
@@ -137,6 +228,15 @@ export function createReadStreamFor(storagePath: string) {
 	} catch {
 		// ignore
 	}
+	const migrated = manifestPathFor(storagePath);
+	if (migrated) {
+		try {
+			const abs = toAbsolute(migrated);
+			if (existsSync(abs)) return createReadStream(abs);
+		} catch {
+			// ignore
+		}
+	}
 	for (const candidate of legacyCandidates(storagePath)) {
 		if (existsSync(candidate)) return createReadStream(candidate);
 	}
@@ -149,6 +249,15 @@ export async function fileStat(storagePath: string) {
 		if (existsSync(abs)) return await stat(abs);
 	} catch {
 		// ignore
+	}
+	const migrated = manifestPathFor(storagePath);
+	if (migrated) {
+		try {
+			const abs = toAbsolute(migrated);
+			if (existsSync(abs)) return await stat(abs);
+		} catch {
+			// ignore
+		}
 	}
 	for (const candidate of legacyCandidates(storagePath)) {
 		if (existsSync(candidate)) return await stat(candidate);
