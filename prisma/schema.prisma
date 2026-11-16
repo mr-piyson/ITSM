@@ -410,3 +410,39 @@ model mail_settings {
   ccEmails  String?  @db.Text
   enabled   Boolean? @default(false)
 }
+
+
+model File {
+  id           String       @id @default(cuid())
+  filename     String       @db.VarChar(255)
+  originalName String       @db.VarChar(255)
+  hash         String       @unique @db.VarChar(64)
+  storagePath  String       @unique @db.VarChar(500)
+  mime         String       @db.VarChar(100)
+  extension    String       @db.VarChar(20)
+  size         Int
+  width        Int?
+  height       Int?
+  createdAt    DateTime     @default(now()) @db.DateTime(0)
+  attachments  Attachment[]
+
+  @@map("File")
+}
+
+model Attachment {
+  id             String   @id @default(cuid())
+  fileId         String   @db.VarChar(191)
+  file           File     @relation(fields: [fileId], references: [id])
+  entityType     String   @db.VarChar(100)
+  entityId       String   @db.VarChar(191)
+  field          String?  @db.VarChar(100)
+  label          String?  @db.VarChar(255)
+  uploadedById   String?  @db.VarChar(191)
+  organizationId String   @db.VarChar(191)
+  createdAt      DateTime @default(now()) @db.DateTime(0)
+
+  @@index([entityType, entityId])
+  @@index([organizationId])
+  @@index([fileId])
+  @@map("Attachment")
+}
