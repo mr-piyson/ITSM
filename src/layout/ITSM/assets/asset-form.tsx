@@ -115,6 +115,7 @@ type AssetFormDialogProps = {
 	onOpenChange: (open: boolean) => void;
 	asset: AssetItem | null;
 	prefill?: AssetPrefill | null;
+	duplicateFrom?: AssetItem | null;
 	onSuccess: () => void;
 };
 
@@ -134,30 +135,69 @@ function mergePrefill(
 	return result;
 }
 
+function assetToFormValues(asset: AssetItem): AssetFormValues {
+	return {
+		code: asset.code,
+		type: asset.type ?? "",
+		location: asset.location ?? "",
+		department: asset.department ?? "",
+		emplCode: asset.emplCode ?? "",
+		ownerName: asset.owner ?? "",
+		deviceName: asset.deviceName ?? "",
+		serialNumber: asset.serialNumber,
+		manufacturer: asset.manufacturer ?? "",
+		model: asset.model ?? "",
+		ip: asset.ip ?? "",
+		firmwareVer: asset.firmwareVer ?? "",
+		processor: asset.processor ?? "",
+		os: asset.os ?? "",
+		memory: asset.memory ?? "",
+		hdd: asset.hdd ?? "",
+		specification: asset.specification ?? "",
+		image: asset.image ?? "",
+	};
+}
+
 export function AssetFormDialog({
 	open,
 	onOpenChange,
 	asset,
 	prefill,
+	duplicateFrom,
 	onSuccess,
 }: AssetFormDialogProps) {
+	const formKey = asset
+		? `edit-${asset.id}`
+		: duplicateFrom
+			? `duplicate-${duplicateFrom.id}`
+			: prefill
+				? "prefill"
+				: "new";
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader>
 					<DialogTitle>
-						{asset ? `Edit Asset — ${asset.code}` : "Add New Asset"}
+						{asset
+							? `Edit Asset — ${asset.code}`
+							: duplicateFrom
+								? `Duplicate Asset — ${duplicateFrom.code}`
+								: "Add New Asset"}
 					</DialogTitle>
 					<DialogDescription>
 						{asset
 							? "Update the details of this asset."
-							: "Register a new asset in the inventory."}
+							: duplicateFrom
+								? "A new code will be generated. Enter a serial number to save the copy."
+								: "Register a new asset in the inventory."}
 					</DialogDescription>
 				</DialogHeader>
 				<AssetFormContent
-					key={`${asset?.id ?? "new"}-${prefill ? "prefill" : "plain"}`}
+					key={formKey}
 					asset={asset}
 					prefill={prefill}
+					duplicateFrom={duplicateFrom}
 					onSuccess={onSuccess}
 				/>
 			</DialogContent>
@@ -168,10 +208,12 @@ export function AssetFormDialog({
 function AssetFormContent({
 	asset,
 	prefill,
+	duplicateFrom,
 	onSuccess,
 }: {
 	asset: AssetItem | null;
 	prefill?: AssetPrefill | null;
+	duplicateFrom?: AssetItem | null;
 	onSuccess: () => void;
 }) {
 	const { data: employees = [] } = trpc.employees.pickList.useQuery();
@@ -183,27 +225,10 @@ function AssetFormContent({
 
 	const form = useForm({
 		defaultValues: asset
-			? {
-					code: asset.code,
-					type: asset.type ?? "",
-					location: asset.location ?? "",
-					department: asset.department ?? "",
-					emplCode: asset.emplCode ?? "",
-					ownerName: asset.owner ?? "",
-					deviceName: asset.deviceName ?? "",
-					serialNumber: asset.serialNumber,
-					manufacturer: asset.manufacturer ?? "",
-					model: asset.model ?? "",
-					ip: asset.ip ?? "",
-					firmwareVer: asset.firmwareVer ?? "",
-					processor: asset.processor ?? "",
-					os: asset.os ?? "",
-					memory: asset.memory ?? "",
-					hdd: asset.hdd ?? "",
-					specification: asset.specification ?? "",
-					image: asset.image ?? "",
-				}
-			: mergePrefill(prefill),
+			? assetToFormValues(asset)
+			: duplicateFrom
+				? { ...assetToFormValues(duplicateFrom), code: "", serialNumber: "" }
+				: mergePrefill(prefill),
 		onSubmit: async ({ value }) => {
 			try {
 				if (asset) {
@@ -263,7 +288,7 @@ function AssetFormContent({
 
 	const autoCodeRan = useRef(false);
 	useEffect(() => {
-		if (asset || !prefill || autoCodeRan.current) {
+		if (asset || (!prefill && !duplicateFrom) || autoCodeRan.current) {
 			return;
 		}
 		autoCodeRan.current = true;
@@ -277,7 +302,7 @@ function AssetFormContent({
 					error instanceof Error ? error.message : "Failed to generate code",
 				),
 		});
-	}, [asset, prefill]);
+	}, [asset, prefill, duplicateFrom]);
 
 	const handleGenerateCode = async () => {
 		try {

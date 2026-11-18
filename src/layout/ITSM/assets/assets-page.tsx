@@ -108,6 +108,7 @@ export function AssetsPage() {
 	const [formOpen, setFormOpen] = useState(false);
 	const [editingAsset, setEditingAsset] = useState<AssetItem | null>(null);
 	const [prefill, setPrefill] = useState<AssetPrefill | null>(null);
+	const [duplicateFrom, setDuplicateFrom] = useState<AssetItem | null>(null);
 
 	useEffect(() => {
 		if (!newParam) {
@@ -117,6 +118,7 @@ export function AssetsPage() {
 		if (parsed) {
 			setPrefill(parsed);
 			setEditingAsset(null);
+			setDuplicateFrom(null);
 			setFormOpen(true);
 		}
 		setNewParam(null, { history: "replace" });
@@ -159,12 +161,22 @@ export function AssetsPage() {
 	const openAdd = () => {
 		setEditingAsset(null);
 		setPrefill(null);
+		setDuplicateFrom(null);
 		setFormOpen(true);
 	};
 
 	const openEdit = (asset: AssetItem) => {
 		setEditingAsset(asset);
 		setPrefill(null);
+		setDuplicateFrom(null);
+		setFormOpen(true);
+	};
+
+	const handleDuplicate = (asset: AssetItem) => {
+		closeDetails();
+		setEditingAsset(null);
+		setPrefill(null);
+		setDuplicateFrom(asset);
 		setFormOpen(true);
 	};
 
@@ -172,6 +184,7 @@ export function AssetsPage() {
 		setFormOpen(false);
 		setEditingAsset(null);
 		setPrefill(null);
+		setDuplicateFrom(null);
 		utils.assets.list.invalidate();
 		utils.assets.byId.invalidate();
 	};
@@ -180,6 +193,7 @@ export function AssetsPage() {
 		setFormOpen(open);
 		if (!open) {
 			setPrefill(null);
+			setDuplicateFrom(null);
 		}
 	};
 
@@ -330,6 +344,7 @@ export function AssetsPage() {
 				onOpenChange={handleFormOpenChange}
 				asset={editingAsset}
 				prefill={prefill}
+				duplicateFrom={duplicateFrom}
 				onSuccess={handleFormSuccess}
 			/>
 
@@ -345,6 +360,7 @@ export function AssetsPage() {
 						setFormOpen(true);
 					}
 				}}
+				onDuplicate={handleDuplicate}
 				onDeleted={handleDeleted}
 			/>
 		</div>

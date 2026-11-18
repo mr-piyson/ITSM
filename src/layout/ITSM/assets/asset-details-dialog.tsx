@@ -2,7 +2,14 @@
 
 import { useRef, useState } from "react";
 
-import { BadgeCheck, ImageUp, Loader2, Pencil, Trash2 } from "lucide-react";
+import {
+	BadgeCheck,
+	Copy,
+	ImageUp,
+	Loader2,
+	Pencil,
+	Trash2,
+} from "lucide-react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 
@@ -38,6 +45,7 @@ type AssetDetailsDialogProps = {
 	asset: AssetItem | null;
 	onOpenChange: (asset: AssetItem | null) => void;
 	onEdit: () => void;
+	onDuplicate: (asset: AssetItem) => void;
 	onDeleted: () => void;
 };
 
@@ -54,6 +62,7 @@ export function AssetDetailsDialog({
 	asset,
 	onOpenChange,
 	onEdit,
+	onDuplicate,
 	onDeleted,
 }: AssetDetailsDialogProps) {
 	const { data: detail, isPending } = trpc.assets.byId.useQuery(
@@ -328,6 +337,14 @@ export function AssetDetailsDialog({
 					<Button variant="outline" onClick={onEdit} disabled={!detail}>
 						<Pencil data-icon="inline-start" />
 						Edit
+					</Button>
+					<Button
+						variant="outline"
+						onClick={() => detail && onDuplicate(detail)}
+						disabled={!detail}
+					>
+						<Copy data-icon="inline-start" />
+						Duplicate
 					</Button>
 					<AlertDialog>
 						<AlertDialogTrigger
