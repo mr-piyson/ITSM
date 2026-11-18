@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 
 import { ChevronsUpDown, Warehouse } from "lucide-react";
 
-import { EmployeeAvatar } from "@/components/employee-avatar";
+import {
+	EmployeeAvatar,
+	getEmployeeInitials,
+} from "@/components/employee-avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -18,6 +22,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { employeeImageUrl } from "@/lib/employees-constants";
 import { cn } from "@/lib/utils";
 
 export type EmployeeOption = {
@@ -25,6 +30,40 @@ export type EmployeeOption = {
 	name: string;
 	image: string | null;
 };
+
+const MAX_VISIBLE_RESULTS = 20;
+
+/**
+ * Base UI's AvatarImage preloads with `new Image()` on mount, which would fire
+ * one request per row as soon as the popover opens. A plain lazy <img> keeps
+ * those requests limited to the rows actually visible in the list.
+ */
+function PickerAvatar({ employee }: { employee: EmployeeOption }) {
+	const src = employeeImageUrl(employee.image);
+	const [failed, setFailed] = useState(false);
+
+	return (
+		<Avatar className="size-6 shrink-0">
+			{src && !failed ? (
+				// biome-ignore lint/performance/noImgElement: Base UI AvatarImage preloads every src eagerly; native lazy loading is required here.
+				<img
+					src={src}
+					alt={employee.name}
+					loading="lazy"
+					decoding="async"
+					fetchPriority="low"
+					data-slot="avatar-image"
+					className="aspect-square size-full rounded-full object-cover"
+					onError={() => setFailed(true)}
+				/>
+			) : (
+				<AvatarFallback className="text-[9px]">
+					{getEmployeeInitials(employee.name, employee.emplCode)}
+				</AvatarFallback>
+			)}
+		</Avatar>
+	);
+}
 
 type EmployeeComboboxProps = {
 	value: string | null;
@@ -53,19 +92,23 @@ export function EmployeeCombobox({
 }: EmployeeComboboxProps) {
 	const [open, setOpen] = useState(false);
 	const [search, setSearch] = useState("");
+	const deferredSearch = useDeferredValue(search);
 
 	const selected = employees.find((employee) => employee.emplCode === value);
 
-	const list = employees.filter((employee) => {
-		const q = search.trim().toLowerCase();
+	const matches = useMemo(() => {
+		const q = deferredSearch.trim().toLowerCase();
 		if (!q) {
-			return true;
+			return employees;
 		}
-		return (
-			employee.name.toLowerCase().includes(q) ||
-			employee.emplCode.toLowerCase().includes(q)
+		return employees.filter(
+			(employee) =>
+				employee.name.toLowerCase().includes(q) ||
+				employee.emplCode.toLowerCase().includes(q),
 		);
-	});
+	}, [employees, deferredSearch]);
+
+	const list = matches.slice(0, MAX_VISIBLE_RESULTS);
 
 	const selectEmployee = (employee: EmployeeOption | null) => {
 		onSelect(employee);
@@ -167,13 +210,7 @@ export function EmployeeCombobox({
 										data-checked={value === employee.emplCode}
 										onSelect={() => selectEmployee(employee)}
 									>
-										<EmployeeAvatar
-											image={employee.image}
-											name={employee.name}
-											code={employee.emplCode}
-											className="size-6 shrink-0"
-											fallbackClassName="text-[9px]"
-										/>
+										<PickerAvatar employee={employee} />
 										<span
 											className="min-w-0 flex-1 truncate"
 											title={employee.name}
@@ -185,6 +222,12 @@ export function EmployeeCombobox({
 										</span>
 									</CommandItem>
 								))}
+								{matches.length > list.length && (
+									<p className="px-2 py-1.5 text-[10px] text-muted-foreground">
+										Showing first {MAX_VISIBLE_RESULTS} of {matches.length}—
+										refine your search
+									</p>
+								)}
 							</CommandGroup>
 						)}
 					</CommandList>
