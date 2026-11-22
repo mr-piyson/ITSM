@@ -37,6 +37,8 @@ export type EmployeeItem = {
 	picPath: string | null;
 	createdOn: string | null;
 	leftDate: string | null;
+	/** Oracle T633_EMPL_MASTER.ACTIVE_YN: face access ('Y' = active, 'N' = inactive). */
+	faceAccessActive: boolean;
 };
 
 function toString(value: unknown): string | null {
@@ -56,6 +58,7 @@ function normalizeOracleEmployee(row: Row): EmployeeItem {
 		picPath: toString(row[5]),
 		createdOn: toString(row[6]),
 		leftDate: toString(row[7]),
+		faceAccessActive: String(row[8] ?? "").trim().toUpperCase() === "Y",
 	};
 }
 
@@ -69,7 +72,7 @@ export const employeesRouter = router({
 				const result = await oracleConn.execute(
 					`SELECT tem.EMPL_CODE, tem.EMPL_PNAME, tem.EMPL_STAFF_WORKR,
 					        tem.EMAIL_ID, tem.EMPL_ON_PAYROLL, tem.EMP_PIC_PATH,
-					        tem.CREATED_ON, tem.LEFT_DATE
+					        tem.CREATED_ON, tem.LEFT_DATE, tem.ACTIVE_YN
 					 FROM T633_EMPL_MASTER tem
 					 WHERE tem.EMPL_CODE = :1
 					   AND tem.T627_DESGN_CODE != 'VISIT'
@@ -110,7 +113,7 @@ export const employeesRouter = router({
 			const result = await oracleConn.execute(
 				`SELECT tem.EMPL_CODE, tem.EMPL_PNAME, tem.EMPL_STAFF_WORKR,
 				        tem.EMAIL_ID, tem.EMPL_ON_PAYROLL, tem.EMP_PIC_PATH,
-				        tem.CREATED_ON, tem.LEFT_DATE
+				        tem.CREATED_ON, tem.LEFT_DATE, tem.ACTIVE_YN
 				 FROM T633_EMPL_MASTER tem
 				 WHERE tem.T627_DESGN_CODE != 'VISIT'
 				   AND tem.EMPL_CODE NOT LIKE '%-0%'

@@ -49,6 +49,15 @@ function StatusRenderer({ data }: CellParams) {
 	return <EmploymentStatusPill leftDate={data.leftDate} />;
 }
 
+function FaceAccessRenderer({ data }: CellParams) {
+	if (!data) return null;
+	return (
+		<Pill tone={data.faceAccessActive ? "green" : "red"}>
+			{data.faceAccessActive ? "Active" : "Inactive"}
+		</Pill>
+	);
+}
+
 function PayrollRenderer({ data }: CellParams) {
 	const val = data?.onPayroll;
 	if (!val) return <span className="text-sm text-muted-foreground">-</span>;
@@ -219,6 +228,14 @@ export function EmployeesTable({
 				width: 140,
 				...NO_FILTER,
 				cellRenderer: EmailActiveRenderer,
+			},
+			{
+				headerName: "Face Access",
+				colId: "faceAccess",
+				field: "faceAccessActive",
+				width: 130,
+				...NO_FILTER,
+				cellRenderer: FaceAccessRenderer,
 			},
 			{
 				headerName: "Type",
