@@ -254,13 +254,17 @@ async function safeQueryLogs(
 	tableName: string,
 	personId: number,
 ): Promise<Row[]> {
+	const tableMonth = tableName.match(/log_(\d{4})(\d{2})$/);
+	if (!tableMonth) return [];
+
 	try {
 		const [rows] = await db.query<Row[]>(
 			`SELECT id, employeeNoString AS person_id, \`time\` AS \`datetime\`, timeRaw AS time_raw, name AS person_name, device_ip
 			 FROM ${tableName}
 			 WHERE employeeNoString = ? AND employeeNoString IS NOT NULL
+			   AND DATE_FORMAT(\`time\`, '%Y-%m') = ?
 			 ORDER BY \`time\` ASC`,
-			[personId],
+			[personId, `${tableMonth[1]}-${tableMonth[2]}`],
 		);
 		return rows;
 	} catch {
@@ -521,7 +525,8 @@ export const attendanceRouter = router({
 				.filter((log) => {
 					const ts = log.datetime.getTime();
 					return ts >= startDate.getTime() && ts < endExclusive.getTime();
-				});
+				})
+				.sort((a, b) => a.datetime.getTime() - b.datetime.getTime());
 		}),
 
 	summary: protectedProcedure
@@ -557,7 +562,8 @@ export const attendanceRouter = router({
 				.filter((log) => {
 					const ts = log.datetime.getTime();
 					return ts >= startDate.getTime() && ts < endExclusive.getTime();
-				});
+				})
+				.sort((a, b) => a.datetime.getTime() - b.datetime.getTime());
 
 			const [empRows] = await ctx.db.mes.execute<Row[]>(
 				`SELECT e.id, e.emp_code, e.name, ${EMPLOYEE_IMAGE_URL} AS image
