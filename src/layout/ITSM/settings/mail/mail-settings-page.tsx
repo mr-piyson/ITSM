@@ -3,10 +3,19 @@
 import { useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
-import { BellRing, Loader2, Mail, Save, Send, Settings2 } from "lucide-react";
+import {
+	BellRing,
+	Loader2,
+	Mail,
+	Save,
+	Send,
+	Settings2,
+	Users,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Card,
 	CardContent,
@@ -48,6 +57,8 @@ const emptyValues: MailFormValues = {
 
 export function MailSettingsPage() {
 	const { data: settings, isPending } = trpc.mail.get.useQuery();
+	const { data: me } = trpc.auth.me.useQuery();
+	const isAdmin = me?.type === "admin";
 	const utils = trpc.useUtils();
 
 	return (
@@ -88,6 +99,7 @@ export function MailSettingsPage() {
 			)}
 
 			<ContractRemindersSection />
+			{isAdmin && <DailyReportSection />}
 		</div>
 	);
 }
@@ -524,6 +536,178 @@ function ContractRemindersSection() {
 					<Button
 						type="button"
 						disabled={!dirty || saveMutation.isPending || runMutation.isPending}
+						onClick={handleSave}
+					>
+						{saveMutation.isPending ? (
+							<Loader2 className="animate-spin" />
+						) : (
+							<Save />
+						)}
+						Save
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
+	);
+}
+
+function DailyReportSection() {
+	const { data: settings } = trpc.dailyReport.get.useQuery();
+	const { data: users } = trpc.users.list.useQuery();
+	const saveMutation = trpc.dailyReport.save.useMutation();
+	const runMutation = trpc.dailyReport.run.useMutation();
+	const utils = trpc.useUtils();
+
+	const [enabled, setEnabled] = useState(false);
+	const [selectedIds, setSelectedIds] = useState<number[]>([]);
+	const [extraEmails, setExtraEmails] = useState("");
+	const [search, setSearch] = useState("");
+	const [loaded, setLoaded] = useState(false);
+
+	if (settings && !loaded) {
+		setEnabled(settings.enabled);
+		setSelectedIds(
+			settings.recipientUserIds
+				.split(",")
+				.map((id) => Number.parseInt(id.trim(), 10))
+				.filter((id) => Number.isInteger(id) && id > 0),
+		);
+		setExtraEmails(settings.extraEmails);
+		setLoaded(true);
+	}
+
+	const filteredUsers = (users ?? []).filter((user) =>
+		`${user.name} ${user.username} ${user.email}`
+			.toLowerCase()
+			.includes(search.trim().toLowerCase()),
+	);
+
+	const handleSave = async () => {
+		try {
+			await saveMutation.mutateAsync({
+				enabled,
+				recipientUserIds: selectedIds.join(","),
+				extraEmails,
+			});
+			utils.dailyReport.get.invalidate();
+			toast.success("Daily report settings saved");
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to save daily report",
+			);
+		}
+	};
+
+	const handleSendNow = async () => {
+		try {
+			const result = await runMutation.mutateAsync();
+			if (result.sent) {
+				toast.success(`Daily report sent to ${result.recipients} recipient(s)`);
+			} else if (result.error) {
+				toast.error(result.error);
+			} else {
+				toast.warning(result.reason ?? "Nothing to send");
+			}
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to send daily report",
+			);
+		}
+	};
+
+	return (
+		<Card className="rounded-none">
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2 text-base">
+					<Users className="size-4" />
+					Daily Report
+				</CardTitle>
+				<CardDescription>
+					Send one daily email to the selected ITSM users and extra addresses.
+					Schedule a daily GET to{" "}
+					<code className="text-[10px]">/api/cron/daily-report</code> with the{" "}
+					<code className="text-[10px]">CRON_SECRET</code> bearer token to
+					automate it.
+				</CardDescription>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				<Label className="flex cursor-pointer items-center justify-between gap-3 border p-3">
+					<span className="text-xs font-medium">Send daily report</span>
+					<Switch checked={enabled} onCheckedChange={setEnabled} />
+				</Label>
+				<div className="space-y-2">
+					<Label htmlFor="daily-report-search">ITSM users</Label>
+					<Input
+						id="daily-report-search"
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						placeholder="Search users"
+					/>
+					<div className="max-h-56 space-y-1 overflow-auto rounded-md border p-2">
+						{filteredUsers.map((user) => (
+							<Label
+								key={user.id}
+								className="flex cursor-pointer items-center gap-2 py-1 text-xs"
+							>
+								<Checkbox
+									checked={selectedIds.includes(user.id)}
+									onCheckedChange={(checked) =>
+										setSelectedIds((prev) =>
+											checked === true
+												? [...prev, user.id]
+												: prev.filter((id) => id !== user.id),
+										)
+									}
+								/>
+								<span className="min-w-0 flex-1 truncate">
+									{user.name}{" "}
+									<span className="text-muted-foreground">
+										({user.username})
+									</span>
+								</span>
+								<span className="max-w-[45%] truncate text-muted-foreground">
+									{user.email}
+								</span>
+							</Label>
+						))}
+						{!users && (
+							<p className="text-xs text-muted-foreground">Loading users…</p>
+						)}
+						{users?.length === 0 && (
+							<p className="text-xs text-muted-foreground">
+								No ITSM users found.
+							</p>
+						)}
+					</div>
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="daily-report-extra-emails">
+						Extra email addresses (comma separated)
+					</Label>
+					<Input
+						id="daily-report-extra-emails"
+						value={extraEmails}
+						onChange={(e) => setExtraEmails(e.target.value)}
+						placeholder="support@bfginternational.com"
+					/>
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={runMutation.isPending || saveMutation.isPending}
+						onClick={handleSendNow}
+					>
+						{runMutation.isPending ? (
+							<Loader2 className="animate-spin" />
+						) : (
+							<Send />
+						)}
+						Send now
+					</Button>
+					<Button
+						type="button"
+						disabled={saveMutation.isPending || runMutation.isPending}
 						onClick={handleSave}
 					>
 						{saveMutation.isPending ? (

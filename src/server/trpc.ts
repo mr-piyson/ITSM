@@ -13,3 +13,13 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 	}
 	return next({ ctx: { user: ctx.user } });
 });
+
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+	if (ctx.user.type !== "admin") {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Only admins can perform this action",
+		});
+	}
+	return next();
+});

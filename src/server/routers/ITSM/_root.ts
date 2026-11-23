@@ -7,6 +7,7 @@ import { bookingsRouter } from "./bookings";
 import { contractsRouter } from "./contracts";
 import { dashboardRouter } from "./dashboard";
 import { dccsRouter } from "./dccs";
+import { dailyReportRouter } from "./daily-report";
 import { employeesRouter } from "./employees";
 import { healthRouter } from "./health";
 import { mailSettingsRouter } from "./mail";
@@ -41,6 +42,7 @@ export const issRouter = {
 	mail: mailSettingsRouter,
 	dashboard: dashboardRouter,
 	dccs: dccsRouter,
+	dailyReport: dailyReportRouter,
 	requests: requestsRouter,
 	reports: reportsRouter,
 	syncPhotos: syncPhotosRouter,

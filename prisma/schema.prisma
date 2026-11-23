@@ -411,6 +411,13 @@ model mail_settings {
   enabled   Boolean? @default(false)
 }
 
+model daily_report_settings {
+  id               Int     @id
+  enabled          Boolean @default(false)
+  recipientUserIds String? @db.Text
+  extraEmails      String? @db.Text
+}
+
 
 model File {
   id           String       @id @default(cuid())
