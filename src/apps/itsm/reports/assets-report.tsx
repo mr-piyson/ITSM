@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useTableTheme } from "@/hooks/use-table-theme";
 import { cn } from "@/lib/utils";
-import type { AssetReportRow } from "@/server/routers/ITSM/reports";
+import type { AssetReportRow } from "@/apps/itsm/reports/router";
 import { trpc } from "@/trpc/react";
 
 import { ExportButtons } from "./export-buttons";
@@ -301,7 +301,7 @@ export function AssetsReport() {
 			<Button
 				variant="outline"
 				size="sm"
-				render={<Link href="/app/reports" />}
+				render={<Link href="/itsm/reports" />}
 				nativeButton={false}
 			>
 				Back to Reports

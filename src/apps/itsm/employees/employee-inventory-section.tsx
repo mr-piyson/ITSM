@@ -83,7 +83,7 @@ export function EmployeeInventorySection({
 	const { data: assets = [], isPending: assetsPending } =
 		trpc.assets.byOwner.useQuery({ code }, { enabled: !!code });
 	const { data: provides = [], isPending: providesPending } =
-		trpc.provides.byEmployee.useQuery({ code }, { enabled: !!code });
+		trpc.provide.byEmployee.useQuery({ code }, { enabled: !!code });
 	const { data: employees = [] } = trpc.employees.pickList.useQuery();
 
 	const updateAsset = trpc.assets.update.useMutation({
@@ -92,7 +92,7 @@ export function EmployeeInventorySection({
 			await Promise.all([
 				utils.assets.byOwner.invalidate({ code }),
 				utils.assets.list.invalidate(),
-				utils.bookings.availableAssets.invalidate(),
+				utils.booking.availableAssets.invalidate(),
 			]);
 		},
 		onError: (error) => toast.error(error.message),

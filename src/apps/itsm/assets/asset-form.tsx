@@ -35,7 +35,7 @@ import {
 } from "@/lib/assets-constants";
 import type { AssetPrefill } from "@/lib/asset-prefill";
 import { uploadImageFile } from "@/lib/upload-image";
-import type { AssetItem } from "@/server/routers/ITSM/assets";
+import type { AssetItem } from "@/apps/itsm/assets/router";
 import { trpc } from "@/trpc/react";
 
 const assetFormSchema = z.object({

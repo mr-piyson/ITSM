@@ -4,7 +4,7 @@ import * as bcrypt from "bcrypt";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -42,7 +42,7 @@ function normalizeUser(row: Row): UserItem {
 	};
 }
 
-export const usersRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<UserItem[]> => {
 		requireAdmin(ctx.user.id, ctx.user.type);
 

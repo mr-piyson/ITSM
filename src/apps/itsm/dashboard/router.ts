@@ -3,7 +3,7 @@ import type { RowDataPacket } from "mysql2";
 import { differenceInCalendarDays, format, isValid, parseISO } from "date-fns";
 import { z } from "zod";
 
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 const UPS_URL = "http://172.18.1.45/Status.htm";
 
@@ -156,7 +156,7 @@ function formatDate(dateIso: string | null): string | null {
 	return isValid(date) ? format(date, "MMM d, yyyy") : null;
 }
 
-export const dashboardRouter = router({
+export const router = tRpcRouter({
 	overview: protectedProcedure.query(
 		async ({ ctx }): Promise<DashboardData> => {
 			const db = ctx.db.iss;
@@ -267,7 +267,7 @@ export const dashboardRouter = router({
 					title: `Low stock: ${name}`,
 					detail: `Only ${stock} left in ${String(row.category ?? "stock")}`,
 					date: null,
-					href: "/app/stock",
+					href: "/itsm/stock",
 				});
 			}
 
@@ -286,7 +286,7 @@ export const dashboardRouter = router({
 								? "Expires today"
 								: `Expires in ${days} days`,
 					date: formatDate(endDate),
-					href: "/app/contracts",
+					href: "/itsm/contracts",
 				});
 			}
 
@@ -305,7 +305,7 @@ export const dashboardRouter = router({
 								? "Due today"
 								: `Due in ${days} days`,
 					date: formatDate(dueDate),
-					href: "/app/servers",
+					href: "/itsm/servers",
 				});
 			}
 
@@ -324,7 +324,7 @@ export const dashboardRouter = router({
 								? "Expires today"
 								: `Expires in ${days} days`,
 					date: formatDate(warrantyDate),
-					href: "/app/assets",
+					href: "/itsm/assets",
 				});
 			}
 

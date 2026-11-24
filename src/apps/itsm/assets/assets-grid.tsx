@@ -15,9 +15,9 @@ import { Button } from "@/components/ui/button";
 import { assetImageUrl, assetTypeBadge } from "@/lib/assets-constants";
 import { usePing, type PingState, type PingTarget } from "@/lib/use-ping";
 import { cn } from "@/lib/utils";
-import type { AssetItem } from "@/server/routers/ITSM/assets";
+import type { AssetItem } from "@/apps/itsm/assets/router";
 
-import { ServerPingBadge } from "../server/server-ping-badge";
+import { ServerPingBadge } from "@/apps/itsm/servers/server-ping-badge";
 
 const CARD_WIDTH = 280;
 const CARD_HEIGHT = 200;

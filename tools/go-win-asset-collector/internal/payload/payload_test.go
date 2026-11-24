@@ -57,7 +57,7 @@ func TestEncodeUsesUrlSafeAlphabet(t *testing.T) {
 
 func TestBuildLink(t *testing.T) {
 	got := BuildLink("http://localhost:4000", testFields())
-	want := "http://localhost:4000/app/assets?new=" + Encode(testFields())
+	want := "http://localhost:4000/itsm/assets?new=" + Encode(testFields())
 	if got != want {
 		t.Errorf("BuildLink = %q, want %q", got, want)
 	}

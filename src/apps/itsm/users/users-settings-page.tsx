@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/table";
 import { UserFormDialog } from "./user-form-dialog";
 import { ResetPasswordDialog } from "./reset-password-dialog";
-import type { UserItem } from "@/server/routers/ITSM/users";
+import type { UserItem } from "@/apps/itsm/users/router";
 import { trpc } from "@/trpc/react";
 
 export function UsersSettingsPage() {

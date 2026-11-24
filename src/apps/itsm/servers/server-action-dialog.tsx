@@ -27,7 +27,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { SERVER_ACTION_TYPES, serverImageUrl } from "@/lib/server-constants";
 import { uploadImageFile } from "@/lib/upload-image";
-import type { ServerItem } from "@/server/routers/ITSM/servers";
+import type { ServerItem } from "@/apps/itsm/servers/router";
 import { trpc } from "@/trpc/react";
 
 // Same action users as the legacy serverActionsLog.php select

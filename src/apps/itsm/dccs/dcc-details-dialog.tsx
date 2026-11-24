@@ -28,7 +28,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { usePing } from "@/lib/use-ping";
-import type { DccItem } from "@/server/routers/ITSM/dccs";
+import type { DccItem } from "@/apps/itsm/dccs/router";
 import { trpc } from "@/trpc/react";
 
 import { DccConnectivityChart } from "./dcc-connectivity-chart";

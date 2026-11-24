@@ -1,7 +1,7 @@
 import type { Pool } from "mysql2/promise";
 
 import db from "@/lib/database";
-import { publicProcedure, router } from "@/server/trpc";
+import { publicProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type DbCheckResult = { ok: boolean; latency: number; error?: string };
 
@@ -51,7 +51,7 @@ async function checkOracle(): Promise<DbCheckResult> {
 	}
 }
 
-export const healthRouter = router({
+export const router = tRpcRouter({
 	ping: publicProcedure.query(() => ({ message: "pong", ts: Date.now() })),
 
 	dbStatus: publicProcedure.query(async () => {

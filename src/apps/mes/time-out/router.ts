@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import db from "@/lib/database";
-import { publicProcedure, router } from "@/server/trpc";
+import { publicProcedure, router as tRpcRouter } from "@/server/trpc";
 
 // Helper to calculate past dates consistently
 const getPastDate = (days: number): string => {
@@ -17,7 +17,7 @@ export interface PivotedReport {
 	[key: string]: string | null; // For the dynamic gate names (Mold, Painting, etc.)
 }
 
-export const timeOutRouter = router({
+export const router = tRpcRouter({
 	getHistory: publicProcedure
 		.input(
 			z.object({

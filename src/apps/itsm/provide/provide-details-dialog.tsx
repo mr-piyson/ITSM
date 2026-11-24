@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { formatProvideDate } from "@/lib/provide-constants";
-import type { ProvideItem } from "@/server/routers/ITSM/provide";
+import type { ProvideItem } from "@/apps/itsm/provide/router";
 
 export function ProvideDetailsDialog({
 	provide,

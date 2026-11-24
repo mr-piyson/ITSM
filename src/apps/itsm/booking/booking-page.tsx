@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import type { BookingItem } from "@/server/routers/ITSM/bookings";
+import type { BookingItem } from "@/apps/itsm/booking/router";
 import { trpc } from "@/trpc/react";
 
 import { ExtendDialog, MarkReceivedDialog } from "./booking-actions";
@@ -34,7 +34,7 @@ const STATUS_TABS: { value: StatusFilter; label: string }[] = [
 
 export function BookingPage() {
 	const utils = trpc.useUtils();
-	const { data: bookings = [], isPending } = trpc.bookings.list.useQuery();
+	const { data: bookings = [], isPending } = trpc.booking.list.useQuery();
 
 	const [query, setQuery] = useQueryState("q", {
 		defaultValue: "",
@@ -84,7 +84,7 @@ export function BookingPage() {
 		});
 	}, [bookings, query, status]);
 
-	const invalidate = () => utils.bookings.list.invalidate();
+	const invalidate = () => utils.booking.list.invalidate();
 
 	const handleFormSuccess = () => {
 		setFormOpen(false);

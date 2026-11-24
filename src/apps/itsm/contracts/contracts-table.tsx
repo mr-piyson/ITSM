@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/table";
 import { formatDateLabel } from "@/lib/contract-constants";
 import { vendorImageUrl } from "@/lib/vendor-constants";
-import type { Contract } from "@/server/routers/ITSM/contracts";
+import type { Contract } from "@/apps/itsm/contracts/router";
 import { StatusBadge } from "./status-badge";
 
 type ContractsTableProps = {

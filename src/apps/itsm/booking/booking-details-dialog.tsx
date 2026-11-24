@@ -22,7 +22,7 @@ import {
 	isBookingOverdue,
 } from "@/lib/booking-constants";
 import { cn } from "@/lib/utils";
-import type { BookingItem } from "@/server/routers/ITSM/bookings";
+import type { BookingItem } from "@/apps/itsm/booking/router";
 
 function formatDateTime(value?: string | null): string {
 	if (!value) {

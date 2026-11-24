@@ -1,7 +1,7 @@
 // ITSM Asset Collector (Go)
 //
 // Collects hardware info from the current machine and opens the ITSM
-// "Add New Asset" dialog prefilled via /app/assets?new=<base64url>.
+// "Add New Asset" dialog prefilled via /itsm/assets?new=<base64url>.
 // Same payload contract as the original tools/win-asset-collector.
 package main
 

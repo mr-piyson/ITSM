@@ -20,19 +20,19 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useTableTheme } from "@/hooks/use-tableTheme";
-import type { InspectionRouteRow } from "@/server/routers/MES/reports/inspection-routes";
+import type { InspectionRouteRow } from "@/apps/mes/inspection-routes/router";
 import { trpc } from "@/trpc/react";
 
 import {
 	DateCellRenderer,
 	PanelCellRender,
 	RouteCellRenderer,
-} from "../CellsRender";
-import { filterParam } from "../params";
+} from "@/apps/mes/inspection-results/components/CellsRender";
+import { filterParam } from "@/apps/mes/inspection-results/components/params";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
-export default function ReportPage() {
+export function Page() {
 	const theme = useTableTheme();
 	const [filter, setFilter] = useQueryState("filter", filterParam);
 	const [gridApi, setGridApi] = useState<GridApi | null>(null);

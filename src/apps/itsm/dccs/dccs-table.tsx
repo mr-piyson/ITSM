@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { usePing, type PingTarget } from "@/lib/use-ping";
-import type { DccItem } from "@/server/routers/ITSM/dccs";
+import type { DccItem } from "@/apps/itsm/dccs/router";
 import { trpc } from "@/trpc/react";
 
 import { DccPingBadge } from "./dcc-ping-badge";

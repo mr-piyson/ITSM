@@ -22,13 +22,13 @@ import {
 import { useTableTheme } from "@/hooks/use-tableTheme";
 import { trpc } from "@/trpc/react";
 
-import { DateCellRenderer } from "../CellsRender";
-import { filterParam } from "../params";
-import type { ApiReportData } from "@/server/routers/MES/reports/packages";
+import { DateCellRenderer } from "@/apps/mes/inspection-results/components/CellsRender";
+import { filterParam } from "@/apps/mes/inspection-results/components/params";
+import type { ApiReportData } from "@/apps/mes/packages/router";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
-export default function ReportPage() {
+export function Page() {
 	const theme = useTableTheme();
 	const [filter, setFilter] = useQueryState("filter", filterParam);
 	const [gridApi, setGridApi] = useState<GridApi | null>(null);

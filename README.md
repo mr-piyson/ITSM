@@ -160,15 +160,41 @@ npm run deploy
 
 ## 📁 Project Structure
 
+Routes are generated from app manifests. Each app owns a URL namespace
+(`/itsm/*`, `/mes/*`) and each module keeps its page, components, schema and
+tRPC router in one folder.
+
 ```
 src/
-├── app/            # Next.js routes (app, reports, auth, documents, APIs)
-├── layout/         # Feature page components (ITSM & MES modules)
-├── components/ui/  # shadcn-style UI component library
-├── server/routers/ # tRPC routers (ITSM + MES)
-├── lib/            # Utilities (database, auth, cron, mail, exports…)
-└── assets/         # Images, icons & branding
+├── apps/
+│   ├── itsm/
+│   │   ├── app.config.ts     # manifest: modules, nav, urlPrefix
+│   │   └── <module>/         # page.tsx, components/, schema.ts?, router.ts, README.md
+│   ├── mes/
+│   │   ├── app.config.ts
+│   │   └── <module>/
+│   ├── registry.ts           # app + nav derivation
+│   └── server-registry.ts    # GENERATED tRPC wiring
+├── app/
+│   ├── itsm/ / mes/          # GENERATED thin route wrappers
+│   └── api/ auth/            # shared infrastructure
+├── components/ui/            # app-agnostic design system
+├── server/                   # tRPC procedure builders
+└── lib/                      # generic utilities (db, auth, mail, exports…)
 ```
+
+### Adding a route
+
+1. Create `src/apps/<app>/<module>/` with `page.tsx` exporting `Page` and,
+   if needed, `router.ts` exporting `router`.
+2. Add one entry to that app's `app.config.ts`.
+3. Run `npm run gen:routes` — wrappers, nav and tRPC registration are derived.
+
+For a single-app deployment set `urlPrefix: ""` in the app config and re-run the
+generator; routes become `/dashboard`, `/assets`, … with no app prefix.
+`urlPrefix` is URL metadata only — Next's deployment-wide `basePath` remains in
+`next.config.ts`. See `AGENTS.md` for the full contract.
+
 
 ## 🤝 Contributing
 

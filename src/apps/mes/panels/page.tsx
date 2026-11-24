@@ -41,8 +41,8 @@ import {
 	JobCellRenderer,
 	PanelCellRender,
 	StatusCellRenderer,
-} from "../CellsRender";
-import type { PanelsReportData } from "@/server/routers/MES/reports/panel";
+} from "@/apps/mes/inspection-results/components/CellsRender";
+import type { PanelsReportData } from "@/apps/mes/panels/router";
 
 interface ProjectItem {
 	project_code: string;
@@ -56,7 +56,7 @@ const ALL_PROJECTS: ProjectItem = {
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
-export default function ReportPage() {
+export function Page() {
 	const theme = useTableTheme();
 	const [gridApi, setGridApi] = useState<GridApi | null>(null);
 	const [selectedRows, setSelectedRows] = useState<PanelsReportData[]>([]);

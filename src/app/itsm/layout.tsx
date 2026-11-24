@@ -1,5 +1,5 @@
 import { SplashScreen } from "@/components/Splash-Screen";
-import AppShell from "@/layout/ITSM/shell/app-shell";
+import AppShell from "@/apps/itsm/shell/app-shell";
 
 export default function Layout(props: any) {
 	return (

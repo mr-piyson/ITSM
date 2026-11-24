@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import type {
 	RequestItem,
 	RequestReplyItem,
-} from "@/server/routers/ITSM/requests";
+} from "@/apps/itsm/requests/router";
 import { trpc } from "@/trpc/react";
 
 import { PriorityBadge, StatusBadge } from "./requests-table";

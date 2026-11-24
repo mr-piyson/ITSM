@@ -8,7 +8,7 @@ import {
 	SYNC_STATUS_FILTER_VALUES,
 } from "@/lib/sync-photos";
 import type { Context } from "@/server/context";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 export type PhotoSyncSource = "employee" | "subcontract";
 
@@ -233,7 +233,7 @@ function toSyncPhotoEmployee(
 	};
 }
 
-export const syncPhotosRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure
 		.input(
 			z.object({

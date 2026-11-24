@@ -21,8 +21,8 @@ import {
 	vendorImageUrl,
 	type ContactType,
 } from "@/lib/vendor-constants";
-import { ResponsiveOverlay } from "@/layout/ITSM/contracts/responsive-overlay";
-import type { Vendor } from "@/server/routers/ITSM/vendors";
+import { ResponsiveOverlay } from "@/apps/itsm/contracts/responsive-overlay";
+import type { Vendor } from "@/apps/itsm/vendors/router";
 import { uploadImageFile } from "@/lib/upload-image";
 import { trpc } from "@/trpc/react";
 

@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 import {
 	getAzureUserDetails,
 	getAzureAccessSummaries,
@@ -62,7 +62,7 @@ function normalizeOracleEmployee(row: Row): EmployeeItem {
 	};
 }
 
-export const employeesRouter = router({
+export const router = tRpcRouter({
 	byCode: protectedProcedure
 		.input(z.object({ code: z.string().min(1) }))
 		.query(async ({ ctx, input }): Promise<EmployeeItem | null> => {

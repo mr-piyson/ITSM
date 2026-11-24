@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { ITEM_CATEGORIES, itemImageUrl } from "@/lib/stock-constants";
 import { uploadImageFile } from "@/lib/upload-image";
-import type { StockItem } from "@/server/routers/ITSM/stock";
+import type { StockItem } from "@/apps/itsm/stock/router";
 import { trpc } from "@/trpc/react";
 
 const stockFormSchema = z.object({

@@ -10,7 +10,7 @@ import {
 import type React from "react";
 import { useRef, useState } from "react";
 
-import { MarketingNavbar } from "@/layout/ITSM/shell/marketing-navbar";
+import { MarketingNavbar } from "@/apps/itsm/shell/marketing-navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Stats {

@@ -22,7 +22,7 @@ import { ProvideTable } from "./provide-table";
 
 export function ProvidePage() {
 	const utils = trpc.useUtils();
-	const { data: provides = [], isPending } = trpc.provides.list.useQuery();
+	const { data: provides = [], isPending } = trpc.provide.list.useQuery();
 
 	const [query, setQuery] = useQueryState("q", {
 		defaultValue: "",
@@ -58,7 +58,7 @@ export function ProvidePage() {
 		});
 	}, [provides, query]);
 
-	const invalidate = () => utils.provides.list.invalidate();
+	const invalidate = () => utils.provide.list.invalidate();
 
 	const handleFormSuccess = () => {
 		setFormOpen(false);

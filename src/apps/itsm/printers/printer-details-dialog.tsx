@@ -40,7 +40,7 @@ import {
 	printerImageUrl,
 } from "@/lib/printer-constants";
 import { cn } from "@/lib/utils";
-import type { PrinterItem } from "@/server/routers/ITSM/printers";
+import type { PrinterItem } from "@/apps/itsm/printers/router";
 import { trpc } from "@/trpc/react";
 
 type PrinterDetailsDialogProps = {

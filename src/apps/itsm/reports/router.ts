@@ -1,7 +1,7 @@
 import type { RowDataPacket } from "mysql2";
 import { z } from "zod";
 
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 import { getEmployeesByCodes } from "@/lib/oracle-employees.server";
 
 type Row = RowDataPacket & Record<string, unknown>;
@@ -77,7 +77,7 @@ function toStringValue(value: unknown): string | null {
 	return String(value);
 }
 
-export const reportsRouter = router({
+export const router = tRpcRouter({
 	assetTypes: protectedProcedure.query(async ({ ctx }): Promise<string[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(
 			`SELECT DISTINCT type FROM assets WHERE type IS NOT NULL AND type != '' ORDER BY type`,

@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import db from "@/lib/database";
-import { publicProcedure, router } from "@/server/trpc";
+import { publicProcedure, router as tRpcRouter } from "@/server/trpc";
 
 export interface PanelsReportData {
 	panel_Id: string;
@@ -37,7 +37,7 @@ const filterSchema = z
 	])
 	.catch("all");
 
-export const panelsRouter = router({
+export const router = tRpcRouter({
 	getProjects: publicProcedure.query(async () => {
 		try {
 			const sql = `

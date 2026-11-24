@@ -97,7 +97,7 @@ export function UserMenu(props: any) {
 						/>
 					</div>
 				</DropdownMenuGroup>
-				<Link href="/app/settings" className="no-underline">
+				<Link href="/itsm/settings" className="no-underline">
 					<DropdownMenuItem>
 						<Settings />
 						Settings

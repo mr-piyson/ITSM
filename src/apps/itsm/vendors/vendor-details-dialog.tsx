@@ -17,9 +17,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ResponsiveOverlay } from "@/layout/ITSM/contracts/responsive-overlay";
+import { ResponsiveOverlay } from "@/apps/itsm/contracts/responsive-overlay";
 import { vendorImageUrl } from "@/lib/vendor-constants";
-import type { Vendor } from "@/server/routers/ITSM/vendors";
+import type { Vendor } from "@/apps/itsm/vendors/router";
 import { trpc } from "@/trpc/react";
 
 type VendorDetailsDialogProps = {

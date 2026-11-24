@@ -23,7 +23,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { UserItem } from "@/server/routers/ITSM/users";
+import type { UserItem } from "@/apps/itsm/users/router";
 import { trpc } from "@/trpc/react";
 
 const USER_TYPES = ["admin", "user", "guest"] as const;

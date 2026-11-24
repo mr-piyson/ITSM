@@ -20,7 +20,7 @@ import {
 	type RequestStatus,
 } from "@/lib/request-constants";
 import { cn } from "@/lib/utils";
-import type { RequestItem } from "@/server/routers/ITSM/requests";
+import type { RequestItem } from "@/apps/itsm/requests/router";
 import { trpc } from "@/trpc/react";
 
 import { RequestDetailsDialog } from "./request-details-dialog";

@@ -29,7 +29,7 @@ import {
 	locationLabel,
 	type TapeLocation,
 } from "@/lib/tape-constants";
-import type { TapeItem } from "@/server/routers/ITSM/tapes";
+import type { TapeItem } from "@/apps/itsm/tapes/router";
 import { trpc } from "@/trpc/react";
 
 type UsageValues = {

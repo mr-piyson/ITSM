@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { VendorFormDialog } from "@/layout/ITSM/vendors/vendor-form-dialog";
+import { VendorFormDialog } from "@/apps/itsm/vendors/vendor-form-dialog";
 import { ITEM_CATEGORIES } from "@/lib/provide-constants";
 import {
 	PURCHASE_BUYERS,
@@ -58,7 +58,7 @@ import type {
 	Purchase,
 	PurchaseItemOption,
 	VendorOption,
-} from "@/server/routers/ITSM/purchases";
+} from "@/apps/itsm/purchases/router";
 import { trpc } from "@/trpc/react";
 
 type FormItemRow = {

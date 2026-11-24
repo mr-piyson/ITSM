@@ -20,14 +20,14 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useTableTheme } from "@/hooks/use-tableTheme";
-import type { ShippedPackageData } from "@/server/routers/MES/reports/shipments";
+import type { ShippedPackageData } from "@/apps/mes/shipments/router";
 import { trpc } from "@/trpc/react";
 
 import {
 	BoxCellRenderer,
 	DateCellRenderer,
 	PanelCellRender,
-} from "../CellsRender";
+} from "@/apps/mes/inspection-results/components/CellsRender";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
@@ -49,7 +49,7 @@ const monthNames = [
 const currentYear = new Date().getFullYear();
 const currentMonth = new Date().getMonth() + 1;
 
-export default function ReportPage() {
+export function Page() {
 	const theme = useTableTheme();
 	const [gridApi, setGridApi] = useState<GridApi | null>(null);
 	const [year, setYear] = useQueryState(

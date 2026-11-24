@@ -7,6 +7,7 @@ import {
 	Wrench,
 	type LucideIcon,
 } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 
 import {
@@ -17,7 +18,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { DashboardAlert } from "@/server/routers/ITSM/dashboard";
+import type { DashboardAlert } from "@/apps/itsm/dashboard/router";
 
 const KIND_ICON: Record<DashboardAlert["kind"], LucideIcon> = {
 	low_stock: PackageX,
@@ -77,7 +78,7 @@ export function AlertsPanel({ alerts }: { alerts: DashboardAlert[] }) {
 					return alert.href ? (
 						<Link
 							key={alert.id}
-							href={alert.href}
+							href={alert.href as Route}
 							className="flex items-center gap-2.5 rounded-none border border-border px-2.5 py-2 transition-colors hover:bg-muted"
 						>
 							{body}

@@ -33,7 +33,7 @@ export function SignInForm() {
 	const signInMutation = trpc.auth.signIn.useMutation({
 		onSuccess: () => {
 			toast.success("Signed in successfully!");
-			router.push("/app");
+			router.push("/itsm");
 		},
 		onError: (error) => {
 			toast.error(error.message);

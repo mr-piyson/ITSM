@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { Vendor } from "@/server/routers/ITSM/vendors";
+import type { Vendor } from "@/apps/itsm/vendors/router";
 import { trpc } from "@/trpc/react";
 
 import { VendorDetailsDialog } from "./vendor-details-dialog";

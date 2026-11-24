@@ -3,7 +3,7 @@
 import { ChevronRight, Store } from "lucide-react";
 
 import { vendorImageUrl } from "@/lib/vendor-constants";
-import type { Vendor } from "@/server/routers/ITSM/vendors";
+import type { Vendor } from "@/apps/itsm/vendors/router";
 
 type VendorsCardListProps = {
 	vendors: Vendor[];

@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
 import type React from "react";
 
@@ -24,7 +25,7 @@ export const NavPath: React.FC = () => {
 					<BreadcrumbItem>
 						<BreadcrumbLink
 							onClick={() => {
-								router.push(`/app/${activity}`);
+								router.push(`/itsm/${activity}` as Route);
 							}}
 							className="block max-w-full truncate text-lg capitalize"
 						>

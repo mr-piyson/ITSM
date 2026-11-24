@@ -1,4 +1,4 @@
-// Package payload builds the /app/assets?new=<base64url> link whose payload the
+// Package payload builds the /itsm/assets?new=<base64url> link whose payload the
 // ITSM app decodes to prefill the Add New Asset dialog.
 package payload
 
@@ -12,7 +12,7 @@ import (
 
 // BuildLink returns the prefilled ITSM assets URL for the given fields.
 func BuildLink(baseURL string, fields mapfields.Fields) string {
-	return baseURL + "/app/assets?new=" + Encode(fields)
+	return baseURL + "/itsm/assets?new=" + Encode(fields)
 }
 
 // Encode serializes fields the way JSON.stringify does (no HTML escaping) and

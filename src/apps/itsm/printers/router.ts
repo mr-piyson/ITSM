@@ -2,7 +2,7 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import { PRINTER_ACTION_TYPES } from "@/lib/printer-constants";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -175,7 +175,7 @@ function toAction(row: Row): PrinterActionItem {
 	};
 }
 
-export const printersRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<PrinterItem[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(
 			`SELECT id, name, location, usedBy, department, printerLink, empID, img

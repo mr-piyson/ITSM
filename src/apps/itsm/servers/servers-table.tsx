@@ -23,7 +23,7 @@ import {
 import type { PingState, PingTarget } from "@/lib/use-ping";
 import { capitalize, serverStatusBadge } from "@/lib/server-constants";
 import { cn } from "@/lib/utils";
-import type { ServerItem } from "@/server/routers/ITSM/servers";
+import type { ServerItem } from "@/apps/itsm/servers/router";
 
 import { ServerPingBadge } from "./server-ping-badge";
 

@@ -11,7 +11,7 @@ import {
 } from "ag-grid-community";
 
 import { Badge } from "@/components/ui/badge";
-import type { DailyAttendance } from "@/server/routers/ITSM/attendance";
+import type { DailyAttendance } from "@/apps/itsm/attendance/router";
 import { useTableTheme } from "@/hooks/use-table-theme";
 
 ModuleRegistry.registerModules([AllCommunityModule]);

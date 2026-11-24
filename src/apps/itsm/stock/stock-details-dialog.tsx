@@ -38,7 +38,7 @@ import {
 	stockStatusLabel,
 } from "@/lib/stock-constants";
 import { cn } from "@/lib/utils";
-import type { StockItem } from "@/server/routers/ITSM/stock";
+import type { StockItem } from "@/apps/itsm/stock/router";
 import { trpc } from "@/trpc/react";
 
 type StockDetailsDialogProps = {

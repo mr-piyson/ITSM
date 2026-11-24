@@ -3,7 +3,7 @@ import type { RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import db from "@/lib/database";
-import { publicProcedure, router } from "@/server/trpc";
+import { publicProcedure, router as tRpcRouter } from "@/server/trpc";
 
 // Define the response interface for type safety on the frontend
 export interface ShippedPackageData {
@@ -19,7 +19,7 @@ export interface ShippedPackageData {
 	epicor_part_no: string;
 }
 
-export const shippingRouter = router({
+export const router = tRpcRouter({
 	getMonthlyShipments: publicProcedure
 		.input(
 			z.object({

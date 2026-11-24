@@ -30,7 +30,7 @@ import {
 	tapeStatusBadge,
 } from "@/lib/tape-constants";
 import { cn } from "@/lib/utils";
-import type { TapeItem } from "@/server/routers/ITSM/tapes";
+import type { TapeItem } from "@/apps/itsm/tapes/router";
 import { trpc } from "@/trpc/react";
 
 type TapeDetailsDialogProps = {

@@ -36,7 +36,7 @@ import {
 	type MaintenancePeriod,
 } from "@/lib/server-constants";
 import { uploadImageFile } from "@/lib/upload-image";
-import type { ServerItem } from "@/server/routers/ITSM/servers";
+import type { ServerItem } from "@/apps/itsm/servers/router";
 import { trpc } from "@/trpc/react";
 
 const serverFormSchema = z.object({

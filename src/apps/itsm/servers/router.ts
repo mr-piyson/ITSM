@@ -10,7 +10,7 @@ import {
 	SERVER_ACTION_TYPES,
 	type MaintenancePeriod,
 } from "@/lib/server-constants";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -251,7 +251,7 @@ const SERVER_SELECT = `serverID, name, type, serverStatus, host, hostIP, serverI
 	diskType, diskType2, location, location2, backupStatus, backupSoftware,
 	Applications, descrip, notes, image`;
 
-export const serversRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<ServerItem[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(
 			`SELECT ${SERVER_SELECT}

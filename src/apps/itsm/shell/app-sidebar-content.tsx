@@ -1,9 +1,11 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { LayoutGrid, Loader2 } from "lucide-react";
+import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { appLinks, routes } from "@/apps/registry";
 import {
 	SidebarGroup,
 	SidebarGroupLabel,
@@ -12,7 +14,6 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar";
-import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 export function AppSidebarContent() {
@@ -35,6 +36,24 @@ export function AppSidebarContent() {
 
 	return (
 		<>
+			<SidebarGroup>
+				<SidebarGroupLabel>Apps</SidebarGroupLabel>
+				<SidebarMenu>
+					{appLinks.map((app) => (
+						<SidebarMenuItem key={app.id}>
+							<SidebarMenuButton
+								isActive={path === app.href || path.startsWith(`${app.href}/`)}
+								tooltip={app.label}
+								size="sm"
+								onClick={() => router.push(app.href as Route)}
+							>
+								<LayoutGrid className="ms-1 size-6 shrink-0" />
+								<span className="text-base">{app.label}</span>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					))}
+				</SidebarMenu>
+			</SidebarGroup>
 			{routes.appSidebar.map((group, groupIndex) => (
 				<SidebarGroup key={group.label ?? `group-${groupIndex}`}>
 					{group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
@@ -51,7 +70,7 @@ export function AppSidebarContent() {
 									tooltip={title}
 									size={"sm"}
 									onClick={() => {
-										const match = path.match(/^\/App\/[^/]+/);
+										const match = path.match(/^\/(itsm|mes)\/[^/]+/);
 										match && match[0] === href
 											? setLoading("")
 											: setLoading(href as string);

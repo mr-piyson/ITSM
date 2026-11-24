@@ -1,7 +1,7 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 import { getEmployeesByCodes } from "@/lib/oracle-employees.server";
 
 type Row = RowDataPacket & Record<string, unknown>;
@@ -67,7 +67,7 @@ function toDateString(value: unknown): string {
 	return "";
 }
 
-export const stockRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<StockItem[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(
 			`SELECT id, name, brand, category, stock, img

@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { MONTHS, compareTapes, locationLabel } from "@/lib/tape-constants";
 import { cn } from "@/lib/utils";
-import type { TapeItem } from "@/server/routers/ITSM/tapes";
+import type { TapeItem } from "@/apps/itsm/tapes/router";
 import { trpc } from "@/trpc/react";
 
 import { TapeDetailsDialog } from "./tape-details-dialog";

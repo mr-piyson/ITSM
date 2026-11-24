@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { formatDateLabel } from "@/lib/contract-constants";
 import { vendorImageUrl } from "@/lib/vendor-constants";
-import type { Contract } from "@/server/routers/ITSM/contracts";
+import type { Contract } from "@/apps/itsm/contracts/router";
 import { trpc } from "@/trpc/react";
 
 import { ResponsiveOverlay } from "./responsive-overlay";

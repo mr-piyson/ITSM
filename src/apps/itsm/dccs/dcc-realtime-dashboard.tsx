@@ -11,7 +11,7 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
-import type { DccItem, DccLogItem } from "@/server/routers/ITSM/dccs";
+import type { DccItem, DccLogItem } from "@/apps/itsm/dccs/router";
 
 type DccWithLogs = DccItem & { recentLogs: DccLogItem[] };
 

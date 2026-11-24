@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import db from "@/lib/database";
-import { publicProcedure, router } from "@/server/trpc";
+import { publicProcedure, router as tRpcRouter } from "@/server/trpc";
 
 // 1. Define the Data Interface
 export interface ApiJobsData {
@@ -20,7 +20,7 @@ export interface ApiJobsData {
 // 2. Define the Schema (Reusable)
 const FilterSchema = z.string().default("");
 
-export const jobsRouter = router({
+export const router = tRpcRouter({
 	getJobs: publicProcedure
 		.input(z.object({ filter: FilterSchema }))
 		.query(async ({ input }) => {

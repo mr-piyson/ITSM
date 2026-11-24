@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { usePing, type PingTarget } from "@/lib/use-ping";
-import type { ServerItem } from "@/server/routers/ITSM/servers";
+import type { ServerItem } from "@/apps/itsm/servers/router";
 import { trpc } from "@/trpc/react";
 
 import { ServerActionDialog } from "./server-action-dialog";

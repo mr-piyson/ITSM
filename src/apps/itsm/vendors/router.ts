@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { CONTACT_TYPES } from "@/lib/vendor-constants";
 import type { Context } from "@/server/context";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -98,7 +98,7 @@ async function logChange(
 	);
 }
 
-export const vendorsRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<Vendor[]> => {
 		const [vendorRows] = await ctx.db.iss.execute<Row[]>(
 			`SELECT id, name, notes, image

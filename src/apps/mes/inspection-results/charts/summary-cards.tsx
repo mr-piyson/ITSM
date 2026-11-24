@@ -7,7 +7,7 @@ import {
 	projectParam,
 	toParam,
 	toDateString,
-} from "@/layout/MES/charts/inspections/params";
+} from "@/apps/mes/inspection-results/charts/params";
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/trpc/react";
 

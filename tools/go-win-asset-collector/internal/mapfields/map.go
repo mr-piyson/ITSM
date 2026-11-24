@@ -1,6 +1,6 @@
 // Package mapfields maps the raw platform snapshot into the asset form fields,
 // equivalent to the original collector's src/map.ts so the payload contract
-// with /app/assets?new= stays unchanged.
+// with /itsm/assets?new= stays unchanged.
 package mapfields
 
 import (

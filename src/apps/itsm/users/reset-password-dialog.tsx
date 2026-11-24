@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { UserItem } from "@/server/routers/ITSM/users";
+import type { UserItem } from "@/apps/itsm/users/router";
 import { trpc } from "@/trpc/react";
 
 const passwordSchema = z.object({

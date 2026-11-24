@@ -33,7 +33,7 @@ import {
 	serverStatusBadge,
 } from "@/lib/server-constants";
 import { cn } from "@/lib/utils";
-import type { ServerDetail, ServerItem } from "@/server/routers/ITSM/servers";
+import type { ServerDetail, ServerItem } from "@/apps/itsm/servers/router";
 import { trpc } from "@/trpc/react";
 
 type ServerDetailsDialogProps = {

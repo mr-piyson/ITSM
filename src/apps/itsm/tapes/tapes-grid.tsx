@@ -12,7 +12,7 @@ import {
 	tapeStatusBadge,
 } from "@/lib/tape-constants";
 import { cn } from "@/lib/utils";
-import type { TapeItem } from "@/server/routers/ITSM/tapes";
+import type { TapeItem } from "@/apps/itsm/tapes/router";
 
 const CARD_WIDTH = 280;
 const CARD_HEIGHT = 176;

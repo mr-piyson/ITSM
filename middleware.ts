@@ -12,12 +12,12 @@ export function middleware(request: NextRequest) {
 	}
 
 	if (sessionToken && isAuthPage) {
-		return NextResponse.redirect(new URL("/app", request.url));
+		return NextResponse.redirect(new URL("/itsm", request.url));
 	}
 
 	return NextResponse.next();
 }
 
 export const config = {
-	matcher: ["/auth", "/app/:path*"],
+	matcher: ["/auth", "/itsm/:path*", "/mes/:path*"],
 };

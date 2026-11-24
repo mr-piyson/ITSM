@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+	typedRoutes: true,
+	async redirects() {
+		return [
+			{ source: "/app/:path*", destination: "/itsm/:path*", permanent: false },
+			{ source: "/reports/:path*", destination: "/mes/:path*", permanent: false },
+		];
+	},
 	async rewrites() {
 		return {
 			beforeFiles: [

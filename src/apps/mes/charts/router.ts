@@ -3,7 +3,7 @@ import type { RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import db from "@/lib/database";
-import { publicProcedure, router } from "@/server/trpc";
+import { publicProcedure, router as tRpcRouter } from "@/server/trpc";
 
 // 15: "Paint Prep",
 // 16: "Wrapping",
@@ -29,7 +29,7 @@ const gateMap: Record<number, string> = {
 // All available gate IDs
 const ALL_GATES = Object.keys(gateMap).map(Number);
 
-export const chartsRouter = router({
+export const router = tRpcRouter({
 	get_totals_defects: publicProcedure
 		.input(
 			z.object({

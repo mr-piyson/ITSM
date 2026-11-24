@@ -18,7 +18,7 @@ import { EmployeeAvatar } from "@/components/employee-avatar";
 import { Button } from "@/components/ui/button";
 import { useTableTheme } from "@/hooks/use-table-theme";
 import { useAzureSummariesContext } from "@/hooks/use-azure-summaries";
-import type { EmployeeItem } from "@/server/routers/ITSM/employees";
+import type { EmployeeItem } from "@/apps/itsm/employees/router";
 
 import {
 	EmploymentStatusPill,

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import type { DashboardData } from "@/server/routers/ITSM/dashboard";
+import type { DashboardData } from "@/apps/itsm/dashboard/router";
 import { trpc } from "@/trpc/react";
 
 import { AlertsPanel } from "./alerts-panel";
@@ -63,8 +63,8 @@ function DashboardContent({
 	upsTemperature,
 }: {
 	data: DashboardData;
-	empLeft: import("@/server/routers/ITSM/dashboard").RecentEmployee[];
-	newJoiners: import("@/server/routers/ITSM/dashboard").RecentEmployee[];
+	empLeft: import("@/apps/itsm/dashboard/router").RecentEmployee[];
+	newJoiners: import("@/apps/itsm/dashboard/router").RecentEmployee[];
 	employeeType: "S" | "W";
 	onEmployeeTypeChange: (type: "S" | "W") => void;
 	newJoinerType: "S" | "W";
@@ -80,25 +80,25 @@ function DashboardContent({
 					label="Assets"
 					value={kpis.totalAssets}
 					icon={Monitor}
-					href="/app/assets"
+					href="/itsm/assets"
 				/>
 				<StatCard
 					label="Provide"
 					value={kpis.totalProvide}
 					icon={PackageSearch}
-					href="/app/provide"
+					href="/itsm/provide"
 				/>
 				<StatCard
 					label="Stock (units)"
 					value={kpis.totalStock}
 					icon={Boxes}
-					href="/app/stock"
+					href="/itsm/stock"
 				/>
 				<StatCard
 					label="Purchases"
 					value={kpis.totalPurchase}
 					icon={ShoppingCart}
-					href="/app/purchases"
+					href="/itsm/purchases"
 				/>
 			</div>
 			{/*  */}

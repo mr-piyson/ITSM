@@ -16,7 +16,7 @@ import {
 import { ASSET_TYPES } from "@/lib/assets-constants";
 import { parseAssetPrefill, type AssetPrefill } from "@/lib/asset-prefill";
 import { cn } from "@/lib/utils";
-import type { AssetItem } from "@/server/routers/ITSM/assets";
+import type { AssetItem } from "@/apps/itsm/assets/router";
 import { trpc } from "@/trpc/react";
 
 import { AssetDetailsDialog } from "./asset-details-dialog";

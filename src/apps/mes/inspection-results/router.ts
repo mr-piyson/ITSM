@@ -3,7 +3,7 @@ import type { RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import db from "@/lib/database";
-import { publicProcedure, router } from "@/server/trpc";
+import { publicProcedure, router as tRpcRouter } from "@/server/trpc";
 
 // --- Types & Constants ---
 
@@ -68,7 +68,7 @@ const gateMap: Record<number, string> = {
 
 // --- Router Definition ---
 
-export const inspectionsRouter = router({
+export const router = tRpcRouter({
 	getProjects: publicProcedure
 		.input(
 			z.object({

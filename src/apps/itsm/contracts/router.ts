@@ -8,7 +8,7 @@ import {
 	saveContractReminderSettings,
 } from "@/lib/contract-mail";
 import type { Context } from "@/server/context";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -107,7 +107,7 @@ const reminderSettingsSchema = z.object({
 	remindDays: z.string().trim().min(1).max(100),
 });
 
-const remindersRouter = router({
+const remindersRouter = tRpcRouter({
 	get: protectedProcedure.query(async () => {
 		return getContractReminderSettings();
 	}),
@@ -124,7 +124,7 @@ const remindersRouter = router({
 	}),
 });
 
-export const contractsRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<Contract[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(
 			`SELECT c.id, c.productName, c.vendorID, v.name AS vendorName,

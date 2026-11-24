@@ -1,6 +1,7 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,7 +48,7 @@ export function StatCard({
 	if (href) {
 		return (
 			<Link
-				href={href}
+				href={href as Route}
 				className="block h-full min-w-0 transition-opacity hover:opacity-80"
 			>
 				{inner}

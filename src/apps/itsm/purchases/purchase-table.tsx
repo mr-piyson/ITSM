@@ -22,7 +22,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { formatPurchaseDate } from "@/lib/purchase-constants";
-import type { Purchase } from "@/server/routers/ITSM/purchases";
+import type { Purchase } from "@/apps/itsm/purchases/router";
 
 type PurchaseTableProps = {
 	purchases: Purchase[];

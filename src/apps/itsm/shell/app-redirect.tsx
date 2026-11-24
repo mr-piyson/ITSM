@@ -7,7 +7,7 @@ export default function AppRedirect() {
 	const router = useRouter();
 
 	useEffect(() => {
-		router.replace("/app/dashboard");
+		router.replace("/itsm/dashboard");
 	}, [router]);
 
 	return (

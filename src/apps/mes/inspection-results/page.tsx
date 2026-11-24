@@ -22,18 +22,18 @@ import Image from "next/image";
 import { parseAsString, useQueryState } from "nuqs";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
-import { DailyAnalyticsChart } from "@/layout/MES/charts/inspections/daily-analytics-chart";
-import { DefectTypeChart } from "@/layout/MES/charts/inspections/defect-type-chart";
-import { GateAnalyticsChart } from "@/layout/MES/charts/inspections/gate-analytics-chart";
+import { DailyAnalyticsChart } from "@/apps/mes/inspection-results/charts/daily-analytics-chart";
+import { DefectTypeChart } from "@/apps/mes/inspection-results/charts/defect-type-chart";
+import { GateAnalyticsChart } from "@/apps/mes/inspection-results/charts/gate-analytics-chart";
 import {
 	fromParam,
 	gateParam,
 	projectParam,
 	toParam,
 	toDateString,
-} from "@/layout/MES/charts/inspections/params";
-import { ProjectAnalyticsChart } from "@/layout/MES/charts/inspections/project-analytics-chart";
-import { SummaryCards } from "@/layout/MES/charts/inspections/summary-cards";
+} from "@/apps/mes/inspection-results/charts/params";
+import { ProjectAnalyticsChart } from "@/apps/mes/inspection-results/charts/project-analytics-chart";
+import { SummaryCards } from "@/apps/mes/inspection-results/charts/summary-cards";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -67,8 +67,8 @@ import {
 	DateCellRenderer,
 	PanelCellRender,
 	StatusCellRenderer,
-} from "../CellsRender";
-import type { InspectionResult } from "@/server/routers/MES/reports/inspection-results";
+} from "@/apps/mes/inspection-results/components/CellsRender";
+import type { InspectionResult } from "@/apps/mes/inspection-results/router";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
@@ -98,7 +98,7 @@ const ALL_PROJECTS: ProjectItem = {
 	project_name: "All Projects",
 };
 
-export default function ReportPage() {
+export function Page() {
 	const theme = useTableTheme();
 
 	const [appliedFrom, setAppliedFrom] = useQueryState<Date>("from", fromParam);

@@ -22,9 +22,9 @@ import {
 import { useTableTheme } from "@/hooks/use-tableTheme";
 import { trpc } from "@/trpc/react";
 
-import { PanelCellRender } from "../CellsRender";
-import { filterParam } from "../params";
-import { PivotedReport } from "@/server/routers/MES/reports/time-out";
+import { PanelCellRender } from "@/apps/mes/inspection-results/components/CellsRender";
+import { filterParam } from "@/apps/mes/inspection-results/components/params";
+import { PivotedReport } from "@/apps/mes/time-out/router";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
@@ -82,7 +82,7 @@ const useReportColumns = () => {
 	}, []);
 };
 
-export default function ReportPage() {
+export function Page() {
 	const theme = useTableTheme();
 	const [gridApi, setGridApi] = useState<GridApi | null>(null);
 	const [filter, setFilter] = useQueryState("filter", filterParam);

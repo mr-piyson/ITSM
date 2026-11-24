@@ -7,7 +7,7 @@ import { ExternalLink, Pencil, Printer } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { printerImageUrl } from "@/lib/printer-constants";
-import type { PrinterItem } from "@/server/routers/ITSM/printers";
+import type { PrinterItem } from "@/apps/itsm/printers/router";
 
 const CARD_WIDTH = 300;
 const CARD_HEIGHT = 280;

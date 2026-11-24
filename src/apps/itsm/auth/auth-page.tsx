@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MarketingNavbar } from "@/layout/ITSM/shell/marketing-navbar";
+import { MarketingNavbar } from "@/apps/itsm/shell/marketing-navbar";
 import { trpc } from "@/trpc/react";
 
 import { SignInForm } from "./sign-in-form";
@@ -15,7 +15,7 @@ export function AuthPage() {
 
 	useEffect(() => {
 		if (user) {
-			router.replace("/app");
+			router.replace("/itsm");
 		}
 	}, [user, router]);
 

@@ -1,7 +1,7 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 import { getEmployeesByCodes } from "@/lib/oracle-employees.server";
 
 type Row = RowDataPacket & Record<string, unknown>;
@@ -153,7 +153,7 @@ const PROVIDE_ITEMS_SELECT = `
 	INNER JOIN items i ON i.id = pi.itemID
 `;
 
-export const providesRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<ProvideItem[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(
 			`${PROVIDE_SELECT} ORDER BY p.date DESC, p.id DESC`,

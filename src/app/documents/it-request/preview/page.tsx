@@ -1,4 +1,4 @@
-import { RequestPreview } from "@/layout/ITSM/it-request/request-preview";
+import { RequestPreview } from "@/apps/itsm/it-request/request-preview";
 
 export default function Page() {
 	return <RequestPreview />;

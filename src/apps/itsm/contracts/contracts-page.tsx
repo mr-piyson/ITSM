@@ -29,7 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { Contract } from "@/server/routers/ITSM/contracts";
+import type { Contract } from "@/apps/itsm/contracts/router";
 import { trpc } from "@/trpc/react";
 
 import { ContractDetails } from "./contract-details";

@@ -87,7 +87,7 @@ export function EmployeesPage() {
 
 	const handleView = useCallback(
 		(emplCode: string) => {
-			router.push(`/app/employees/${encodeURIComponent(emplCode)}`);
+			router.push(`/itsm/employees/${encodeURIComponent(emplCode)}`);
 		},
 		[router],
 	);

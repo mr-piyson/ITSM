@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { printerImageUrl } from "@/lib/printer-constants";
 import { uploadImageFile } from "@/lib/upload-image";
-import type { PrinterItem } from "@/server/routers/ITSM/printers";
+import type { PrinterItem } from "@/apps/itsm/printers/router";
 import { trpc } from "@/trpc/react";
 
 const printerFormSchema = z.object({

@@ -38,7 +38,7 @@ import { parseCsvInts, readCards } from "@/lib/ac/csv";
 import { acEmpSourceLabel, acVerifyModeLabel } from "@/lib/ac/labels";
 import { formatAcDate, formatAcDateTime } from "@/lib/ac/format";
 import { useAcAccess } from "@/lib/ac/use-ac-access";
-import { AcUserPhoto } from "../settings/access-control/ac-photo";
+import { AcUserPhoto } from "@/apps/itsm/access-control/ac-photo";
 import {
 	AccessBadge,
 	AdminBadge,
@@ -46,7 +46,7 @@ import {
 	VerifyModeBadge,
 	GroupBadges,
 	CardTypeBadge,
-} from "../settings/access-control/ac-badges";
+} from "@/apps/itsm/access-control/ac-badges";
 import { EmployeeInventorySection } from "./employee-inventory-section";
 import { EmployeeEditDialog } from "./employee-edit-dialog";
 

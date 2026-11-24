@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { useTableTheme } from "@/hooks/use-table-theme";
-import type { PrinterReportRow } from "@/server/routers/ITSM/reports";
+import type { PrinterReportRow } from "@/apps/itsm/reports/router";
 import { trpc } from "@/trpc/react";
 
 import { ExportButtons } from "./export-buttons";
@@ -256,7 +256,7 @@ export function PrintersReport() {
 			<Button
 				variant="outline"
 				size="sm"
-				render={<Link href="/app/reports" />}
+				render={<Link href="/itsm/reports" />}
 				nativeButton={false}
 			>
 				<ArrowLeft data-icon="inline-start" />

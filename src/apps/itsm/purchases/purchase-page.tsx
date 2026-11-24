@@ -14,7 +14,7 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
-import type { Purchase } from "@/server/routers/ITSM/purchases";
+import type { Purchase } from "@/apps/itsm/purchases/router";
 import { trpc } from "@/trpc/react";
 
 import { PurchaseDetailsDialog } from "./purchase-details-dialog";

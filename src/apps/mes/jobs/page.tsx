@@ -26,13 +26,13 @@ import {
 	DateCellRenderer,
 	JobCellRenderer,
 	StatusCellRenderer,
-} from "../CellsRender";
-import { filterParam } from "../params";
-import { ApiJobsData } from "@/server/routers/MES/reports/jobs";
+} from "@/apps/mes/inspection-results/components/CellsRender";
+import { filterParam } from "@/apps/mes/inspection-results/components/params";
+import { ApiJobsData } from "@/apps/mes/jobs/router";
 
 ModuleRegistry.registerModules([AllCommunityModule, CsvExportModule]);
 
-export default function ReportPage() {
+export function Page() {
 	const theme = useTableTheme();
 	const [filter, setFilter] = useQueryState("filter", filterParam);
 	const [gridApi, setGridApi] = useState<GridApi | null>(null);

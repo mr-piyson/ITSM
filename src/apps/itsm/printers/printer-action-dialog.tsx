@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { provideToday } from "@/lib/provide-constants";
 import { isTonerAction, PRINTER_ACTION_TYPES } from "@/lib/printer-constants";
-import type { PrinterItem } from "@/server/routers/ITSM/printers";
+import type { PrinterItem } from "@/apps/itsm/printers/router";
 import { trpc } from "@/trpc/react";
 
 const ACTION_BY_OPTIONS = ["Hadi Almahari", "Salman Almosawi"];

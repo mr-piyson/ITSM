@@ -24,7 +24,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import type { DccItem } from "@/server/routers/ITSM/dccs";
+import type { DccItem } from "@/apps/itsm/dccs/router";
 import { trpc } from "@/trpc/react";
 
 const INTERVAL_OPTIONS = [60, 120, 300, 600, 900, 1800, 3600] as const;

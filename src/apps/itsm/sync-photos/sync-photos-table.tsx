@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { useTableTheme } from "@/hooks/use-table-theme";
 import { SYNC_STATUS_LABELS, syncStatusBadgeClass } from "@/lib/sync-photos";
 import { cn } from "@/lib/utils";
-import type { SyncPhotoEmployee } from "@/server/routers/ITSM/sync-photos";
+import type { SyncPhotoEmployee } from "@/apps/itsm/sync-photos/router";
 
 type SyncPhotosTableProps = {
 	datasource: IDatasource;

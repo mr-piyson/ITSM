@@ -33,7 +33,7 @@ type ReportCategory = {
 	items: ReportItem[];
 };
 
-export default function ScalableReportsDashboard() {
+export function Page() {
 	const reportCategories: ReportCategory[] = [
 		{
 			categoryName: "Panel Tracking",
@@ -43,7 +43,7 @@ export default function ScalableReportsDashboard() {
 					title: "Panel Report",
 					description: "System panels & metrics",
 					icon: LayoutPanelLeft,
-					href: "/reports/panels" as Route,
+					href: "/mes/panels" as Route,
 					theme: {
 						bg: "bg-blue-50 dark:bg-blue-950/30",
 						text: "text-blue-600 dark:text-blue-400",
@@ -56,7 +56,7 @@ export default function ScalableReportsDashboard() {
 					title: "Time-outs",
 					description: "Downtimes & delays",
 					icon: Clock,
-					href: "/reports/time-out" as Route,
+					href: "/mes/time-out" as Route,
 					theme: {
 						bg: "bg-rose-50 dark:bg-rose-950/30",
 						text: "text-rose-600 dark:text-rose-400",
@@ -74,7 +74,7 @@ export default function ScalableReportsDashboard() {
 					title: "Shipments",
 					description: "Logistics & transit status",
 					icon: Truck,
-					href: "/reports/shipments" as Route,
+					href: "/mes/shipments" as Route,
 					theme: {
 						bg: "bg-violet-50 dark:bg-violet-950/30",
 						text: "text-violet-600 dark:text-violet-400",
@@ -87,7 +87,7 @@ export default function ScalableReportsDashboard() {
 					title: "Packages",
 					description: "Inventory & dispatch",
 					icon: Package,
-					href: "/reports/packages" as Route,
+					href: "/mes/packages" as Route,
 					theme: {
 						bg: "bg-amber-50 dark:bg-amber-950/30",
 						text: "text-amber-600 dark:text-amber-400",
@@ -100,7 +100,7 @@ export default function ScalableReportsDashboard() {
 					title: "Jobs",
 					description: "Active work orders",
 					icon: Briefcase,
-					href: "/reports/jobs" as Route,
+					href: "/mes/jobs" as Route,
 					theme: {
 						bg: "bg-indigo-50 dark:bg-indigo-950/30",
 						text: "text-indigo-600 dark:text-indigo-400",
@@ -118,7 +118,7 @@ export default function ScalableReportsDashboard() {
 					title: "Inspection",
 					description: "QA & compliance checks",
 					icon: ClipboardCheck,
-					href: "/reports/inspection-results" as Route,
+					href: "/mes/inspection-results" as Route,
 					theme: {
 						bg: "bg-emerald-50 dark:bg-emerald-950/30",
 						text: "text-emerald-600 dark:text-emerald-400",
@@ -131,7 +131,7 @@ export default function ScalableReportsDashboard() {
 					title: "Panel routes",
 					description: "Show panels route and last stage",
 					icon: RouteIcon,
-					href: "/reports/inspection-routes" as Route,
+					href: "/mes/inspection-routes" as Route,
 					theme: {
 						bg: "bg-lime-50 dark:bg-emerald-950/30",
 						text: "text-lime-600 dark:text-emerald-400",

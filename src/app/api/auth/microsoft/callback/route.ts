@@ -113,8 +113,8 @@ export async function GET(request: NextRequest) {
 		// Log successful login
 		await logLoginAttempt(user.id, true);
 
-		// Create response that redirects to /app
-		const response = NextResponse.redirect(new URL("/app", env.APP_URL));
+		// Create response that redirects to /itsm
+		const response = NextResponse.redirect(new URL("/itsm", env.APP_URL));
 
 		// Set session cookie
 		const sessionOptions = getSessionOptions(user.token);

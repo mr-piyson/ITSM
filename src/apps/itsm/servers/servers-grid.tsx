@@ -12,7 +12,7 @@ import {
 	serverStatusBadge,
 } from "@/lib/server-constants";
 import { cn } from "@/lib/utils";
-import type { ServerItem } from "@/server/routers/ITSM/servers";
+import type { ServerItem } from "@/apps/itsm/servers/router";
 
 const CARD_WIDTH = 280;
 const CARD_HEIGHT = 200;

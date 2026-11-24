@@ -27,7 +27,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
 	AttendanceLog,
 	DailyAttendance,
-} from "@/server/routers/ITSM/attendance";
+} from "@/apps/itsm/attendance/router";
 import { useTableTheme } from "@/hooks/use-table-theme";
 import { trpc } from "@/trpc/react";
 

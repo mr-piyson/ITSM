@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import type { StockItem } from "@/server/routers/ITSM/stock";
+import type { StockItem } from "@/apps/itsm/stock/router";
 import { trpc } from "@/trpc/react";
 
 import { StockDetailsDialog } from "./stock-details-dialog";
@@ -98,7 +98,7 @@ export function StockPage() {
 		setEditingItem(null);
 		utils.stock.list.invalidate();
 		utils.stock.history.invalidate();
-		utils.provides.list.invalidate();
+		utils.provide.list.invalidate();
 		utils.purchases.list.invalidate();
 	};
 

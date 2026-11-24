@@ -14,7 +14,7 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
-import type { PrinterItem } from "@/server/routers/ITSM/printers";
+import type { PrinterItem } from "@/apps/itsm/printers/router";
 import { trpc } from "@/trpc/react";
 
 import { PrinterActionDialog } from "./printer-action-dialog";

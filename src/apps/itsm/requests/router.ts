@@ -8,7 +8,7 @@ import {
 	REQUEST_STATUSES,
 } from "@/lib/request-constants";
 import { sendMail } from "@/lib/mail";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -88,7 +88,7 @@ function toRequest(row: Row): RequestItem {
 	};
 }
 
-export const requestsRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure
 		.input(listSchema)
 		.query(async ({ ctx, input }): Promise<RequestItem[]> => {

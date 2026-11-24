@@ -1,6 +1,6 @@
 "use client";
 
-import { MarketingNavbar } from "@/layout/ITSM/shell/marketing-navbar";
+import { MarketingNavbar } from "@/apps/itsm/shell/marketing-navbar";
 
 import { LandingCta } from "./landing-cta";
 import { LandingFeatures } from "./landing-features";

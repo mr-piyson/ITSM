@@ -18,7 +18,7 @@ import {
 	projectParam,
 	toParam,
 	toDateString,
-} from "@/layout/MES/charts/inspections/params";
+} from "@/apps/mes/inspection-results/charts/params";
 import { Button } from "@/components/ui/button";
 import {
 	Card,

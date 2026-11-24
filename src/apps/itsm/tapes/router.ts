@@ -2,7 +2,7 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import { MONTHS } from "@/lib/tape-constants";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -98,7 +98,7 @@ function toTape(row: Row): TapeItem {
 	};
 }
 
-export const tapesRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<TapeItem[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(
 			`SELECT id, tapeID, location, month, year, status, sequenceNum,

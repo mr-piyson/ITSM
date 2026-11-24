@@ -2,7 +2,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 
 import { cn } from "@/lib/utils";
 
-import { RootProviders } from "@/layout/ITSM/shell/root-providers";
+import { RootProviders } from "@/apps/itsm/shell/root-providers";
 
 import "./globals.css";
 

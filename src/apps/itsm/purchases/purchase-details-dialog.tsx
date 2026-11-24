@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { formatPurchaseDate } from "@/lib/purchase-constants";
-import type { Purchase } from "@/server/routers/ITSM/purchases";
+import type { Purchase } from "@/apps/itsm/purchases/router";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
 	return (

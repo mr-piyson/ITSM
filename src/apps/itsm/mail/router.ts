@@ -2,7 +2,7 @@ import type { RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import { bookingTestMail, sendMailWithConfig } from "@/lib/mail";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -34,7 +34,7 @@ export type MailSettingsView = {
 	enabled: boolean;
 };
 
-export const mailSettingsRouter = router({
+export const router = tRpcRouter({
 	get: protectedProcedure.query(
 		async ({ ctx }): Promise<MailSettingsView | null> => {
 			const [rows] = await ctx.db.iss.execute<Row[]>(

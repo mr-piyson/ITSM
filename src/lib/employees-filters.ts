@@ -1,7 +1,7 @@
 import { parseAsJson } from "nuqs";
 
 import { employeeStaffLabel } from "./employees-constants";
-import type { EmployeeItem } from "@/server/routers/ITSM/employees";
+import type { EmployeeItem } from "@/apps/itsm/employees/router";
 
 const columnGetters: Record<string, (e: EmployeeItem) => string> = {
 	emplCode: (e) => e.emplCode,

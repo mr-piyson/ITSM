@@ -28,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { bookingToday, formatBookingDate } from "@/lib/booking-constants";
-import type { BookingItem } from "@/server/routers/ITSM/bookings";
+import type { BookingItem } from "@/apps/itsm/booking/router";
 import { trpc } from "@/trpc/react";
 
 export function MarkReceivedDialog({
@@ -41,9 +41,9 @@ export function MarkReceivedDialog({
 	onSuccess: () => void;
 }) {
 	const utils = trpc.useUtils();
-	const mutation = trpc.bookings.markReceived.useMutation({
+	const mutation = trpc.booking.markReceived.useMutation({
 		onSuccess: () => {
-			utils.bookings.list.invalidate();
+			utils.booking.list.invalidate();
 			onSuccess();
 			toast.success("Asset marked as received");
 		},
@@ -109,9 +109,9 @@ export function ExtendDialog({
 	onSuccess: () => void;
 }) {
 	const utils = trpc.useUtils();
-	const mutation = trpc.bookings.extend.useMutation({
+	const mutation = trpc.booking.extend.useMutation({
 		onSuccess: () => {
-			utils.bookings.list.invalidate();
+			utils.booking.list.invalidate();
 			onSuccess();
 			toast.success("Booking extended successfully");
 		},

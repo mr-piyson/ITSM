@@ -22,7 +22,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { trpc } from "@/trpc/react";
-import type { AttendanceEmployee } from "@/server/routers/ITSM/attendance";
+import type { AttendanceEmployee } from "@/apps/itsm/attendance/router";
 
 import { SecretAttendanceTable } from "./attendance-table";
 

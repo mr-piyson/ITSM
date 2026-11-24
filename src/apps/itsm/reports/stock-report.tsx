@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import type {
 	StockProvideRow,
 	StockPurchaseRow,
-} from "@/server/routers/ITSM/reports";
+} from "@/apps/itsm/reports/router";
 import { trpc } from "@/trpc/react";
 
 import { ExportButtons } from "./export-buttons";
@@ -538,7 +538,7 @@ export function StockReport() {
 			<Button
 				variant="outline"
 				size="sm"
-				render={<Link href="/app/reports" />}
+				render={<Link href="/itsm/reports" />}
 				nativeButton={false}
 			>
 				<ArrowLeft data-icon="inline-start" />

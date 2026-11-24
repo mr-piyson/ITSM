@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import type { DccItem } from "@/server/routers/ITSM/dccs";
+import type { DccItem } from "@/apps/itsm/dccs/router";
 import { trpc } from "@/trpc/react";
 
 import { DccDetailsDialog } from "./dcc-details-dialog";

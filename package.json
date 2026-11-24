@@ -4,6 +4,7 @@
 	"private": true,
 	"scripts": {
 		"start": "next start",
+		"gen:routes": "node scripts/gen-routes.mjs",
 		"lint": "next lint",
 		"dev": "next dev -p 4000",
 		"build": "next build",

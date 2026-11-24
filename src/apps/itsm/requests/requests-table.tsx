@@ -26,7 +26,7 @@ import {
 	statusLabel,
 } from "@/lib/request-constants";
 import { cn } from "@/lib/utils";
-import type { RequestItem } from "@/server/routers/ITSM/requests";
+import type { RequestItem } from "@/apps/itsm/requests/router";
 
 type RequestsTableProps = {
 	requests: RequestItem[];

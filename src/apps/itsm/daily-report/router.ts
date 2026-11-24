@@ -5,7 +5,7 @@ import {
 	runDailyReport,
 	saveDailyReportSettings,
 } from "@/lib/daily-report-mail";
-import { adminProcedure, router } from "@/server/trpc";
+import { adminProcedure, router as tRpcRouter } from "@/server/trpc";
 
 const settingsSchema = z.object({
 	enabled: z.boolean(),
@@ -13,7 +13,7 @@ const settingsSchema = z.object({
 	extraEmails: z.string().max(2000),
 });
 
-export const dailyReportRouter = router({
+export const router = tRpcRouter({
 	get: adminProcedure.query(() => getDailyReportSettings()),
 
 	save: adminProcedure.input(settingsSchema).mutation(async ({ input }) => {

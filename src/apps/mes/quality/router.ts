@@ -2,11 +2,11 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import db from "@/lib/database";
-import { publicProcedure, router } from "@/server/trpc";
+import { publicProcedure, router as tRpcRouter } from "@/server/trpc";
 
 // Assuming your mysql2 pool instance
 
-export const qualityRouter = router({
+export const router = tRpcRouter({
 	getPaintInspectionData: publicProcedure
 		.input(z.object({ panelSerial: z.string() }))
 		.query(async ({ input }) => {

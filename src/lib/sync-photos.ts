@@ -1,4 +1,4 @@
-import type { SyncPhotoEmployee } from "@/server/routers/ITSM/sync-photos";
+import type { SyncPhotoEmployee } from "@/apps/itsm/sync-photos/router";
 
 export const PHOTO_SYNC_SOURCE_VALUES = ["employee", "subcontract"] as const;
 

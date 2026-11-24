@@ -48,8 +48,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { provideToday } from "@/lib/provide-constants";
 import { cn } from "@/lib/utils";
-import type { StockItemOption } from "@/server/routers/ITSM/provide";
-import type { PickEmployee } from "@/server/routers/ITSM/employees";
+import type { StockItemOption } from "@/apps/itsm/provide/router";
+import type { PickEmployee } from "@/apps/itsm/employees/router";
 import { trpc } from "@/trpc/react";
 
 type FormItem = {
@@ -325,10 +325,10 @@ function ItemPicker({
 
 function ProvideFormContent({ onSuccess }: { onSuccess: () => void }) {
 	const { data: employees = [] } = trpc.employees.pickList.useQuery();
-	const { data: stockItems = [] } = trpc.provides.stockItems.useQuery();
-	const { data: users = [] } = trpc.provides.users.useQuery();
+	const { data: stockItems = [] } = trpc.provide.stockItems.useQuery();
+	const { data: users = [] } = trpc.provide.users.useQuery();
 	const { data: currentUser } = trpc.auth.me.useQuery();
-	const createMutation = trpc.provides.create.useMutation();
+	const createMutation = trpc.provide.create.useMutation();
 
 	const nextRowIdRef = useRef(1);
 	const createRow = (): FormItem => {

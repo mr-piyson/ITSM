@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import type {
 	EmployeeItem,
 	EmployeeTargetResult,
-} from "@/server/routers/ITSM/employees";
+} from "@/apps/itsm/employees/router";
 import { trpc } from "@/trpc/react";
 
 function fieldError(state: {

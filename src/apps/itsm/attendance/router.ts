@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { ATTENDANCE_RULES } from "@/lib/attendance-rules";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -272,7 +272,7 @@ async function safeQueryLogs(
 	}
 }
 
-export const attendanceRouter = router({
+export const router = tRpcRouter({
 	employeeSearch: protectedProcedure
 		.input(z.object({ query: z.string().trim().min(2).max(80) }))
 		.query(async ({ ctx, input }): Promise<AttendanceEmployee[]> => {

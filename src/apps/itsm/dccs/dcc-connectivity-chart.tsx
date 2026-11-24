@@ -12,7 +12,7 @@ import {
 	YAxis,
 } from "recharts";
 
-import type { DccLogItem } from "@/server/routers/ITSM/dccs";
+import type { DccLogItem } from "@/apps/itsm/dccs/router";
 
 type DccConnectivityChartProps = {
 	logs: DccLogItem[];

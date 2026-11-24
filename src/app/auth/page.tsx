@@ -1,4 +1,4 @@
-import { AuthPage } from "@/layout/ITSM/auth/auth-page";
+import { AuthPage } from "@/apps/itsm/auth/auth-page";
 
 export default function Page() {
 	return <AuthPage />;

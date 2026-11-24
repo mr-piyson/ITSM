@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { publicProcedure, router } from "@/server/trpc";
+import { publicProcedure, router as tRpcRouter } from "@/server/trpc";
 import db from "@/lib/database";
 
 interface RawInspectionRow {
@@ -18,7 +18,7 @@ export interface InspectionRouteRow {
 	route: string[];
 }
 
-export const inspection_route_Router = router({
+export const router = tRpcRouter({
 	get_inspection_routes: publicProcedure
 		.input(
 			z.object({

@@ -34,7 +34,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
 	RecentAsset,
 	RecentEmployee,
-} from "@/server/routers/ITSM/dashboard";
+} from "@/apps/itsm/dashboard/router";
 import { Button } from "@/components/ui/button";
 
 function ListCard({
@@ -267,7 +267,7 @@ function EmployeeDetailsDialog({
 					<DialogClose>Close</DialogClose>
 					<Button
 						render={
-							<Link href={`/app/employees/${data.emplCode}`}>
+							<Link href={`/itsm/employees/${data.emplCode}`}>
 								View full profile
 								<ExternalLink aria-hidden />
 							</Link>
@@ -282,7 +282,7 @@ function EmployeeDetailsDialog({
 function AssetRow({ asset }: { asset: RecentAsset }) {
 	return (
 		<li className="group flex items-center justify-between gap-2 rounded-md px-2 py-2 transition-colors hover:bg-muted/50">
-			<Link href="/app/assets" className="flex min-w-0 flex-1 flex-col gap-0.5">
+			<Link href="/itsm/assets" className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<span className="truncate text-sm font-medium leading-none">
 					{asset.deviceName ?? asset.code}
 				</span>

@@ -30,7 +30,7 @@ import {
 	AcUserListInputSchema,
 	PersonIdSchema,
 } from "@/lib/ac/types";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 const acProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 	if (!(await canAccessControl(ctx.user))) {
@@ -42,7 +42,7 @@ const acProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 	return next({ ctx });
 });
 
-export const acRouter = router({
+export const router = tRpcRouter({
 	/**
 	 * Non-throwing permission probe so the UI can hide the access control
 	 * sections instead of firing queries that would fail with FORBIDDEN.

@@ -31,7 +31,7 @@ import type {
 	AssetTypeCount,
 	ContractExpiry,
 	ExpiredContract,
-} from "@/server/routers/ITSM/dashboard";
+} from "@/apps/itsm/dashboard/router";
 
 const EXPIRY_CONFIG: ChartConfig = {
 	daysLeft: { label: "Days left", color: "var(--chart-1)" },

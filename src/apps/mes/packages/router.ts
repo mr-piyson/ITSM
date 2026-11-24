@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import db from "@/lib/database";
-import { publicProcedure, router } from "@/server/trpc";
+import { publicProcedure, router as tRpcRouter } from "@/server/trpc";
 
 // Define the interface for the database response
 export interface ApiReportData {
@@ -17,7 +17,7 @@ export interface ApiReportData {
 	shipped_at: string;
 }
 
-export const packageRouter = router({
+export const router = tRpcRouter({
 	getPackages: publicProcedure
 		.input(
 			z.object({

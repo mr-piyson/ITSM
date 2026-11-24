@@ -1,6 +1,7 @@
 "use client";
 
 import { BarChart3, Monitor, Printer, ShoppingCart } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -10,21 +11,21 @@ const REPORTS = [
 		title: "Assets Report",
 		description:
 			"Full asset inventory filtered by device status and asset types, with owner and location details.",
-		href: "/app/reports/assets",
+		href: "/itsm/reports/assets",
 		icon: Monitor,
 	},
 	{
 		title: "Printers Report",
 		description:
 			"Toner replacements and printer maintenance actions within a date range.",
-		href: "/app/reports/printers",
+		href: "/itsm/reports/printers",
 		icon: Printer,
 	},
 	{
 		title: "Stock Report",
 		description:
 			"Purchases and items provided to employees within a date range, with totals.",
-		href: "/app/reports/stock",
+		href: "/itsm/reports/stock",
 		icon: ShoppingCart,
 	},
 ];
@@ -47,7 +48,7 @@ export function ReportsPage() {
 							key={report.href}
 							variant="outline"
 							className="h-auto flex-col items-start gap-2 p-4 text-left"
-							render={<Link href={report.href} />}
+							render={<Link href={report.href as Route} />}
 							nativeButton={false}
 						>
 							<span className="flex size-9 items-center justify-center border bg-muted/50">

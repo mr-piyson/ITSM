@@ -8,7 +8,7 @@ import {
 	sendMail,
 	type BookingEmailContext,
 } from "@/lib/mail";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 import { getEmployeesByCodes } from "@/lib/oracle-employees.server";
 
 type Row = RowDataPacket & Record<string, unknown>;
@@ -133,7 +133,7 @@ async function sendBookingNotification(
 	}
 }
 
-export const bookingsRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<BookingItem[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(`
 			SELECT

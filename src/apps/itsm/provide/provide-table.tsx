@@ -22,7 +22,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { formatProvideDate } from "@/lib/provide-constants";
-import type { ProvideItem } from "@/server/routers/ITSM/provide";
+import type { ProvideItem } from "@/apps/itsm/provide/router";
 
 type ProvideTableProps = {
 	provides: ProvideItem[];

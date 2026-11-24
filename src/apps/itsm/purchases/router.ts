@@ -1,7 +1,7 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -142,7 +142,7 @@ function toDateTimeString(value: unknown): string {
 	return "";
 }
 
-export const purchasesRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<Purchase[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(`
 			SELECT

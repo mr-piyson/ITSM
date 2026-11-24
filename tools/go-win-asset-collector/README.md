@@ -2,7 +2,7 @@
 
 A single-file, cross-platform rewrite of `tools/win-asset-collector` in **Go**.
 It collects hardware info from the current PC and opens the ITSM **Add New
-Asset** dialog prefilled — same `/app/assets?new=<base64url>` payload contract,
+Asset** dialog prefilled — same `/itsm/assets?new=<base64url>` payload contract,
 but smaller, faster, and more trusted on corporate machines.
 
 | | Bun/TS original | Go rewrite |

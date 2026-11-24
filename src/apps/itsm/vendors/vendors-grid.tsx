@@ -7,7 +7,7 @@ import { Pencil, Store } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { vendorImageUrl } from "@/lib/vendor-constants";
-import type { Vendor } from "@/server/routers/ITSM/vendors";
+import type { Vendor } from "@/apps/itsm/vendors/router";
 
 const CARD_WIDTH = 320;
 const CARD_HEIGHT = 200;

@@ -51,7 +51,7 @@ import {
 import type {
 	PhotoSyncSource,
 	SyncPhotoEmployee,
-} from "@/server/routers/ITSM/sync-photos";
+} from "@/apps/itsm/sync-photos/router";
 import { trpc } from "@/trpc/react";
 
 import { SyncPhotosTable } from "./sync-photos-table";
@@ -137,8 +137,8 @@ export function SyncPhotosPage() {
 	const gridApiRef = useRef<GridApi<SyncPhotoEmployee> | null>(null);
 	const requestIdRef = useRef(0);
 
-	const syncOneMutation = trpc.syncPhotos.syncOne.useMutation();
-	const syncAllMutation = trpc.syncPhotos.syncAll.useMutation();
+	const syncOneMutation = trpc["sync-photos"].syncOne.useMutation();
+	const syncAllMutation = trpc["sync-photos"].syncAll.useMutation();
 
 	const meta = SOURCE_META[source];
 
@@ -203,7 +203,7 @@ export function SyncPhotosPage() {
 				const serverPage = Math.floor(params.startRow / PAGE_SIZE) + 1;
 				setIsLoading(true);
 				try {
-					const data = await utils.syncPhotos.list.fetch({
+					const data = await utils["sync-photos"].list.fetch({
 						source,
 						status,
 						q: query,
@@ -258,7 +258,7 @@ export function SyncPhotosPage() {
 					imageUrl: emp.imageUrl,
 				});
 				toast.success(`Photo synced for ${emp.empCode}`);
-				void utils.syncPhotos.list.invalidate();
+				void utils["sync-photos"].list.invalidate();
 				gridApiRef.current?.refreshInfiniteCache();
 			} catch (error) {
 				toast.error(
@@ -281,7 +281,7 @@ export function SyncPhotosPage() {
 						? `Synced ${result.succeeded} · ${result.skipped} already in sync`
 						: `Synced ${result.succeeded} photo(s)`,
 			);
-			void utils.syncPhotos.list.invalidate();
+			void utils["sync-photos"].list.invalidate();
 			gridApiRef.current?.refreshInfiniteCache();
 			setSyncAllOpen(false);
 		} catch (error) {

@@ -1,4 +1,4 @@
-import MouseTestingApp from "@/layout/ITSM/tools/mouse-tester-page";
+import MouseTestingApp from "@/apps/itsm/tools/mouse-tester-page";
 
 export default function Page() {
 	return <MouseTestingApp />;

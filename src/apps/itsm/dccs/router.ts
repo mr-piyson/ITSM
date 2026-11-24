@@ -1,7 +1,7 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -148,7 +148,7 @@ const DCC_SELECT = `id, name, ip_address, card_reader_id, dcc_code, card_reader_
 	screen_inch, toggles, scanner, card_reader, paper_printer, rfid_label_printer,
 	light_tower, check_interval_seconds, last_checked_at, last_status`;
 
-export const dccsRouter = router({
+export const router = tRpcRouter({
 	list: protectedProcedure.query(async ({ ctx }): Promise<DccItem[]> => {
 		const [rows] = await ctx.db.iss.execute<Row[]>(
 			`SELECT ${DCC_SELECT}

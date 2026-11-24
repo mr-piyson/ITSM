@@ -125,8 +125,8 @@ function fieldError(state: {
 
 function BookingFormContent({ onSuccess }: { onSuccess: () => void }) {
 	const { data: employees = [] } = trpc.employees.pickList.useQuery();
-	const { data: assets = [] } = trpc.bookings.availableAssets.useQuery();
-	const createMutation = trpc.bookings.create.useMutation();
+	const { data: assets = [] } = trpc.booking.availableAssets.useQuery();
+	const createMutation = trpc.booking.create.useMutation();
 
 	const [assetOpen, setAssetOpen] = useState(false);
 	const [assetSearch, setAssetSearch] = useState("");

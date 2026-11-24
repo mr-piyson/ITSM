@@ -38,7 +38,7 @@ import { Separator } from "@/components/ui/separator";
 import { assetImageUrl, assetTypeBadge } from "@/lib/assets-constants";
 import { uploadImageFile } from "@/lib/upload-image";
 import { cn } from "@/lib/utils";
-import type { AssetItem } from "@/server/routers/ITSM/assets";
+import type { AssetItem } from "@/apps/itsm/assets/router";
 import { trpc } from "@/trpc/react";
 
 type AssetDetailsDialogProps = {
@@ -240,7 +240,7 @@ export function AssetDetailsDialog({
 											typeof window !== "undefined"
 												? window.location.origin
 												: ""
-										}/app/assets?code=${encodeURIComponent(asset.code)}`}
+										}/itsm/assets?code=${encodeURIComponent(asset.code)}`}
 										size={88}
 										level="M"
 										bgColor="#ffffff"
