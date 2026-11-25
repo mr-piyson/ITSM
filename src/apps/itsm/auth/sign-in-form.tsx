@@ -2,6 +2,7 @@
 
 import { useForm } from "@tanstack/react-form";
 import { Loader2 } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -33,7 +34,7 @@ export function SignInForm() {
 	const signInMutation = trpc.auth.signIn.useMutation({
 		onSuccess: () => {
 			toast.success("Signed in successfully!");
-			router.push("/itsm");
+			router.push("/documents/requests" as Route);
 		},
 		onError: (error) => {
 			toast.error(error.message);

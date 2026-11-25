@@ -255,18 +255,21 @@ model requestReplies {
 }
 
 model requests {
-  id            Int       @id @default(autoincrement())
-  user          Int
-  pgtype        String?   @db.VarChar(50)
-  newpg         String?   @db.VarChar(100)
-  slctname      String?   @db.VarChar(50)
-  otherpg       String?   @db.VarChar(100)
-  modifi        String?   @db.VarChar(50)
-  descrip       String?   @db.Text
-  imagefilePath String?   @db.VarChar(200)
-  status        String?   @db.VarChar(50)
-  submitDate    DateTime? @db.DateTime(0)
-  requestPrio   String?   @db.VarChar(50)
+  id                Int       @id @default(autoincrement())
+  user              Int
+  kind              String    @default("change") @db.VarChar(20)
+  payload           String?   @db.Text
+  requesterEmplCode String?   @db.VarChar(20)
+  pgtype            String?   @db.VarChar(50)
+  newpg             String?   @db.VarChar(100)
+  slctname          String?   @db.VarChar(50)
+  otherpg           String?   @db.VarChar(100)
+  modifi            String?   @db.VarChar(50)
+  descrip           String?   @db.Text
+  imagefilePath     String?   @db.VarChar(200)
+  status            String?   @db.VarChar(50)
+  submitDate        DateTime? @db.DateTime(0)
+  requestPrio       String?   @db.VarChar(50)
 }
 
 model serverActions {

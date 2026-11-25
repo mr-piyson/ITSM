@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { imageUrl } from "@/lib/images";
 import {
+	kindLabel,
 	modificationLabel,
 	pageLabel,
 	REQUEST_STATUSES,
@@ -113,6 +114,17 @@ export function RequestDetailsDialog({
 	const [statusValue, setStatusValue] = useState<string>("pending");
 	const [replyText, setReplyText] = useState("");
 
+	const payload = useMemo(() => {
+		if (!request?.payload) {
+			return null;
+		}
+		try {
+			return JSON.parse(request.payload) as Record<string, unknown>;
+		} catch {
+			return null;
+		}
+	}, [request?.payload]);
+
 	useEffect(() => {
 		setStatusValue(request?.status ?? "pending");
 		setReplyText("");
@@ -183,19 +195,38 @@ export function RequestDetailsDialog({
 						</div>
 
 						<div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+							<Row label="Type" value={kindLabel(request.kind)} />
 							<Row
-								label="Page"
-								value={pageLabel(
-									request.pgtype,
-									request.slctname,
-									request.newpg,
-									request.otherpg,
-								)}
+								label="Requester (MIS)"
+								value={request.requesterEmplCode ?? request.userName}
 							/>
-							<Row
-								label="Modification"
-								value={modificationLabel(request.modifi)}
-							/>
+							{payload ? (
+								Object.entries(payload).map(([key, value]) => (
+									<Row
+										key={key}
+										label={key.replace(/([A-Z])/g, " $1")}
+										value={
+											value === null || value === undefined ? null : String(value)
+										}
+									/>
+								))
+							) : (
+								<>
+									<Row
+										label="Page"
+										value={pageLabel(
+											request.pgtype,
+											request.slctname,
+											request.newpg,
+											request.otherpg,
+										)}
+									/>
+									<Row
+										label="Modification"
+										value={modificationLabel(request.modifi)}
+									/>
+								</>
+							)}
 						</div>
 
 						<div className="flex flex-col gap-0.5">

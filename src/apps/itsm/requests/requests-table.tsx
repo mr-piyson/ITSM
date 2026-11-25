@@ -20,11 +20,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	modificationLabel,
-	priorityLabel,
-	statusLabel,
-} from "@/lib/request-constants";
+import { kindLabel, priorityLabel, statusLabel } from "@/lib/request-constants";
 import { cn } from "@/lib/utils";
 import type { RequestItem } from "@/apps/itsm/requests/router";
 
@@ -142,27 +138,22 @@ export function RequestsTable({ requests, onDetails }: RequestsTableProps) {
 				),
 			},
 			{
-				id: "page",
-				header: "Page",
-				size: 190,
-				grow: true,
+				id: "kind",
+				header: "Type",
+				size: 150,
 				cell: ({ row }) => (
 					<span className="block min-w-0 truncate">
-						{row.original.slctname === "other"
-							? `Other (${row.original.otherpg ?? "-"})`
-							: row.original.pgtype === "new"
-								? `New: ${row.original.newpg ?? "-"}`
-								: (row.original.slctname ?? "-")}
+						{kindLabel(row.original.kind)}
 					</span>
 				),
 			},
 			{
-				id: "modifi",
-				header: "Modification",
-				size: 140,
+				id: "requester",
+				header: "Requester",
+				size: 150,
 				cell: ({ row }) => (
 					<span className="block min-w-0 truncate">
-						{modificationLabel(row.original.modifi)}
+						{row.original.requesterEmplCode ?? row.original.userName ?? "-"}
 					</span>
 				),
 			},

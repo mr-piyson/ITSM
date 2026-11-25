@@ -1,4 +1,9 @@
 "use client";
+import { Plus } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
@@ -22,6 +27,15 @@ export default function Toolbar(props: any) {
 			</div>
 			{/* Right hand side */}
 			<div className="flex items-center gap-2">
+				<Button
+					variant="outline"
+					size="sm"
+					render={<Link href={"/documents/requests" as Route} />}
+					nativeButton={false}
+				>
+					<Plus data-icon="inline-start" />
+					New Request
+				</Button>
 				<UserMenu />
 			</div>
 		</header>

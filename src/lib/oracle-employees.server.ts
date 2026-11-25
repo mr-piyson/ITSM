@@ -75,6 +75,34 @@ export async function listPickableEmployees(): Promise<PickEmployee[]> {
 }
 
 /**
+ * Resolves a logged-in user's email to an active MIS employee.
+ *
+ * This is the gate for request routes: an ISS account may grant access to the
+ * app, but only an email that also exists in MIS can act as a requester.
+ */
+export async function getEmployeeByEmail(
+	email: string,
+): Promise<OracleEmployeeInfo | null> {
+	const normalized = email.trim().toLowerCase();
+	if (!normalized) {
+		return null;
+	}
+
+	const rows = await withOracleConnection(async (conn) => {
+		const result = await conn.execute(
+			`${BASE_SELECT}
+			 WHERE LOWER(TRIM(tem.EMAIL_ID)) = :1
+			   AND ${PICKABLE_FILTER}`,
+			[normalized],
+		);
+		return (result.rows ?? []) as Row[];
+	});
+
+	const row = rows[0];
+	return row ? toEmployee(row) : null;
+}
+
+/**
  * Resolves stored `EMPL_CODE` values back to employee details.
  *
  * Deliberately unfiltered by `LEFT_DATE` so historical records (provides,

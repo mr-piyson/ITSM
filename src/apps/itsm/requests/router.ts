@@ -2,13 +2,13 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { z } from "zod";
 
 import {
-	REQUEST_MODIFICATIONS,
-	REQUEST_PAGES,
+	PROBLEM_CATEGORIES,
+	REQUEST_KINDS,
 	REQUEST_PRIORITIES,
 	REQUEST_STATUSES,
 } from "@/lib/request-constants";
 import { sendMail } from "@/lib/mail";
-import { protectedProcedure, router as tRpcRouter } from "@/server/trpc";
+import { requesterProcedure, router as tRpcRouter } from "@/server/trpc";
 
 type Row = RowDataPacket & Record<string, unknown>;
 
@@ -16,6 +16,9 @@ export type RequestItem = {
 	id: number;
 	user: number;
 	userName: string | null;
+	kind: string | null;
+	payload: string | null;
+	requesterEmplCode: string | null;
 	pgtype: string | null;
 	newpg: string | null;
 	slctname: string | null;
@@ -38,35 +41,42 @@ export type RequestReplyItem = {
 	userName: string | null;
 };
 
-const optionalText = (max: number) =>
-	z
-		.string()
-		.trim()
-		.max(max)
-		.transform((value) => (value === "" ? null : value))
-		.nullable();
+const priority = z.enum(REQUEST_PRIORITIES);
+const description = z.string().trim().min(1, "Description is required").max(2000);
 
-const createSchema = z
-	.object({
-		pgtype: z.enum(["existing", "new"]),
-		newpg: optionalText(100),
-		slctname: z.enum(REQUEST_PAGES),
-		otherpg: optionalText(100),
-		modifi: z.enum(REQUEST_MODIFICATIONS),
-		descrip: z.string().trim().min(1, "Description is required").max(2000),
-		requestPrio: z.enum(REQUEST_PRIORITIES),
-	})
-	.refine((data) => data.pgtype !== "new" || (data.newpg?.length ?? 0) > 0, {
-		message: "New page name is required",
-		path: ["newpg"],
-	})
-	.refine(
-		(data) => data.slctname !== "other" || (data.otherpg?.length ?? 0) > 0,
-		{ message: "Other page name is required", path: ["otherpg"] },
-	);
+const createSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("problem"),
+		requestPrio: priority,
+		descrip: description,
+		payload: z.object({
+			category: z.enum(PROBLEM_CATEGORIES),
+			affected: z.string().trim().min(1).max(200),
+			impact: z.string().trim().min(1, "Impact is required").max(500),
+			steps: z.string().trim().max(2000).default(""),
+			expected: z.string().trim().max(1000).default(""),
+		}),
+	}),
+	z.object({
+		kind: z.literal("asset"),
+		requestPrio: priority,
+		descrip: description,
+		payload: z.object({
+			item: z.string().trim().min(1, "Item is required").max(200),
+			quantity: z.number().int().positive().max(999),
+			neededBy: z.string().trim().max(20).default(""),
+			justification: z
+				.string()
+				.trim()
+				.min(1, "Justification is required")
+				.max(2000),
+		}),
+	}),
+]);
 
 const listSchema = z.object({
 	status: z.enum(["all", ...REQUEST_STATUSES]).default("all"),
+	kind: z.enum(["all", ...REQUEST_KINDS]).default("all"),
 });
 
 function toRequest(row: Row): RequestItem {
@@ -74,6 +84,11 @@ function toRequest(row: Row): RequestItem {
 		id: Number(row.id),
 		user: Number(row.user),
 		userName: row.userName ? String(row.userName) : null,
+		kind: row.kind ? String(row.kind) : null,
+		payload: row.payload ? String(row.payload) : null,
+		requesterEmplCode: row.requesterEmplCode
+			? String(row.requesterEmplCode)
+			: null,
 		pgtype: row.pgtype ? String(row.pgtype) : null,
 		newpg: row.newpg ? String(row.newpg) : null,
 		slctname: row.slctname ? String(row.slctname) : null,
@@ -89,7 +104,10 @@ function toRequest(row: Row): RequestItem {
 }
 
 export const router = tRpcRouter({
-	list: protectedProcedure
+	/** The MIS employee resolved from the signed-in user's email. */
+	requester: requesterProcedure.query(({ ctx }) => ctx.requester),
+
+	list: requesterProcedure
 		.input(listSchema)
 		.query(async ({ ctx, input }): Promise<RequestItem[]> => {
 			const isAdmin = ctx.user.type === "admin";
@@ -102,6 +120,10 @@ export const router = tRpcRouter({
 			if (input.status !== "all") {
 				conditions.push("r.status = ?");
 				params.push(input.status);
+			}
+			if (input.kind !== "all") {
+				conditions.push("r.kind = ?");
+				params.push(input.kind);
 			}
 			const whereClause =
 				conditions.length > 0 ? ` WHERE ${conditions.join(" AND ")}` : "";
@@ -118,7 +140,7 @@ export const router = tRpcRouter({
 			return rows.map(toRequest);
 		}),
 
-	replies: protectedProcedure
+	replies: requesterProcedure
 		.input(z.object({ requestID: z.coerce.number().int().positive() }))
 		.query(async ({ ctx, input }): Promise<RequestReplyItem[]> => {
 			const [rows] = await ctx.db.iss.execute<Row[]>(
@@ -139,21 +161,19 @@ export const router = tRpcRouter({
 			}));
 		}),
 
-	create: protectedProcedure
+	create: requesterProcedure
 		.input(createSchema)
 		.mutation(async ({ ctx, input }) => {
 			const [result] = await ctx.db.iss.execute<ResultSetHeader>(
 				`INSERT INTO requests
-				     (user, pgtype, newpg, slctname, otherpg, modifi, descrip,
+				     (user, kind, payload, requesterEmplCode, descrip,
 				      status, submitDate, requestPrio)
-				 VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW(), ?)`,
+				 VALUES (?, ?, ?, ?, ?, 'pending', NOW(), ?)`,
 				[
 					ctx.user.id,
-					input.pgtype,
-					input.newpg,
-					input.slctname,
-					input.otherpg,
-					input.modifi,
+					input.kind,
+					JSON.stringify(input.payload),
+					ctx.requester.emplCode,
 					input.descrip,
 					input.requestPrio,
 				],
@@ -169,7 +189,7 @@ export const router = tRpcRouter({
 			return { success: true, id: requestId };
 		}),
 
-	updateStatus: protectedProcedure
+	updateStatus: requesterProcedure
 		.input(
 			z.object({
 				id: z.coerce.number().int().positive(),
@@ -193,7 +213,7 @@ export const router = tRpcRouter({
 			return { success: true, affectedRows: result.affectedRows };
 		}),
 
-	addReply: protectedProcedure
+	addReply: requesterProcedure
 		.input(
 			z.object({
 				requestID: z.coerce.number().int().positive(),

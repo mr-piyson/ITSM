@@ -113,8 +113,10 @@ export async function GET(request: NextRequest) {
 		// Log successful login
 		await logLoginAttempt(user.id, true);
 
-		// Create response that redirects to /itsm
-		const response = NextResponse.redirect(new URL("/itsm", env.APP_URL));
+		// All logins land on the public request chooser.
+		const response = NextResponse.redirect(
+			new URL("/documents/requests", env.APP_URL),
+		);
 
 		// Set session cookie
 		const sessionOptions = getSessionOptions(user.token);

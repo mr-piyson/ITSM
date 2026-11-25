@@ -1,8 +1,10 @@
 "use client";
 
-import { ClipboardList, Loader2, Plus, Search } from "lucide-react";
+import { AlertCircle, ClipboardList, Plus, Search } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +17,8 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import {
+	kindLabel,
+	REQUEST_KINDS,
 	REQUEST_STATUSES,
 	statusLabel,
 	type RequestStatus,
@@ -24,19 +28,27 @@ import type { RequestItem } from "@/apps/itsm/requests/router";
 import { trpc } from "@/trpc/react";
 
 import { RequestDetailsDialog } from "./request-details-dialog";
-import { RequestFormDialog } from "./request-form-dialog";
 import { RequestsTable } from "./requests-table";
 
 const STATUS_FILTERS = ["all", ...REQUEST_STATUSES] as const;
 const STATUS_FILTER_VALUES = [...STATUS_FILTERS] as unknown as string[];
+const KIND_FILTERS = ["all", ...REQUEST_KINDS] as const;
+const KIND_FILTER_VALUES = [...KIND_FILTERS] as unknown as string[];
+
+const newRequestLink = "/documents/requests" as Route;
 
 export function RequestsPage() {
 	const utils = trpc.useUtils();
 	const meQuery = trpc.auth.me.useQuery();
+	const requesterQuery = trpc.requests.requester.useQuery();
 
 	const [statusParam, setStatusParam] = useQueryState(
 		"status",
 		parseAsStringLiteral(STATUS_FILTER_VALUES).withDefault("all"),
+	);
+	const [kindParam, setKindParam] = useQueryState(
+		"kind",
+		parseAsStringLiteral(KIND_FILTER_VALUES).withDefault("all"),
 	);
 	const [query, setQuery] = useQueryState("q", {
 		defaultValue: "",
@@ -47,10 +59,9 @@ export function RequestsPage() {
 		history: "replace",
 	});
 
-	const [formOpen, setFormOpen] = useState(false);
-
 	const { data: requests = [], isPending } = trpc.requests.list.useQuery({
 		status: statusParam as "all" | RequestStatus,
+		kind: kindParam as "all" | (typeof REQUEST_KINDS)[number],
 	});
 
 	const filtered = useMemo(() => {
@@ -62,10 +73,13 @@ export function RequestsPage() {
 			const parts = [
 				request.id,
 				request.userName,
+				request.requesterEmplCode,
+				kindLabel(request.kind),
 				request.slctname,
 				request.otherpg,
 				request.newpg,
 				request.descrip,
+				request.payload,
 				request.status,
 				request.requestPrio,
 			];
@@ -86,6 +100,11 @@ export function RequestsPage() {
 		utils.requests.list.invalidate();
 	};
 
+	const misError =
+		requesterQuery.error?.message === "Your email is not in MIS"
+			? requesterQuery.error.message
+			: null;
+
 	return (
 		<div className="flex h-full min-h-0 flex-col space-y-4 p-4 md:p-6">
 			<div className="flex min-w-0 flex-col gap-4">
@@ -93,14 +112,25 @@ export function RequestsPage() {
 					<div>
 						<h1 className="text-xl font-semibold tracking-tight">Requests</h1>
 						<p className="text-xs text-muted-foreground">
-							System change requests ({isPending ? "…" : filtered.length})
+							All request kinds ({isPending ? "…" : filtered.length})
 						</p>
 					</div>
-					<Button onClick={() => setFormOpen(true)} size="default">
+					<Button
+						size="default"
+						render={<Link href={newRequestLink} />}
+						nativeButton={false}
+					>
 						<Plus data-icon="inline-start" />
 						New Request
 					</Button>
 				</div>
+
+				{misError && (
+					<div className="flex items-center gap-2 border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+						<AlertCircle className="size-4 shrink-0" />
+						{misError}. Please contact IT to register your email in MIS.
+					</div>
+				)}
 
 				<div className="relative w-full max-w-lg">
 					<Search
@@ -111,38 +141,63 @@ export function RequestsPage() {
 						type="search"
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
-						placeholder="Search by ID, user, page, description…"
+						placeholder="Search by ID, requester, type, description…"
 						className="h-9 pl-8"
 					/>
 				</div>
 
-				<div
-					className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1"
-					role="group"
-					aria-label="Filter by status"
-				>
-					{STATUS_FILTERS.map((status) => (
-						<button
-							key={status}
-							type="button"
-							aria-pressed={statusParam === status}
-							onClick={() => setStatusParam(status)}
-							className={cn(
-								"shrink-0 whitespace-nowrap rounded-none border px-2.5 py-1 text-xs font-medium transition-colors",
-								statusParam === status
-									? "border-primary bg-primary text-primary-foreground"
-									: "bg-background text-muted-foreground hover:bg-muted",
-							)}
-						>
-							{status === "all" ? "All" : statusLabel(status)}
-						</button>
-					))}
+				<div className="flex flex-col gap-1.5">
+					<div
+						className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1"
+						role="group"
+						aria-label="Filter by type"
+					>
+						{KIND_FILTERS.map((kind) => (
+							<button
+								key={kind}
+								type="button"
+								aria-pressed={kindParam === kind}
+								onClick={() => setKindParam(kind)}
+								className={cn(
+									"shrink-0 whitespace-nowrap rounded-none border px-2.5 py-1 text-xs font-medium transition-colors",
+									kindParam === kind
+										? "border-primary bg-primary text-primary-foreground"
+										: "bg-background text-muted-foreground hover:bg-muted",
+								)}
+							>
+								{kind === "all" ? "All Types" : kindLabel(kind)}
+							</button>
+						))}
+					</div>
+
+					<div
+						className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1"
+						role="group"
+						aria-label="Filter by status"
+					>
+						{STATUS_FILTERS.map((status) => (
+							<button
+								key={status}
+								type="button"
+								aria-pressed={statusParam === status}
+								onClick={() => setStatusParam(status)}
+								className={cn(
+									"shrink-0 whitespace-nowrap rounded-none border px-2.5 py-1 text-xs font-medium transition-colors",
+									statusParam === status
+										? "border-primary bg-primary text-primary-foreground"
+										: "bg-background text-muted-foreground hover:bg-muted",
+								)}
+							>
+								{status === "all" ? "All" : statusLabel(status)}
+							</button>
+						))}
+					</div>
 				</div>
 			</div>
 
 			{isPending ? (
 				<div className="flex flex-1 items-center justify-center">
-					<Loader2 className="size-6 animate-spin text-muted-foreground" />
+					<ClipboardList className="size-6 animate-pulse text-muted-foreground" />
 				</div>
 			) : filtered.length === 0 ? (
 				<Empty className="flex-1 border">
@@ -156,14 +211,18 @@ export function RequestsPage() {
 						<EmptyDescription>
 							{requests.length === 0
 								? meQuery.data?.type === "admin"
-									? "Change requests submitted by users will appear here."
-									: "Submit a change request to propose an improvement."
-								: "Try adjusting your search or status filter."}
+									? "Requests submitted by users will appear here."
+									: "Submit a request to report a problem or ask for an asset."
+								: "Try adjusting your search or filters."}
 						</EmptyDescription>
 					</EmptyHeader>
 					<EmptyContent>
 						{requests.length === 0 && (
-							<Button size="sm" onClick={() => setFormOpen(true)}>
+							<Button
+								size="sm"
+								render={<Link href={newRequestLink} />}
+								nativeButton={false}
+							>
 								<Plus data-icon="inline-start" />
 								Submit the first request
 							</Button>
@@ -176,15 +235,6 @@ export function RequestsPage() {
 					onDetails={(request: RequestItem) => setIdParam(String(request.id))}
 				/>
 			)}
-
-			<RequestFormDialog
-				open={formOpen}
-				onOpenChange={setFormOpen}
-				onSuccess={() => {
-					setFormOpen(false);
-					utils.requests.list.invalidate();
-				}}
-			/>
 
 			<RequestDetailsDialog
 				request={detailsRequest}

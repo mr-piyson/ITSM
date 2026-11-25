@@ -2,7 +2,9 @@ import type { ResultSetHeader } from "mysql2";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { getUser } from "@/lib/auth.server";
 import db from "@/lib/database";
+import { getEmployeeByEmail } from "@/lib/oracle-employees.server";
 import { sendMail } from "@/lib/mail";
 
 export const dynamic = "force-dynamic";
@@ -63,10 +65,26 @@ function buildSummary(data: z.infer<typeof schema>): string {
 }
 
 /**
- * Public submission endpoint for the IT Request Form (/documents/it-request).
- * Stores the request so it appears in the Requests module and notifies IT.
+ * Submission endpoint for the IT Request Form (/documents/it-request).
+ * Requires a Microsoft/ISS session whose email also resolves in MIS, stores
+ * the request so it appears in the Requests module, and notifies IT.
  */
 export async function POST(request: Request) {
+	const user = await getUser();
+	if (!user) {
+		return NextResponse.json({ error: "Please sign in first" }, { status: 401 });
+	}
+
+	const requester = user.email
+		? await getEmployeeByEmail(user.email)
+		: null;
+	if (!requester) {
+		return NextResponse.json(
+			{ error: "Your email is not in MIS" },
+			{ status: 403 },
+		);
+	}
+
 	let body: unknown;
 	try {
 		body = await request.json();
@@ -87,11 +105,17 @@ export async function POST(request: Request) {
 
 	const [result] = await db.iss.execute<ResultSetHeader>(
 		`INSERT INTO requests
-		     (user, pgtype, newpg, slctname, otherpg, modifi, descrip,
-		      status, submitDate, requestPrio)
-		 VALUES (0, 'it-request', NULL, 'other', 'IT Request Form', 'add',
-		         ?, 'pending', NOW(), 'medium')`,
-		[summary],
+		     (user, kind, payload, requesterEmplCode, pgtype, slctname, otherpg,
+		      modifi, descrip, status, submitDate, requestPrio)
+		 VALUES (?, 'it-request', ?, ?, 'it-request', 'other', 'IT Request Form',
+		         'add', ?, 'pending', NOW(), 'medium')`,
+		[user.id, JSON.stringify(data), requester.emplCode, summary],
+	);
+
+	await db.iss.execute(
+		`INSERT INTO changes_logs (userID, date, action, node, nodeID)
+		 VALUES (?, NOW(), 'add', 'requests', ?)`,
+		[user.id, result.insertId],
 	);
 
 	await sendMail({

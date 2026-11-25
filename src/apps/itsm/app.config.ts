@@ -64,6 +64,10 @@ export const itsmApp: AppDefinition = {
 
 		// ── Landing page ───────────────────────────────────────────────────────
 		{
+			id: "requests-landing", title: "Requests", icon: "ClipboardList", section: "landing",
+			href: "/documents/requests", hasPage: false, hasRouter: false,
+		},
+		{
 			id: "documents", title: "Documents", icon: "FileText", section: "landing",
 			hasPage: false, hasRouter: false,
 			children: [

@@ -7,6 +7,16 @@ export const REQUEST_STATUSES = [
 
 export type RequestStatus = (typeof REQUEST_STATUSES)[number];
 
+/**
+ * Values stored in `requests.kind`. `change` is kept only for rows created
+ * before the multi-kind form existed; new submissions use the other three.
+ */
+export const REQUEST_KINDS = ["change", "problem", "asset", "it-request"] as const;
+
+export const PROBLEM_CATEGORIES = ["software", "hardware"] as const;
+
+export type ProblemCategory = (typeof PROBLEM_CATEGORIES)[number];
+
 export const REQUEST_PRIORITIES = ["low", "medium", "high"] as const;
 
 export type RequestPriority = (typeof REQUEST_PRIORITIES)[number];
@@ -63,6 +73,21 @@ export function pageLabel(
 		return `New Page: ${newpg || "Unnamed"}`;
 	}
 	return `${pageType}: ${capitalize(slctname)}`;
+}
+
+export function kindLabel(kind: string | null): string {
+	switch (kind) {
+		case "problem":
+			return "Problem Request";
+		case "asset":
+			return "Assets Request";
+		case "it-request":
+			return "IT Request Form";
+		case "change":
+			return "Change Request";
+		default:
+			return kind ? capitalize(kind) : "Unknown";
+	}
 }
 
 export function modificationLabel(modifi: string | null): string {
