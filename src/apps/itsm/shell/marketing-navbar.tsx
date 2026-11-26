@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown, Menu, Monitor, X } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import * as React from "react";
 import { useState } from "react";
@@ -30,9 +31,12 @@ import { type RouteItem, routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import AppLogo from "@/assets/icons/Logo";
+import { trpc } from "@/trpc/react";
 
 export function MarketingNavbar({ hideSignIn }: { hideSignIn?: boolean }) {
 	const [isScrolled, setIsScrolled] = React.useState(false);
+	const { data: user } = trpc.auth.me.useQuery();
+	const signInHref: Route = user ? "/itsm" : "/auth";
 
 	React.useLayoutEffect(() => {
 		const handleScroll = () => {
@@ -67,9 +71,12 @@ export function MarketingNavbar({ hideSignIn }: { hideSignIn?: boolean }) {
 						{/* Desktop Sign In Button */}
 						<div className="hidden md:block">
 							{!hideSignIn && (
-								<Link href="/auth">
-									<Button>Sign In</Button>
-								</Link>
+								<Button
+									nativeButton={false}
+									render={<Link href={signInHref} />}
+								>
+									Sign In
+								</Button>
 							)}
 						</div>
 					</div>

@@ -2,6 +2,10 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import type { RowDataPacket } from "mysql2";
 
+import {
+	MICROSOFT_NEXT_COOKIE,
+	resolveLoginDestination,
+} from "@/lib/auth-destinations";
 import { exchangeCodeForUser } from "@/lib/microsoft-auth";
 import db from "@/lib/database";
 import { SESSION_COOKIE_NAME } from "@/lib/auth.server";
@@ -113,10 +117,12 @@ export async function GET(request: NextRequest) {
 		// Log successful login
 		await logLoginAttempt(user.id, true);
 
-		// All logins land on the public request chooser.
-		const response = NextResponse.redirect(
-			new URL("/documents/requests", env.APP_URL),
+		// App logins go to /itsm; request logins return to the request page.
+		const next = resolveLoginDestination(
+			request.cookies.get(MICROSOFT_NEXT_COOKIE)?.value ??
+				searchParams.get("next"),
 		);
+		const response = NextResponse.redirect(new URL(next, env.APP_URL));
 
 		// Set session cookie
 		const sessionOptions = getSessionOptions(user.token);
@@ -131,6 +137,7 @@ export async function GET(request: NextRequest) {
 		// Clear auth cookies
 		response.cookies.delete("microsoft_auth_state");
 		response.cookies.delete("microsoft_code_verifier");
+		response.cookies.delete(MICROSOFT_NEXT_COOKIE);
 
 		return response;
 	} catch (error) {

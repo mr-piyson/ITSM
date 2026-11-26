@@ -2,7 +2,6 @@
 
 import { useForm } from "@tanstack/react-form";
 import { Loader2 } from "lucide-react";
-import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -20,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DEFAULT_LOGIN_DESTINATION } from "@/lib/auth-destinations";
 import { trpc } from "@/trpc/react";
 
 export const SignInSchema = z.object({
@@ -34,7 +34,7 @@ export function SignInForm() {
 	const signInMutation = trpc.auth.signIn.useMutation({
 		onSuccess: () => {
 			toast.success("Signed in successfully!");
-			router.push("/documents/requests" as Route);
+			router.push(DEFAULT_LOGIN_DESTINATION);
 		},
 		onError: (error) => {
 			toast.error(error.message);
